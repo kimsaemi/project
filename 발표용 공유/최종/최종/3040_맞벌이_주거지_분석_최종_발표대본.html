@@ -3,134 +3,57 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>[발표 대본] 3040 맞벌이를 위한 서울 아파트 주거지 분석</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<title>[발표 대본] 3040 맞벌이를 위한 서울 아파트 주거지 분석 v4.0</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
 <style>
-  :root {
-    --bg: #0F172A;
-    --card: #1E293B;
-    --border: #334155;
-    --text: #F8FAFC;
-    --text-sub: #94A3B8;
-    --accent: #38BDF8;
-    --amber: #FBBF24;
-    --green: #34D399;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Pretendard', sans-serif;
-    line-height: 1.8;
-    padding: 40px 20px;
-  }
-  .container {
-    max-width: 900px;
-    margin: 0 auto;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 40px;
-  }
-  h1 { font-size: 28px; font-weight: 800; color: var(--accent); margin-bottom: 8px; }
-  .meta { font-size: 14px; color: var(--text-sub); margin-bottom: 30px; border-bottom: 1px solid var(--border); padding-bottom: 16px; }
-  
-  .speech-block {
-    background: rgba(15, 23, 42, 0.6);
-    border: 1px solid var(--border);
-    border-left: 4px solid var(--accent);
-    border-radius: 8px;
-    padding: 20px;
-    margin-bottom: 24px;
-  }
-  .speech-title {
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--amber);
-    margin-bottom: 10px;
-    display: flex;
-    justify-content: space-between;
-  }
-  .speech-text {
-    font-size: 15px;
-    color: #E2E8F0;
-  }
-  .qa-box {
-    background: rgba(52, 211, 153, 0.1);
-    border: 1px solid rgba(52, 211, 153, 0.3);
-    border-radius: 8px;
-    padding: 20px;
-    margin-top: 30px;
-  }
-  .qa-q { font-weight: 700; color: var(--green); margin-bottom: 8px; }
-  .qa-a { font-size: 14px; color: #CBD5E1; }
+  body { font-family: 'Pretendard', sans-serif; line-height: 1.7; color: #1e293b; background: #f8fafc; padding: 40px 20px; }
+  .container { max-width: 900px; margin: 0 auto; background: #fff; padding: 50px 60px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+  h1 { color: #1e3a8a; font-size: 26px; font-weight: 800; border-bottom: 3px solid #3b82f6; padding-bottom: 12px; margin-bottom: 24px; }
+  h2 { color: #0284c7; font-size: 19px; font-weight: 700; margin-top: 32px; margin-bottom: 12px; background: #e0f2fe; padding: 8px 14px; border-radius: 6px; }
+  p { font-size: 15px; color: #334155; margin-bottom: 14px; }
+  .time-tag { font-size: 13px; font-weight: 700; color: #d97706; background: #fffbe6; padding: 2px 8px; border-radius: 4px; }
+  .qa-box { background: #f1f5f9; padding: 16px; border-left: 4px solid #3b82f6; margin-bottom: 12px; border-radius: 0 6px 6px 0; }
+  .qa-q { font-weight: 700; color: #1e3a8a; }
 </style>
 </head>
 <body>
-
 <div class="container">
-  <h1>🎙️ [발표 대본] 3040 맞벌이를 위한 서울 아파트 주거지 분석</h1>
-  <div class="meta">
-    ⏱️ 예상 소요시간: 10분~12분 | 📑 슬라이드 연동: 12개 슬라이드 | 📍 저장경로: D:\26_강의자료\프로젝트\발표용 공유\최종\최종
-  </div>
+  <h1>🎙️ [발표 대본] 3040 맞벌이를 위한 서울 아파트 주거지 분석 (v4.0)</h1>
+  <p><b>총 발표시간</b>: 20분 (15분 발표 + 5분 Q&A) | <b>연동 슬라이드</b>: `3040_맞벌이_주거지_분석_최종발표_슬라이드.html`</p>
 
-  <div class="speech-block">
-    <div class="speech-title">📢 [Slide 1] 표지 및 발표 시작 <span>(45초)</span></div>
-    <div class="speech-text">
-      안녕하십니까, "3040 맞벌이 가구를 위한 서울 최적 아파트 주거지 분석 및 추천 모델링" 발표를 맡은 1조 발표자입니다.<br>
-      저희 팀은 피곤한 맞벌이 직장인 부부들이 주거지를 선택할 때 겪는 정보 비대칭과 선택의 혼란을 해결하고자 본 프로젝트를 기획하였습니다. 특히 심사위원분들의 5가지 핵심 피드백(점수 로직, 공공통계 벤치마크, 모델링 타당성, 대시보드 역검증, 순위-군집 결합 순서)을 100% 반영한 최종 결과물을 소개합니다.
-    </div>
-  </div>
+  <h2>📢 [Slide 1] 문제정의 & 가설 <span class="time-tag">소요시간: 1분 30초</span></h2>
+  <p>안녕하십니까, "3040 맞벌이 가구를 위한 서울 최적 아파트 주거지 분석 및 추천 모델링" 발표를 맡은 1조 발표자입니다. 저희 팀은 매일 지친 몸으로 퇴근하는 3040 맞벌이 부부들이 집을 구할 때 겪는 정보의 비대칭과 직주근접, 자산 방어력, 육아 환경 사이의 다기준 선택 혼란을 해결하고자 본 프로젝트를 기획하였습니다.</p>
 
-  <div class="speech-block">
-    <div class="speech-title">📢 [Slide 2] 피드백 반영 5대 핵심 개편 사항 <span>(1분 15초)</span></div>
-    <div class="speech-text">
-      [슬라이드 2로 넘어가며]<br>
-      저희가 수립한 5대 지침입니다. 첫째, 원천 수치 정규화 수식과 임계값(30분, -10% 낙폭) 확정. 둘째, 서울시 생활이동 공공통계(편도 43.8분) 객관적 앵커 설정. 셋째, MCDM 가중치 합산과 이커머스 추천 파이프라인 연계. 넷째, 대시보드 실시간 역검증 튜너 탑재. 다섯째, [전체 순위 산출 후 군집 태깅] 파이프라인 확정입니다.
-    </div>
-  </div>
+  <h2>📢 [Slide 2] 데이터 구조 설명 <span class="time-tag">소요시간: 1분 45초</span></h2>
+  <p>최종 정제 데이터 마트 `final_recommendation_mart_v4.csv` 기반으로 서울시 273개 법정동 506개 아파트 면적 세그먼트 데이터베이스를 구축하였으며, 엄격한 검증을 거친 240개 세그먼트를 최종 추천 대상으로 확정하였습니다.</p>
 
-  <div class="speech-block">
-    <div class="speech-title">📢 [Slide 3~4] 점수 산정 구체화 & 가격 방어력 정의 <span>(2분 30초)</span></div>
-    <div class="speech-text">
-      [슬라이드 3~4로 넘어가며]<br>
-      통근은 30분 이내 100점 만점 후 초과 시 분당 -1.5점 페널티를 적용하고, 가격 방어력은 하락장 낙폭 -10% 이내 100점 만점 후 초과 낙폭 1%p당 -3.0점 감점합니다. 예산 10억 초과 매물은 1단계 Hard Filter로 제외하고, 차액 남는 금액은 가성비 가점으로 분리 표기하여 점수의 왜곡을 방지했습니다.
-    </div>
-  </div>
+  <h2>📢 [Slide 3] 전처리 과정: 결측/이상치 처리 <span class="time-tag">소요시간: 1분 45초</span></h2>
+  <p>거래건수 10건 이상 표본 신뢰도 검증, 1단계 Hard Filter (Pass/Fail) 예산 조건 선별 및 v2 방어력 실측 검증 프로세스를 거쳐 240개 검증 완료 주거지를 최종 확정했습니다.</p>
 
-  <div class="speech-block">
-    <div class="speech-title">📢 [Slide 5~7] 벤치마크, MCDM 타당성 & 파이프라인 <span>(2분 45초)</span></div>
-    <div class="speech-text">
-      [슬라이드 5~7로 넘어가며]<br>
-      서울시 공공통계 43.8분을 기준선으로 채택했습니다. 파레토 최적 대신 MCDM 가중치 합산법을 선택하여 137개동의 명확한 Top 10 순위 산출 및 슬라이더 조절을 가능하게 했습니다. 이는 현업 이커머스 상품 추천 알고리즘 3단계 파이프라인과 1:1로 부합합니다.
-    </div>
-  </div>
+  <h2>📢 [Slide 4] 핵심 분석 지표 설명 & MCDM 모델 <span class="time-tag">소요시간: 2분 00초</span></h2>
+  <p>통근(35%, 30분 앵커), 방어력(30%, -10% 낙폭 앵커), 3040비중(25%), 유동성(10%) MCDM 모델링 수식을 수립하였습니다. 전체 240개 추천군 전수를 서열화(Full Ranking)한 후 K-Means 군집 성격 태그를 부착하는 [접근 2] 방식을 채택했습니다.</p>
 
-  <div class="speech-block">
-    <div class="speech-title">📢 [Slide 8~10] 대시보드 역검증 & 페르소나 정성 평가 <span>(2분 30초)</span></div>
-    <div class="speech-text">
-      [슬라이드 8~10으로 넘어가며]<br>
-      대시보드 UI 슬라이더를 통해 순위 실시간 변동을 확인합니다. 예산 7~9억, GBD+YBD 3040 맞벌이 페르소나 적용 시 **1위 영등포구 당산동(YBD 5분/GBD 15분, 낙폭 -12.0%)**, **2위 강서구 염창동(3040 비중 43.3%)**이 추천되어 실수요자 상식선과 완벽하게 일치함을 검증했습니다.
-    </div>
-  </div>
+  <h2>📢 [Slide 5] 대시보드 시각화 공유 <span class="time-tag">소요시간: 2분 30초</span></h2>
+  <p>Leaflet 오픈소스 지도 기반으로 240개 추천 주거지 마커 렌더링 및 가중치 슬라이더 dynamic score 0.1초 즉시 재계산 시스템을 시연합니다.</p>
 
-  <div class="speech-block">
-    <div class="speech-title">📢 [Slide 11~12] 서울 137개동 TOP 5 & 최종 결론 <span>(1분 45초)</span></div>
-    <div class="speech-text">
-      [슬라이드 11~12로 넘어가며]<br>
-      서울 137개동 실데이터 분석 결과 종합 1위는 영등포구 당산동으로 선정되었습니다. 제공되는 대시보드를 통해 실시간 튜닝 시연이 가능합니다. 감사합니다.
-    </div>
-  </div>
+  <h2>📢 [Slide 6] 비즈니스 인사이트 도출 <span class="time-tag">소요시간: 2분 00초</span></h2>
+  <p>59㎡/7억이하 1위 구로동(5.98억, 70.4점), 59㎡/7~9억 1위 연희동(8.0억, 67.9점), 59㎡/9~12억 1위 당산동1가(11.0억, 76.4점), 84㎡/9~12억 1위 염창동(10.8억, 72.5점) 등 실데이터 랭킹 인사이트를 제시합니다.</p>
 
+  <h2>📢 [Slide 7] 개선 제안 & 액션 플랜 <span class="time-tag">소요시간: 1분 30초</span></h2>
+  <p>단기: 가중치 저장 및 카카오톡 알림톡 구축, 학군 배정 API 융합. 장기: 은행 대출 LTV/DSR 한도 조회 B2B API 및 GenAI 대화형 프롭테크 컨시어지 탑재.</p>
+
+  <h2>📢 [Slide 8] 회고 및 결론 <span class="time-tag">소요시간: 1분 45초</span></h2>
+  <p>팀원 R&R 구분과 KIKmix 행정동-법정동 단위 환산, 단위 정규화 극복 경험 및 최종 결론을 전달합니다.</p>
+
+  <h2>🛡️ Q&A 세션 예상 질문 및 방어 대본 (5분)</h2>
   <div class="qa-box">
-    <div class="qa-q">🛡️ 예상 Q&A: "왜 파레토 최적이 아닌 가중치 합산(MCDM)인가요?"</div>
-    <div class="qa-a">
-      "파레토 최적은 서열화(Full Ranking)가 불가능하여 맞벌이 부부에게 1~10위 추천 목록을 선사할 수 없고, 슬라이더 기반의 사용자 파라미터 튜닝이 불가능하기 때문입니다. 실무 이커머스 추천 엔진에서도 점수 합산법을 표준으로 사용합니다."
-    </div>
+    <div class="qa-q">Q. 파레토 최적 대신 MCDM 가중치 합산을 선택한 이유는?</div>
+    <p class="qa-a">A. 파레토 최적은 단일 랭킹을 제공하지 못하므로, 실시간 슬라이더 UI와 1~10위 단일 순위 제공을 위해 MCDM 가중합산 스코어링을 채택했습니다.</p>
+  </div>
+  <div class="qa-box">
+    <div class="qa-q">Q. 하락장 방어력 -10% 임계값의 근거는?</div>
+    <p class="qa-a">A. 금리 shock 서울 평균 낙폭(-25%) 대비 상위 10% 자산 보전 구역임을 통계적으로 확인하여 만점 앵커로 정했습니다.</p>
   </div>
 </div>
-
 </body>
 </html>

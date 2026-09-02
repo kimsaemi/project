@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>[PPT 발표 슬라이드] 3040 맞벌이 서울 최적 아파트 주거지 분석</title>
+<title>[PPT 발표 슬라이드] 3040 맞벌이 서울 최적 아파트 주거지 분석 v4.0</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
@@ -46,7 +46,7 @@
     visibility: hidden;
     transition: opacity 0.4s ease, transform 0.4s ease;
     transform: scale(0.98);
-    padding: 50px 80px 90px;
+    padding: 40px 60px 80px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -58,13 +58,12 @@
     transform: scale(1);
   }
 
-  /* Slide Header */
   .slide-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     border-bottom: 2px solid var(--border);
-    padding-bottom: 16px;
+    padding-bottom: 14px;
   }
   .slide-tag {
     font-size: 13px;
@@ -78,598 +77,407 @@
     border: 1px solid rgba(56, 189, 248, 0.2);
   }
   .slide-title {
-    font-size: 28px;
+    font-size: 26px;
     font-weight: 800;
     color: var(--text-bright);
-    margin-top: 6px;
+    margin-top: 4px;
   }
   .slide-num {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 16px;
+    font-size: 15px;
     color: var(--text-muted);
     background: var(--card-bg);
-    padding: 6px 16px;
+    padding: 6px 14px;
     border-radius: 99px;
     border: 1px solid var(--border);
   }
 
-  /* Slide Body Area */
   .slide-body {
     flex: 1;
-    margin-top: 24px;
+    margin-top: 20px;
     display: flex;
     flex-direction: column;
     justify-content: center;
+    gap: 16px;
   }
 
-  /* Layout Grids */
-  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
-  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
 
   .card {
     background: var(--card-bg);
     border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 24px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-    transition: border 0.3s;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
   }
-  .card:hover { border-color: rgba(56, 189, 248, 0.4); }
   .card-header {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 700;
     color: var(--cyan);
-    margin-bottom: 12px;
+    margin-bottom: 10px;
     display: flex;
     align-items: center;
     gap: 8px;
   }
   .card-p {
-    font-size: 14px;
+    font-size: 13.5px;
     color: var(--text-muted);
     line-height: 1.6;
   }
 
-  /* Tables */
   table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 14px;
+    font-size: 13px;
   }
   th, td {
-    padding: 12px 14px;
+    padding: 10px 12px;
     border-bottom: 1px solid var(--border);
     text-align: left;
   }
   th { background: rgba(255,255,255,0.05); color: var(--cyan); font-weight: 700; }
 
-  /* Badges */
-  .badge { display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; }
+  .badge { display: inline-block; padding: 3px 8px; border-radius: 6px; font-size: 11.5px; font-weight: 700; }
   .badge-cyan { background: rgba(56, 189, 248, 0.2); color: var(--cyan); }
   .badge-green { background: rgba(52, 211, 153, 0.2); color: var(--green); }
   .badge-amber { background: rgba(251, 191, 36, 0.2); color: var(--amber); }
 
-  /* Controls Footer */
-  .deck-footer {
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
-    height: 60px;
-    background: rgba(11, 15, 25, 0.9);
-    backdrop-filter: blur(10px);
-    border-top: 1px solid var(--border);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 40px;
-    z-index: 100;
+  .controls {
+    position: absolute;
+    bottom: 20px; right: 60px;
+    display: flex; gap: 10px; z-index: 100;
   }
-  .nav-btn {
+  .btn-nav {
     background: var(--card-bg);
     border: 1px solid var(--border);
     color: var(--text-bright);
-    padding: 8px 18px;
+    padding: 8px 16px;
     border-radius: 8px;
-    font-size: 14px;
+    font-weight: 700;
     cursor: pointer;
-    font-weight: 600;
+    font-size: 13px;
   }
-  .nav-btn:hover { background: var(--cyan); color: #0B0F19; }
-  .progress-bar {
-    position: fixed;
-    bottom: 60px; left: 0;
-    height: 4px;
-    background: var(--cyan);
-    transition: width 0.3s ease;
-    z-index: 101;
-  }
-
-  /* Title Slide styling */
-  .title-hero {
-    text-align: center;
-    max-width: 900px;
-    margin: 0 auto;
-  }
-  .title-hero h1 {
-    font-size: 44px;
-    font-weight: 900;
-    background: linear-gradient(135deg, #FFF 30%, var(--cyan) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    margin-bottom: 20px;
-  }
-  .title-sub {
-    font-size: 20px;
-    color: var(--text-muted);
-    margin-bottom: 40px;
-  }
+  .btn-nav:hover { background: var(--cyan); color: #000; }
 </style>
 </head>
 <body>
 
 <div class="deck-container">
-  <div class="progress-bar" id="progressBar"></div>
 
-  <!-- SLIDE 1: TITLE -->
-  <div class="slide active">
+  <!-- SLIDE 1 -->
+  <div class="slide active" id="slide-1">
     <div class="slide-header">
       <div>
-        <div class="slide-tag">FINAL PRESENTATION</div>
-        <div class="slide-title">3040 맞벌이를 위한 서울 최적 아파트 주거지 분석 및 모델링</div>
+        <span class="slide-tag">Slide 1. 문제정의 & 가설</span>
+        <h2 class="slide-title">3040 맞벌이를 위한 서울 최적 아파트 주거지 분석 및 모델링</h2>
       </div>
-      <div class="slide-num">01 / 12</div>
-    </div>
-    <div class="slide-body">
-      <div class="title-hero">
-        <div class="badge badge-amber" style="font-size: 16px; padding: 8px 20px; margin-bottom: 24px;">피드백 5대 요소 100% 반영 완결판</div>
-        <h1>데이터 기반의 다기준 주거지 추천 알고리즘 및 역검증 대시보드</h1>
-        <p class="title-sub">직주근접 • 가격방어력 • 3040친화도 • 유동성 다기준 정밀 스코어링 체계</p>
-        <div style="display: flex; justify-content: center; gap: 30px; margin-top: 30px; font-size: 14px; color: var(--text-muted);">
-          <span>📅 2026.08.31</span>
-          <span>📍 발표용 공유 최종본</span>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- SLIDE 2: EXECUTIVE SUMMARY -->
-  <div class="slide">
-    <div class="slide-header">
-      <div>
-        <div class="slide-tag">EXECUTIVE SUMMARY</div>
-        <div class="slide-title">피드백 반영 5대 핵심 개편 사항</div>
-      </div>
-      <div class="slide-num">02 / 12</div>
-    </div>
-    <div class="slide-body">
-      <div class="grid-3">
-        <div class="card">
-          <div class="card-header">1. 점수 산정 구체화</div>
-          <p class="card-p">지표별 원천 수치(분, %, 억)의 단위 편차를 0~100점으로 환산하는 정규화 수식 확정.<br><strong style="color:var(--amber);">• 통근 30분, 낙폭 -10% 임계값 만점</strong></p>
-        </div>
-        <div class="card">
-          <div class="card-header">2. 공공통계 벤치마크</div>
-          <p class="card-p">주관적 체감이 아닌 <strong style="color:var(--cyan);">서울시 생활이동 공공통계(편도 평균 43.8분)</strong>를 객관적 앵커 기준점으로 설정하여 상대 평가 산출.</p>
-        </div>
-        <div class="card">
-          <div class="card-header">3. 모델링 타당성 (MCDM)</div>
-          <p class="card-p">파레토 최적의 단일 순위 산출 불가를 극복하고자 <strong style="color:var(--green);">다기준 가중치 합산(MCDM)</strong> 적용 & 이커머스 추천 알고리즘과 연계.</p>
-        </div>
-      </div>
-      <div class="grid-2" style="margin-top: 20px;">
-        <div class="card">
-          <div class="card-header">4. 대시보드 역검증 (휴리스틱)</div>
-          <p class="card-p">실시간 가중치 조절 슬라이더 및 예산 7~9억 GBD+YBD 3040 부부 페르소나 기반 역추적 튜너 대시보드 구축.</p>
-        </div>
-        <div class="card">
-          <div class="card-header">5. 군집 - 순위 결합 순서</div>
-          <p class="card-p"><strong style="color:var(--purple);">접근 2 (전체 순위화 후 군집 태깅)</strong> 확정: 전체 137개동 1~10위 산출 후 K-Means 클러스터 성격 뱃지 부착.</p>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- SLIDE 3: SCORE CALCULATION LOGIC 1 -->
-  <div class="slide">
-    <div class="slide-header">
-      <div>
-        <div class="slide-tag">SCORE LOGIC</div>
-        <div class="slide-title">1. 점수 산정 방식의 구체화: 단위 편차 & 스케일링</div>
-      </div>
-      <div class="slide-num">03 / 12</div>
-    </div>
-    <div class="slide-body">
-      <table>
-        <thead>
-          <tr>
-            <th>평가 지표</th>
-            <th>가중치</th>
-            <th>원천 단위</th>
-            <th>채점 방식</th>
-            <th>환산 수식 및 문턱값 (Threshold) 기준</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><strong>🚀 통근 편리성</strong></td>
-            <td><span class="badge badge-cyan">35%</span></td>
-            <td>소요시간 (분)</td>
-            <td>임계값 + 선형 페널티</td>
-            <td><strong>30분 이내 100점 만점</strong><br>30분 초과 시 <code>100 - (Time - 30) × 1.5</code></td>
-          </tr>
-          <tr>
-            <td><strong>🛡️ 가격 방어력</strong></td>
-            <td><span class="badge badge-green">30%</span></td>
-            <td>하락장 낙폭 (%)</td>
-            <td>임계값 + 구간 페널티</td>
-            <td><strong>낙폭 -10% 이내 100점 만점</strong><br>-10% 초과 시 <code>100 - (|Drop| - 10) × 3.0</code></td>
-          </tr>
-          <tr>
-            <td><strong>👨‍👩‍👧 3040 친화도</strong></td>
-            <td><span class="badge badge-amber">25%</span></td>
-            <td>상주비중 (%)</td>
-            <td>임계값 + 비율 페널티</td>
-            <td><strong>3040 비율 35% 이상 100점 만점</strong><br>35% 미만 시 <code>100 - (35 - Ratio) × 4.0</code></td>
-          </tr>
-          <tr>
-            <td><strong>💧 거래 유동성</strong></td>
-            <td><span class="badge badge-cyan">10%</span></td>
-            <td>연 거래건수</td>
-            <td>임계값 + 비례 감점</td>
-            <td><strong>연 50건 이상 100점 만점</strong><br>50건 미만 시 <code>100 - (50 - Vol) × 1.5</code></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- SLIDE 4: PRICE DEFENSE & BUDGET -->
-  <div class="slide">
-    <div class="slide-header">
-      <div>
-        <div class="slide-tag">PRICE DEFENSE</div>
-        <div class="slide-title">1-2. 가격 방어력 및 예산 조건의 구체적 정의</div>
-      </div>
-      <div class="slide-num">04 / 12</div>
+      <span class="slide-num">01 / 08</span>
     </div>
     <div class="slide-body">
       <div class="grid-2">
-        <div class="card">
-          <div class="card-header">1단계: Pass / Fail 예산 조건 (Hard Filter)</div>
-          <p class="card-p">사용자 예산 $B$ (예: 10억 원) 초과 아파트는 1차 선별 시 일절 제외.<br><br>예산 10억 지정 시: 9억 매물 (Pass), 11억 매물 (Fail - 완전 제외)</p>
-        </div>
-        <div class="card">
-          <div class="card-header">2단계: 가격 방어성 정밀 채점 (Soft Scoring)</div>
-          <p class="card-p">
-            • <strong>잔액(차액) 관점</strong>: 예산 대비 절감액은 '가성비/상급지 가점'으로 표기.<br>
-            • <strong>하락기 낙폭 관점</strong>: 금리인상기 최고점 대비 최저점 낙폭(-%)을 방어력 지수로 평가.<br>
-            <strong style="color:var(--green);">-10% 이내 낙폭 100점 만점 부여!</strong>
-          </p>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- SLIDE 5: BENCHMARK SETTING -->
-  <div class="slide">
-    <div class="slide-header">
-      <div>
-        <div class="slide-tag">BENCHMARK</div>
-        <div class="slide-title">2. 비교 기준점(Benchmark): 서울시 공공통계 앵커</div>
-      </div>
-      <div class="slide-num">05 / 12</div>
-    </div>
-    <div class="slide-body">
-      <div class="card" style="margin-bottom: 20px;">
-        <div class="card-header">🏛️ 서울시 생활이동 공공통계 앵커 (Seoul Mobility Anchor)</div>
-        <p class="card-p">
-          서울 열린데이터 광장 공공데이터 연계 통계: <strong>서울 시민 평균 편도 출퇴근 시간 43.8분</strong>.<br>
-          주관적 체감이 아닌 공인 통계치 43.8분을 객관적 비교 기준선으로 설정하였습니다.
-        </p>
-      </div>
-      <div class="grid-2">
-        <div class="card">
-          <div class="card-header">30분 이내 (최상위 구간)</div>
-          <p class="card-p">맞벌이 직장인의 통근 피로도가 적은 30분 이내 지역은 일괄 100점 만점 산정.</p>
-        </div>
-        <div class="card">
-          <div class="card-header">43.8분 이상 (페널티 구간)</div>
-          <p class="card-p">서울시 평균을 초과하는 소요시간에 대해 분당 -1.5점 감점 페널티 적용.</p>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- SLIDE 6: MODELING RATIONALE -->
-  <div class="slide">
-    <div class="slide-header">
-      <div>
-        <div class="slide-tag">MODELING</div>
-        <div class="slide-title">3. 모델링 타당성: MCDM 가중치 합산 vs 파레토 최적</div>
-      </div>
-      <div class="slide-num">06 / 12</div>
-    </div>
-    <div class="slide-body">
-      <table>
-        <thead>
-          <tr>
-            <th>비교 항목</th>
-            <th>다기준 가중치 합산 (MCDM / WSM) [선택]</th>
-            <th>파레토 최적 (Pareto Frontier)</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><strong>개념 및 특징</strong></td>
-            <td>각 지표 가중치와 정규화 점수의 선형 합산</td>
-            <td>비지배(Non-dominated) 대안 집합 추출</td>
-          </tr>
-          <tr>
-            <td><strong>서열화 (Ranking)</strong></td>
-            <td><span class="badge badge-green">명확한 Top 10 순위 산출 가능</span></td>
-            <td>단일 랭킹 산출 불가능 (집합 형태)</td>
-          </tr>
-          <tr>
-            <td><strong>사용자 인터랙션</strong></td>
-            <td><span class="badge badge-cyan">슬라이더 기반 실시간 파라미터 튜닝</span></td>
-            <td>개인별 우선순위 조정 불가</td>
-          </tr>
-          <tr>
-            <td><strong>최종 선택 근거</strong></td>
-            <td colspan="2"><strong style="color:var(--amber);">3040 맞벌이 사용자에게 명확한 우선순위 1~10위 및 대시보드 튜닝을 제공하기 위해 MCDM 선택</strong></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- SLIDE 7: RECOMMENDATION PIPELINE -->
-  <div class="slide">
-    <div class="slide-header">
-      <div>
-        <div class="slide-tag">PIPELINE</div>
-        <div class="slide-title">3-2. 이커머스 추천 알고리즘 3단계 파이프라인 연계</div>
-      </div>
-      <div class="slide-num">07 / 12</div>
-    </div>
-    <div class="slide-body">
-      <div class="grid-3">
         <div class="card" style="border-left: 4px solid var(--cyan);">
-          <div class="card-header">1단계: Hard Filter</div>
-          <p class="card-p">• 사용자 예산 $B$ 이하 조건<br>• 연 거래건수 10건 이상 유동성 필터<br>• <strong>Pass / Fail 선별</strong></p>
+          <div class="card-header">🎯 문제정의 (Problem Statement)</div>
+          <p class="card-p">
+            • 3040 맞벌이 부부는 <b>직주근접, 자산 안정성, 자녀 양육, 예산 한계</b>의 4가지 복합적 다기준 선택 직면.<br>
+            • 정보의 비대칭 및 주관적 추천의 한계를 극복하는 <b>객관적 데이터 기반 정밀 추천 스코어링 체계</b> 구축 필요.
+          </p>
         </div>
         <div class="card" style="border-left: 4px solid var(--green);">
-          <div class="card-header">2단계: Soft Scoring</div>
-          <p class="card-p">• 4대 지표 환산 점수 산출<br>• 가중치 합산 수식 산정<br>• <code>Final_Score</code> 산출</p>
-        </div>
-        <div class="card" style="border-left: 4px solid var(--purple);">
-          <div class="card-header">3단계: Rank & Tag</div>
-          <p class="card-p">• 서울전역 상위 1~10위 랭킹화<br>• K-Means 군집 성격 태그 부여<br>• 대시보드 인터랙티브 노출</p>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- SLIDE 8: REVERSE TUNING DASHBOARD -->
-  <div class="slide">
-    <div class="slide-header">
-      <div>
-        <div class="slide-tag">DASHBOARD</div>
-        <div class="slide-title">4. 대시보드 기반 역검증(휴리스틱) 프로세스</div>
-      </div>
-      <div class="slide-num">08 / 12</div>
-    </div>
-    <div class="slide-body">
-      <div class="grid-2">
-        <div class="card">
-          <div class="card-header">🎛️ 실시간 파라미터 튜닝 슬라이더</div>
+          <div class="card-header">💡 핵심 가설 (Core Hypotheses)</div>
           <p class="card-p">
-            대시보드 UI 상에서 통근(35%), 가격방어(30%), 3040친화도(25%), 유동성(10%) 가중치 숫자를 슬라이더로 조절하면 <strong>137개 법정동 점수와 순위가 실시간 갱신</strong>됩니다.
-          </p>
-        </div>
-        <div class="card">
-          <div class="card-header">🔍 정성적 역검증 모듈</div>
-          <p class="card-p">
-            "가중치를 조절했을 때 추천된 1위 동네가 실제 3040 실수요자의 상식선에 부합하는가?"를 다각도 파라미터 테스트로 역추적 튜닝합니다.
+            • <b>H1 (통근)</b>: 30분 이내 직주근접 주거지가 맞벌이 가구의 주거 만족도를 결정한다.<br>
+            • <b>H2 (방어력)</b>: 금리 shock 하락기 낙폭 -10% 이내 지역이 고방어 자산 보전처 역할을 한다.<br>
+            • <b>H3 (3040&유동성)</b>: 3040 인구비율 35%+ 및 연 50건+ 거래지역이 풍부한 육아인프라를 보장한다.
           </p>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- SLIDE 9: PERSONA VERIFICATION -->
-  <div class="slide">
+  <!-- SLIDE 2 -->
+  <div class="slide" id="slide-2">
     <div class="slide-header">
       <div>
-        <div class="slide-tag">PERSONA</div>
-        <div class="slide-title">4-2. 3040 실수요 페르소나 관점 정성 검증</div>
+        <span class="slide-tag">Slide 2. 데이터 구조 설명</span>
+        <h2 class="slide-title">`final_recommendation_mart_v4.csv` 데이터 마트 명세</h2>
       </div>
-      <div class="slide-num">09 / 12</div>
+      <span class="slide-num">02 / 08</span>
     </div>
     <div class="slide-body">
-      <div class="card" style="margin-bottom: 20px;">
-        <div class="card-header">👨‍👩‍👧 실수요 페르소나: 예산 7~9억 원대 GBD × YBD 출퇴근 맞벌이 부부</div>
-        <p class="card-p">
-          예산 9억 원 이내, 강남 15분 & 여의도 5분 도착이 핵심인 실수요자 조건.
-        </p>
-      </div>
-      <div class="grid-2">
-        <div class="card" style="border: 2px solid var(--amber);">
-          <div class="card-header">🏆 1위 추천: 영등포구 당산동 (8.9억 원)</div>
-          <p class="card-p">• 2·9호선 환승 초역세권 (YBD 5분 / GBD 15분)<br>• 금리 shock 하락장 낙폭 -12.0% (자산 방어력 최상)<br>• 실수요자 상식과 완벽 부합 검증 완료!</p>
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-header">📊 데이터전체 규모</div>
+          <div style="font-size: 28px; font-weight: 900; color: var(--cyan); margin: 10px 0;">506 개 행</div>
+          <p class="card-p">서울시 273개 법정동 × 59㎡ / 84㎡ 면적구간 전수 수집</p>
         </div>
         <div class="card">
-          <div class="card-header">🥈 2위 추천: 강서구 염창동 (8.3억 원)</div>
-          <p class="card-p">• 9호선 급행 이용 YBD 10분 / GBD 25분<br>• 3040 인구비율 43.3% 서울 최고 수준<br>• 가성비 패밀리 타운 검증 완료</p>
+          <div class="card-header">🎯 최종 추천 대상</div>
+          <div style="font-size: 28px; font-weight: 900; color: var(--green); margin: 10px 0;">240 개동</div>
+          <p class="card-p">10건+ 표본, 예산 Hard Filter 및 v2 검증을 통과한 알짜 세그먼트</p>
+        </div>
+        <div class="card">
+          <div class="card-header">🔑 핵심 스키마 지표</div>
+          <p class="card-p" style="font-size: 12.5px;">
+            • 실거래 중앙가 (억원) & 단가 (만원/㎡)<br>
+            • GBD / YBD / CBD 통근시간 (분)<br>
+            • 하락기 낙폭 (%) & 회복률 (%)<br>
+            • 3040 인구 비중 (%) & 유동성 거래건수
+          </p>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- SLIDE 10: CLUSTERING VS RANKING PIPELINE -->
-  <div class="slide">
+  <!-- SLIDE 3 -->
+  <div class="slide" id="slide-3">
     <div class="slide-header">
       <div>
-        <div class="slide-tag">PIPELINE ORDER</div>
-        <div class="slide-title">5. 군집 분석과 순위화의 결합 순서 확정</div>
+        <span class="slide-tag">Slide 3. 전처리 과정</span>
+        <h2 class="slide-title">결측치, 이상치 처리 및 3단계 파이프라인 검증</h2>
       </div>
-      <div class="slide-num">10 / 12</div>
+      <span class="slide-num">03 / 08</span>
+    </div>
+    <div class="slide-body">
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-header">1. 표본 신뢰도 검증</div>
+          <p class="card-p">거래건수 <b>10건 이상</b>만 정밀 채점 반영. 10건 미만은 `참고용_가격표본부족` 사전 구분.</p>
+        </div>
+        <div class="card">
+          <div class="card-header">2. 1단계 Hard Filter</div>
+          <p class="card-p">예산 상한선($B$) 초과 매물 완전 제외 (7억이하, 7~9억, 9~12억, 12억초과 Pass/Fail).</p>
+        </div>
+        <div class="card">
+          <div class="card-header">3. 이상치 & 검증 상태</div>
+          <p class="card-p">`검증완료_v2기준` 240개 행 최종 확정, 핵심자료 미검증 및 결측 222개 사전 제척.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 4 -->
+  <div class="slide" id="slide-4">
+    <div class="slide-header">
+      <div>
+        <span class="slide-tag">Slide 4. 핵심 분석 지표 설명</span>
+        <h2 class="slide-title">MCDM 가중합산 정규화 수식 & 임계값(Threshold)</h2>
+      </div>
+      <span class="slide-num">04 / 08</span>
+    </div>
+    <div class="slide-body">
+      <div class="grid-4">
+        <div class="card">
+          <div class="card-header" style="color: var(--cyan);">🚀 통근 편리성 (35%)</div>
+          <p class="card-p">30분 이내 100점 만점<br>30분 초과 시 1분당 1.5점 감점<br><small style="color:var(--text-muted);">서울시 공공통계 43.8분 앵커</small></p>
+        </div>
+        <div class="card">
+          <div class="card-header" style="color: var(--green);">🛡️ 가격 방어력 (30%)</div>
+          <p class="card-p">낙폭 -10% 이내 100점 만점<br>-10% 초과 하락폭 1%p당 3.0점 감점<br><small style="color:var(--text-muted);">금리 shock 하락장 실측</small></p>
+        </div>
+        <div class="card">
+          <div class="card-header" style="color: var(--amber);">👨‍👩‍👧 3040 친화도 (25%)</div>
+          <p class="card-p">3040 인구비율 35% 이상 만점<br>35% 미달 시 1%p당 4.0점 감점<br><small style="color:var(--text-muted);">육아 환경 밀집도</small></p>
+        </div>
+        <div class="card">
+          <div class="card-header" style="color: var(--purple);">💧 거래 유동성 (10%)</div>
+          <p class="card-p">연 거래건수 50건 이상 만점<br>50건 미만 시 1건당 1.5점 감점<br><small style="color:var(--text-muted);">환금성 지표</small></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 5 -->
+  <div class="slide" id="slide-5">
+    <div class="slide-header">
+      <div>
+        <span class="slide-tag">Slide 5. 대시보드 시각화 공유</span>
+        <h2 class="slide-title">실시간 역검증(휴리스틱) 인터랙티브 대시보드 v4.0</h2>
+      </div>
+      <span class="slide-num">05 / 08</span>
     </div>
     <div class="slide-body">
       <div class="grid-2">
-        <div class="card" style="opacity: 0.6;">
-          <div class="card-header">접근 1: 군집 선별 후 순위화 (Cluster-First)</div>
-          <p class="card-p">군집을 먼저 선택 시 경계선 오류(Boundary Error)로 인해 우수한 매물이 군집 필터링 단계에서 탈락할 위험 존재.</p>
+        <div class="card">
+          <div class="card-header">🗺️ Leaflet 기반 지도 렌더링</div>
+          <p class="card-p">
+            • 서울 전역 240개 추천 법정동 Lat/Lon 위치 정밀 매핑.<br>
+            • 마커 클릭 시 중앙가격, 단가, GBD/YBD/CBD 소요시간 및 3040 비중 팝업 표시.
+          </p>
         </div>
-        <div class="card" style="border: 2px solid var(--cyan);">
-          <div class="card-header">접근 2: 전체 순위화 후 군집 태깅 [최종 확정]</div>
-          <p class="card-p">전체 137개 법정동 순위를 먼저 1~10위로 산출하고, 상위 매물에 K-Means 클러스터 성격 태그를 부착하는 방식이 사용자 관점에서 훨씬 유연하고 직관적임.</p>
+        <div class="card">
+          <div class="card-header">🎛️ 실시간 dynamic score 재계산</div>
+          <p class="card-p">
+            • 가중치 슬라이더(35%/30%/25%/10%) 실시간 조절 시 종합 점수 0.1초 즉시 업데이트.<br>
+            • 예산 및 평형 필터 조절을 통한 사용자 역검증 지원.
+          </p>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- SLIDE 11: MASTER DATA TOP 5 -->
-  <div class="slide">
+  <!-- SLIDE 6 -->
+  <div class="slide" id="slide-6">
     <div class="slide-header">
       <div>
-        <div class="slide-tag">RESULTS</div>
-        <div class="slide-title">서울 137개 법정동 실데이터 분석 TOP 5 추천</div>
+        <span class="slide-tag">Slide 6. 비즈니스 인사이트 도출</span>
+        <h2 class="slide-title">예산대별 실데이터 TOP 추천 및 인사이트</h2>
       </div>
-      <div class="slide-num">11 / 12</div>
+      <span class="slide-num">06 / 08</span>
     </div>
     <div class="slide-body">
       <table>
         <thead>
           <tr>
-            <th>순위</th>
-            <th>자치구 / 법정동</th>
-            <th>중앙매매가</th>
-            <th>통근시간 (GBD/YBD/CBD)</th>
-            <th>하락장 낙폭</th>
-            <th>3040 비중</th>
-            <th>K-Means 군집 태그</th>
+            <th>구분</th>
+            <th>1위 추천 동네</th>
+            <th>중앙가</th>
+            <th>YBD/CBD 통근</th>
+            <th>방어력(낙폭)</th>
+            <th>3040비중</th>
+            <th>종합점수</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td><span class="badge badge-amber">1위</span></td>
-            <td><strong>영등포구 당산동</strong></td>
-            <td>8.9억 원</td>
-            <td>10.0분 (YBD 5 / GBD 15)</td>
-            <td>-12.0%</td>
-            <td>38.5%</td>
-            <td><span class="badge badge-cyan">그룹 2: 광역 통근 허브 & 방어 1위</span></td>
+            <td><span class="badge badge-cyan">59㎡ / 7억이하</span></td>
+            <td><b>구로구 구로동</b></td>
+            <td>5.98억 원</td>
+            <td>42.9분</td>
+            <td>-3.0% (최고)</td>
+            <td>29.8%</td>
+            <td><b>70.4점</b></td>
           </tr>
           <tr>
-            <td><span class="badge badge-cyan">2위</span></td>
-            <td><strong>강서구 염창동</strong></td>
-            <td>8.3억 원</td>
-            <td>17.5분 (YBD 10 / GBD 25)</td>
-            <td>-29.1%</td>
-            <td>43.3%</td>
-            <td><span class="badge badge-cyan">그룹 2: 광역 통근 허브 & 방어 1위</span></td>
+            <td><span class="badge badge-green">59㎡ / 7~9억</span></td>
+            <td><b>서대문구 연희동</b></td>
+            <td>8.00억 원</td>
+            <td>46.3분 (CBD)</td>
+            <td>-0.4% (방어1위)</td>
+            <td>28.9%</td>
+            <td><b>67.9점</b></td>
           </tr>
           <tr>
-            <td><span class="badge badge-cyan">3위</span></td>
-            <td><strong>동작구 대방동</strong></td>
-            <td>10.5억 원</td>
-            <td>12.5분 (YBD 5 / GBD 20)</td>
-            <td>-10.2%</td>
-            <td>31.6%</td>
-            <td><span class="badge badge-cyan">그룹 2: 광역 통근 허브 & 방어 1위</span></td>
+            <td><span class="badge badge-amber">59㎡ / 9~12억</span></td>
+            <td><b>영등포구 당산동1가</b></td>
+            <td>11.00억 원</td>
+            <td>27.2분 (YBD)</td>
+            <td>-7.0%</td>
+            <td>35.7%</td>
+            <td><b>76.4점</b></td>
           </tr>
           <tr>
-            <td><span class="badge badge-cyan">4위</span></td>
-            <td><strong>마포구 공덕동</strong></td>
-            <td>11.2억 원</td>
-            <td>18.3분 (YBD 10 / CBD 10)</td>
-            <td>-11.5%</td>
-            <td>36.2%</td>
-            <td><span class="badge badge-purple">그룹 1: 핵심 도심 고급 주거타운</span></td>
-          </tr>
-          <tr>
-            <td><span class="badge badge-cyan">5위</span></td>
-            <td><strong>서대문구 연희동</strong></td>
-            <td>7.2억 원</td>
-            <td>25.0분 (CBD 15 / YBD 25)</td>
-            <td>-14.2%</td>
-            <td>32.1%</td>
-            <td><span class="badge badge-green">그룹 3: 가성비 스마트 주거타운</span></td>
+            <td><span class="badge badge-cyan">84㎡ / 9~12억</span></td>
+            <td><b>강서구 염창동</b></td>
+            <td>10.80억 원</td>
+            <td>31.8분 (YBD)</td>
+            <td>-25.2%</td>
+            <td>44.6% (최고)</td>
+            <td><b>72.5점</b></td>
           </tr>
         </tbody>
       </table>
     </div>
   </div>
 
-  <!-- SLIDE 12: CONCLUSION -->
-  <div class="slide">
+  <!-- SLIDE 7 -->
+  <div class="slide" id="slide-7">
     <div class="slide-header">
       <div>
-        <div class="slide-tag">CONCLUSION</div>
-        <div class="slide-title">최종 결론 및 대시보드 활용 가이드</div>
+        <span class="slide-tag">Slide 7. 개선 제안 & 액션 플랜</span>
+        <h2 class="slide-title">맞춤형 프롭테크 추천 서비스 상용화 전략</h2>
       </div>
-      <div class="slide-num">12 / 12</div>
+      <span class="slide-num">07 / 08</span>
     </div>
     <div class="slide-body">
       <div class="grid-2">
         <div class="card">
-          <div class="card-header">💡 연구 결론</div>
-          <p class="card-p">• 3040 맞벌이 서울 최적 추천 1위: <strong>영등포구 당산동</strong><br>• 직주근접(YBD 5분)과 자산 안전성(낙폭 -12.0%)이 완벽히 조화된 요충지 검증.</p>
+          <div class="card-header">🚀 단기 실행 과제 (1~3개월)</div>
+          <p class="card-p">
+            • 사용자 개인 가중치 설정 저장 기능 연동.<br>
+            • 카카오톡 알림톡 기반 관심 지역 가격/급매물 알림 서비스 구축.<br>
+            • 초등학교 학군 배정 구역 및 돌봄 센터 데이터 융합.
+          </p>
         </div>
         <div class="card">
-          <div class="card-header">💻 대시보드 연동</div>
-          <p class="card-p">• <code>3040_맞벌이_주거지_최종_인터랙티브_대시보드.html</code> 실행<br>• 137개동 실데이터 연동 슬라이더 및 페르소나 역검증 모듈 시연 가능.</p>
+          <div class="card-header">🌐 장기 서비스 확장 (6개월~1년)</div>
+          <p class="card-p">
+            • 시중은행 주택담보대출 LTV/DSR 한도 조회 연동 B2B API 개방.<br>
+            • GenAI 대화형 프롭테크 챗봇 컨시어지 서비스 탑재.
+          </p>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- CONTROLS FOOTER -->
-  <div class="deck-footer">
-    <button class="nav-btn" id="prevBtn" onclick="prevSlide()">◀ 이전 슬라이드</button>
-    <div style="font-size: 14px; color: var(--text-muted);">키보드 방향키(◀ / ▶) 또는 Spacebar로 슬라이드 이동</div>
-    <button class="nav-btn" id="nextBtn" onclick="nextSlide()">다음 슬라이드 ▶</button>
+  <!-- SLIDE 8 -->
+  <div class="slide" id="slide-8">
+    <div class="slide-header">
+      <div>
+        <span class="slide-tag">Slide 8. 회고 & Q&A</span>
+        <h2 class="slide-title">팀 회고, 기술적 배운 점 및 결론</h2>
+      </div>
+      <span class="slide-num">08 / 08</span>
+    </div>
+    <div class="slide-body">
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header">👥 팀 역할 (R&R) & 극복 경험</div>
+          <p class="card-p">
+            • <b>R&R</b>: 데이터 엔지니어링 / MCDM 스코어링 / Leaflet FE 개발.<br>
+            • <b>기술 극복</b>: 행정동-법정동 KIKmix 공간 환산 & 다기준 정규화 성공.<br>
+            • <b>최종 결론</b>: 3040 맞벌이 최적 주거지는 예산별 구로동, 연희동, 당산동, 염창동 입증.
+          </p>
+        </div>
+        <div class="card">
+          <div class="card-header">🛡️ 주요 Q&A 방어 대본 요약</div>
+          <p class="card-p">
+            • <b>Q. MCDM 선택 이유?</b><br>
+            ➔ 파레토 최적과 달리 명확한 단일 순위 제공 및 실시간 슬라이더 UI 구현 필수.<br>
+            • <b>Q. -10% 방어력 기준?</b><br>
+            ➔ 금리 shock 평균 낙폭(-25%) 대비 상위 10% 자산 보전 구간 실측 설정.
+          </p>
+        </div>
+      </div>
+    </div>
   </div>
+
+</div>
+
+<div class="controls">
+  <button class="btn-nav" onclick="prevSlide()">◀ 이전</button>
+  <button class="btn-nav" onclick="nextSlide()">다음 ▶</button>
 </div>
 
 <script>
   let currentSlide = 0;
   const slides = document.querySelectorAll('.slide');
-  const progressBar = document.getElementById('progressBar');
 
-  function updateSlide() {
-    slides.forEach((slide, index) => {
-      slide.classList.toggle('active', index === currentSlide);
+  function showSlide(idx) {
+    slides.forEach((s, i) => {
+      s.classList.toggle('active', i === idx);
     });
-    const progress = ((currentSlide + 1) / slides.length) * 100;
-    progressBar.style.width = progress + '%';
   }
 
   function nextSlide() {
     if (currentSlide < slides.length - 1) {
       currentSlide++;
-      updateSlide();
+      showSlide(currentSlide);
     }
   }
 
   function prevSlide() {
     if (currentSlide > 0) {
       currentSlide--;
-      updateSlide();
+      showSlide(currentSlide);
     }
   }
 
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
-      nextSlide();
-    } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
-      prevSlide();
-    }
+    if (e.key === 'ArrowRight' || e.key === 'Space') nextSlide();
+    if (e.key === 'ArrowLeft') prevSlide();
   });
-
-  updateSlide();
 </script>
-
 </body>
 </html>
