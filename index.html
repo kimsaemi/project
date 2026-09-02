@@ -138,6 +138,40 @@
     .filter-label { font-size: 11px; font-weight: 700; color: var(--text-muted); display: flex; justify-content: space-between; }
     .btn-group { display: flex; gap: 4px; flex-wrap: wrap; }
 
+    .mode-toggle-bar {
+      display: flex;
+      background: #0f172a;
+      border-bottom: 1px solid var(--border-color);
+      padding: 8px 12px;
+      gap: 8px;
+    }
+    .mode-tab {
+      flex: 1;
+      padding: 9px 10px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background: rgba(30, 41, 59, 0.6);
+      color: #94a3b8;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .mode-tab:hover {
+      background: var(--panel-hover);
+      color: #ffffff;
+    }
+    .mode-tab.active {
+      background: #2563eb;
+      color: #ffffff;
+      border-color: #60a5fa;
+      box-shadow: 0 2px 10px rgba(37, 99, 235, 0.4);
+    }
+
     .filter-btn {
       padding: 5px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; background: #0f172a; color: #94a3b8; border: 1px solid var(--border-color); cursor: pointer; transition: all 0.2s; user-select: none;
     }
@@ -260,8 +294,13 @@
       </div>
     </div>
 
+    <div class="mode-toggle-bar">
+      <button class="mode-tab active" id="modeCustomBtn"><i class="fa-solid fa-sliders"></i> 🎛️ 자유 가중치 조절</button>
+      <button class="mode-tab" id="modeTop5Btn"><i class="fa-solid fa-trophy"></i> 🏆 4대 분야 TOP 5</button>
+    </div>
+
     <div class="filter-section">
-      <div class="slider-main-box">
+      <div class="slider-main-box" id="sliderMainBox">
         <div class="slider-header">
           <span><i class="fa-solid fa-sliders"></i> 🎛️ 실시간 가중치 조절 바 (선형비례)</span>
           <div style="display: flex; align-items: center; gap: 8px;">
@@ -293,15 +332,10 @@
         </div>
       </div>
 
-      <div class="search-box">
-        <i class="fa-solid fa-magnifying-glass"></i>
-        <input type="text" id="searchInput" placeholder="동네명/자치구 검색 (예: 당산, 염창, 공덕)" />
-      </div>
-
-      <div class="filter-group">
-        <div class="filter-label">⚡ 4대 핵심 기준별 TOP 5 퀵보기</div>
+      <div class="filter-group" id="presetFilterGroup" style="display: none;">
+        <div class="filter-label">🏆 4대 분야별 명예의 전당 (TOP 5 전용)</div>
         <div class="btn-group" id="presetFilter">
-          <button class="filter-btn preset-btn" data-preset="commute">🚀 통근 Top 5</button>
+          <button class="filter-btn preset-btn active" data-preset="commute">🚀 통근 Top 5</button>
           <button class="filter-btn preset-btn" data-preset="defense">🛡️ 방어력 Top 5</button>
           <button class="filter-btn preset-btn" data-preset="3040">👨‍👩‍👧 3040 Top 5</button>
           <button class="filter-btn preset-btn" data-preset="liquidity">💧 유동성 Top 5</button>
@@ -14656,44 +14690,35 @@
     let currentBudget = 'all';
     let currentSearch = '';
     let currentPreset = 'all';
+    let currentMode = 'custom'; // 'custom' or 'top5'
+
+    document.getElementById('modeCustomBtn').addEventListener('click', () => {
+      document.getElementById('modeCustomBtn').classList.add('active');
+      document.getElementById('modeTop5Btn').classList.remove('active');
+      document.getElementById('sliderMainBox').style.display = 'block';
+      document.getElementById('presetFilterGroup').style.display = 'none';
+      currentMode = 'custom';
+      currentPreset = 'all';
+      updateDashboard();
+    });
+
+    document.getElementById('modeTop5Btn').addEventListener('click', () => {
+      document.getElementById('modeTop5Btn').classList.add('active');
+      document.getElementById('modeCustomBtn').classList.remove('active');
+      document.getElementById('sliderMainBox').style.display = 'none';
+      document.getElementById('presetFilterGroup').style.display = 'block';
+      currentMode = 'top5';
+      const activePresetBtn = document.querySelector('.preset-btn.active');
+      currentPreset = activePresetBtn ? activePresetBtn.getAttribute('data-preset') : 'commute';
+      updateDashboard();
+    });
 
     document.querySelectorAll('.preset-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.preventDefault();
-        const clickedPreset = btn.getAttribute('data-preset');
-
-        if (btn.classList.contains('active')) {
-          btn.classList.remove('active');
-          currentPreset = 'all';
-          w_commute = 35; w_defense = 30; w_3040 = 25; w_liquidity = 10;
-        } else {
-          document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-          currentPreset = clickedPreset;
-
-          if (currentPreset === 'commute') {
-            w_commute = 100; w_defense = 0; w_3040 = 0; w_liquidity = 0;
-          } else if (currentPreset === 'defense') {
-            w_commute = 0; w_defense = 100; w_3040 = 0; w_liquidity = 0;
-          } else if (currentPreset === '3040') {
-            w_commute = 0; w_defense = 0; w_3040 = 100; w_liquidity = 0;
-          } else if (currentPreset === 'liquidity') {
-            w_commute = 0; w_defense = 0; w_3040 = 0; w_liquidity = 100;
-          }
-        }
-
-        document.getElementById('slider_commute').value = w_commute;
-        document.getElementById('val_commute').innerText = `${w_commute}%`;
-        document.getElementById('slider_defense').value = w_defense;
-        document.getElementById('val_defense').innerText = `${w_defense}%`;
-        document.getElementById('slider_3040').value = w_3040;
-        document.getElementById('val_3040').innerText = `${w_3040}%`;
-        document.getElementById('slider_liquidity').value = w_liquidity;
-        document.getElementById('val_liquidity').innerText = `${w_liquidity}%`;
-
-        const total = w_commute + w_defense + w_3040 + w_liquidity;
-        document.getElementById('totalWeightBadge').innerText = `총합 ${total}%`;
-
+        document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentPreset = btn.getAttribute('data-preset');
         updateDashboard();
       });
     });
@@ -14784,20 +14809,19 @@
       });
 
       let sorted = [...filtered];
-      if (currentPreset === 'commute') {
-        sorted.sort((a, b) => (a.gbd + a.ybd + a.cbd) - (b.gbd + b.ybd + b.cbd));
-      } else if (currentPreset === 'defense') {
-        sorted.sort((a, b) => a.drop - b.drop);
-      } else if (currentPreset === '3040') {
-        sorted.sort((a, b) => b.p3040 - a.p3040);
-      } else if (currentPreset === 'liquidity') {
-        sorted.sort((a, b) => b.price_eok - a.price_eok);
+      if (currentMode === 'top5') {
+        if (currentPreset === 'commute') {
+          sorted.sort((a, b) => (a.gbd + a.ybd + a.cbd) - (b.gbd + b.ybd + b.cbd));
+        } else if (currentPreset === 'defense') {
+          sorted.sort((a, b) => a.drop - b.drop);
+        } else if (currentPreset === '3040') {
+          sorted.sort((a, b) => b.p3040 - a.p3040);
+        } else if (currentPreset === 'liquidity') {
+          sorted.sort((a, b) => b.unit_price - a.unit_price);
+        }
+        sorted = sorted.slice(0, 5);
       } else {
         sorted.sort((a, b) => b.dynamicScore - a.dynamicScore);
-      }
-
-      if (currentPreset !== 'all') {
-        sorted = sorted.slice(0, 5);
       }
 
       document.getElementById('stat-count').innerText = `${sorted.length}개`;
