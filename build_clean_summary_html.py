@@ -1,0 +1,448 @@
+import sys
+import os
+import pandas as pd
+
+if sys.platform == 'win32':
+    sys.stdout.reconfigure(encoding='utf-8')
+    sys.stderr.reconfigure(encoding='utf-8')
+
+html_content = """<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>[한눈에 보는 최종 요약] 3040 맞벌이를 위한 서울 최적 아파트 주거지 분석 (v2 정제본 연동)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;800;900&family=IBM+Plex+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg: #F4F7FB;
+    --paper: #FFFFFF;
+    --border: #DCE4EF;
+    --text-main: #172033;
+    --text-sub: #5F6B7A;
+    --blue: #2855D9;
+    --blue-soft: #EAF0FF;
+    --green: #1D7950;
+    --green-soft: #E9F8F0;
+    --gold: #A86F00;
+    --gold-soft: #FFF4D6;
+    --purple: #6B21A8;
+    --purple-soft: #F3E8FF;
+    --red: #A83838;
+    --red-soft: #FFF0F0;
+    --shadow: 0 14px 36px rgba(32, 49, 82, .08);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #101522;
+      --paper: #171E2C;
+      --border: #303A4D;
+      --text-main: #EDF2FB;
+      --text-sub: #A7B2C4;
+      --blue: #91ADFF;
+      --blue-soft: #1B2A50;
+      --green: #85DBAF;
+      --green-soft: #173728;
+      --gold: #FFD47A;
+      --gold-soft: #382D16;
+      --purple: #C084FC;
+      --purple-soft: #3B0764;
+      --red: #FF9E9E;
+      --red-soft: #3C2226;
+      --shadow: none;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 24px;
+    background-color: var(--bg);
+    color: var(--text-main);
+    font-family: "Pretendard", -apple-system, sans-serif;
+    line-height: 1.6;
+  }
+
+  .mono { font-family: "IBM Plex Mono", monospace; }
+  .wrap { max-width: 1140px; margin: 0 auto; }
+
+  /* Header */
+  header {
+    background: linear-gradient(135deg, #18356F 0%, #2855D9 66%, #3F76EE 100%);
+    color: white;
+    padding: 32px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 12px 30px rgba(40, 85, 217, 0.25);
+  }
+  .eyebrow { font-size: 13px; font-weight: 800; letter-spacing: 0.08em; opacity: 0.88; text-transform: uppercase; margin-bottom: 8px; }
+  h1 { font-size: clamp(26px, 4vw, 36px); font-weight: 900; margin: 0 0 12px; line-height: 1.2; letter-spacing: -0.03em; }
+  .lead { font-size: 16px; opacity: 0.92; max-width: 900px; margin: 0; line-height: 1.6; }
+
+  /* Stat Badges */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  .stat-card {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    padding: 16px;
+    border-radius: 14px;
+    text-align: center;
+    box-shadow: var(--shadow);
+  }
+  .stat-val { font-size: 26px; font-weight: 900; color: var(--blue); }
+  .stat-lbl { font-size: 12.5px; color: var(--text-sub); margin-top: 2px; }
+  @media (max-width: 768px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
+
+  /* Grid System */
+  .grid-12 {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 16px;
+  }
+
+  .box {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: var(--shadow);
+  }
+
+  .col-4 { grid-column: span 4; }
+  .col-6 { grid-column: span 6; }
+  .col-8 { grid-column: span 8; }
+  .col-12 { grid-column: span 12; }
+
+  @media (max-width: 850px) {
+    .col-4, .col-6, .col-8, .col-12 { grid-column: span 12; }
+  }
+
+  .box-title {
+    font-size: 16px;
+    font-weight: 800;
+    margin: 0 0 14px;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .box-title::before {
+    content: '';
+    display: inline-block;
+    width: 4px;
+    height: 16px;
+    background: var(--blue);
+    border-radius: 2px;
+  }
+
+  /* Table Style */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th { background: var(--blue-soft); color: #17316F; font-weight: 800; padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--text-main); vertical-align: middle; }
+  tr:last-child td { border-bottom: 0; }
+
+  .badge { display: inline-block; padding: 3px 8px; border-radius: 999px; font-size: 11.5px; font-weight: 800; white-space: nowrap; }
+  .badge-blue { background: var(--blue-soft); color: var(--blue); }
+  .badge-green { background: var(--green-soft); color: var(--green); }
+  .badge-gold { background: var(--gold-soft); color: var(--gold); }
+  .badge-purple { background: var(--purple-soft); color: var(--purple); }
+  .badge-red { background: var(--red-soft); color: var(--red); }
+
+  /* Print Button */
+  .btn-print {
+    position: fixed;
+    top: 24px; right: 24px;
+    background: var(--blue);
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 99px;
+    font-weight: 800;
+    font-size: 13.5px;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(40, 85, 217, 0.4);
+    z-index: 999;
+  }
+  @media print {
+    .btn-print { display: none; }
+    body { padding: 0; background: white; }
+    .box, header, .stat-card { box-shadow: none; }
+  }
+</style>
+</head>
+<body>
+
+<button class="btn-print" onclick="window.print()">🖨️ 인쇄 / PDF 저장</button>
+
+<div class="wrap">
+  <!-- Header -->
+  <header>
+    <div class="eyebrow">FINAL EXECUTIVE SUMMARY DASHBOARD (v2 연동완료)</div>
+    <h1>3040 맞벌이를 위한 서울 최적 아파트 주거지 분석 (최종 v2 실거래 정제본 연동)</h1>
+    <p class="lead">부동산 실거래가 정제본 v2 (83,178건 / 아파트 46,644건) + 3040 실측 통근 이동량 + 금리사이클 가격 변동성을 완벽히 통합한 1-Page 최종 요약 SHEET입니다.</p>
+  </header>
+
+  <!-- Stat Badges -->
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-val mono">83,178건</div>
+      <div class="stat-lbl">v2 실거래 정제본 연동 (아파트 46,644건)</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val mono">R² = 83.8%</div>
+      <div class="stat-lbl">회귀 모델 예측 설명력</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val mono">64.5%</div>
+      <div class="stat-lbl">주거 만족도 1위 요인 (통근시간)</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val mono">-7.1%</div>
+      <div class="stat-lbl">하락장 자산 방어 1위 낙폭율 (사당동)</div>
+    </div>
+  </div>
+
+  <!-- Bento Grid -->
+  <div class="grid-12">
+    
+    <!-- Box 1: 프로젝트 핵심 목표 -->
+    <div class="box col-4">
+      <h2 class="box-title">1. 프로젝트 핵심 목표</h2>
+      <p style="font-size:14px; color:var(--text-sub); margin:0 0 12px;">
+        3040 맞벌이 가구가 가용 예산 범위 내에서 <b>[부부 두 사람의 출퇴근 시간 단축]</b>과 <b>[금리 하락장 가격 방어율]</b>을 한눈에 비교하여 최적의 동네 후보 5~10곳을 선별.
+      </p>
+      <div style="background:var(--blue-soft); padding:10px 14px; border-radius:10px; font-size:13px; color:var(--blue); font-weight:700;">
+        🎯 핵심 타깃: 6억~15억 원대 예산의 3040 실수요자 및 맞벌이 부부
+      </div>
+    </div>
+
+    <!-- Box 2: 융합 데이터 및 노이즈 정리 -->
+    <div class="box col-8">
+      <h2 class="box-title">2. 융합 데이터셋 & v2 실거래 정제본 연동 명세</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>데이터 구분</th><th>핵심 변수 & 데이터 규모</th><th>프로젝트 내 역할 및 정제/삭제 기준</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><b>실거래가 정제본 v2</b></td>
+              <td><code>11_실거래가_정제본_v2.csv</code> (83,178건)</td>
+              <td><span class="tag badge-blue">최종 연동</span> 실거래가 중앙값, 평단가, 연식(건축년도), 주요 대단지명(래미안/아이파크 등) 직결.</td>
+            </tr>
+            <tr>
+              <td><b>통근 이동량</b></td>
+              <td>07~09시 실측 이동량 O-D</td>
+              <td><span class="tag badge-blue">필수 결합</span> GBD/YBD/CBD 3대 업무지구 20분대 도달 측정. 주말/심야 데이터 <b>삭제</b>.</td>
+            </tr>
+            <tr>
+              <td><b>가격 방어력</b></td>
+              <td><code>하락기_낙폭_%</code></td>
+              <td><span class="tag badge-blue">필수 결합</span> 금리 인상기 하락장 낙폭율 (2021~2022) 산출. 자산 방어선 평가.</td>
+            </tr>
+            <tr>
+              <td><b>상권 분석 데이터</b></td>
+              <td><code>길단위인구</code>, <code>점포수</code></td>
+              <td><span class="tag badge-red">전량 삭제</span> 아파트 주거지 평가 시 상권 점포수 데이터는 노이즈이므로 <b>삭제</b>.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Box 3: 추천 1 - TOPSIS 개인맞춤 모델 -->
+    <div class="box col-6">
+      <h2 class="box-title">3. [추천 1] MCDM TOPSIS 개인 맞춤형 모델</h2>
+      <p style="font-size:13px; color:var(--text-sub); margin:0 0 10px;">사용자 가중치(출퇴근 / 가격방어 / 3040비중 / 예산) 입력에 따른 실시간 랭킹</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>페르소나 유형</th><th>가중치 설정</th><th>1위 추천 동네</th><th>2위 추천 동네</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="badge badge-blue">A. 신혼 가성비</span></td>
+              <td>통근50% / 예산30%</td>
+              <td><b>영등포동2가</b> (7.35억)</td>
+              <td><b>종로구 숭인동</b> (5.20억)</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-green">B. 자산 방어형</span></td>
+              <td>방어50% / 통근30%</td>
+              <td><b>영등포동2가</b> (+1.5%)</td>
+              <td><b>구로구 구로동</b> (-2.4%)</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-gold">C. 도심 성장형</span></td>
+              <td>통근40% / 3040 30%</td>
+              <td><b>강서구 염창동</b> (43.3%)</td>
+              <td><b>영등포구 당산동</b> (38.5%)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Box 4: 추천 2 - K-Means 4대 군집 분석 -->
+    <div class="box col-6">
+      <h2 class="box-title">4. [추천 2] K-Means 4대 주거 세그먼트</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>군집 세그먼트</th><th>시세 대역</th><th>하락장 방어율</th><th>대표 동네 & 특징</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="badge badge-blue">그룹 1 (실속형)</span></td>
+              <td>6.0~8.3억</td>
+              <td>-21.7% ~ -29.1%</td>
+              <td><b>강서 염창·등촌</b> (9호선급행 / 3040비중 1위)</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-green">그룹 2 (방어1위)★</span></td>
+              <td>9.6~11.5억</td>
+              <td><b style="color:var(--green);">-7.1% ~ -12.0%</b></td>
+              <td><b>영등포 당산, 동작 사당</b> (자산방어 1위)</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-gold">그룹 3 (도심거점)</span></td>
+              <td>12.1~15.4억</td>
+              <td>상승기 +40.9%</td>
+              <td><b>마포 공덕, 송파 문정</b> (쿼드러플 / 고탄력)</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-purple">그룹 4 (학군배후)</span></td>
+              <td>7.5~10.5억</td>
+              <td>-22.8% ~ -29.5%</td>
+              <td><b>노원 중계, 강동 고덕</b> (서울3대 학군)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Box 5: TOP 4 법정동 종합 비교 -->
+    <div class="box col-12">
+      <h2 class="box-title">5. 서울 핵심 추천 법정동 TOP 4 실측 데이터 매트릭스 (v2 실거래 단지 연동)</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>자치구 / 법정동</th><th>중앙 매매가</th><th>v2 연동 대표 아파트 단지명</th><th>3대도심 통근시간</th><th>하락장 낙폭</th><th>3040 비중</th><th>핵심 추천 포인트 및 실속 전략</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><b>영등포구 당산동</b></td>
+              <td><b>11.5억 원</b></td>
+              <td><b>당산 삼성래미안, 당산 삼환</b></td>
+              <td>YBD 5분 / GBD 15분</td>
+              <td style="color:var(--green); font-weight:bold;">-12.0% (방어 1위)</td>
+              <td>38.5%</td>
+              <td><b>[실수요 1위]</b> 2·9호선 환승 요충지, 부부 직장 위치 다를 때 최적지</td>
+            </tr>
+            <tr>
+              <td><b>동작구 사당동</b></td>
+              <td><b>10.7억 원</b></td>
+              <td><b>사당 래미안로이뷰, 사당 우성3차</b></td>
+              <td>GBD 10분 / CBD 20분</td>
+              <td style="color:var(--green); font-weight:bold;">-7.1% (서울 최저)</td>
+              <td>33.0%</td>
+              <td><b>[자산방어 1위]</b> 하락장 낙폭 서울 최저, 강남/도심 20분대 도달</td>
+            </tr>
+            <tr>
+              <td><b>강서구 염창동</b></td>
+              <td><b>8.3억 원</b></td>
+              <td><b>염창 래미안, 염창 동아3차</b></td>
+              <td>YBD 10분 / GBD 25분</td>
+              <td>-29.1%</td>
+              <td style="color:var(--blue); font-weight:bold;">43.3% (서울 1위)</td>
+              <td><b>[가성비 1위]</b> 6~8억대 30대 첫 집 1순위, 9호선 급행 평지 역세권</td>
+            </tr>
+            <tr>
+              <td><b>마포구 공덕동</b></td>
+              <td><b>14.1억 원</b></td>
+              <td><b>공덕 래미안4차, 공덕 자이</b></td>
+              <td>YBD 5분 / CBD 10분</td>
+              <td style="color:var(--gold); font-weight:bold;">상승기 +40.9%</td>
+              <td>32.9%</td>
+              <td><b>[자산성장 1위]</b> 4개 노선 쿼드러플 환승, 직주근접 종결지 및 고탄력</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>
+"""
+
+summary_html_path = r'd:\26_강의자료\프로젝트\3040_맞벌이_주거지_분석_한눈에보는_요약.html'
+with open(summary_html_path, 'w', encoding='utf-8') as f:
+    f.write(html_content)
+
+print("Updated Summary HTML with v2 info created at:", summary_html_path)
+
+# Update Markdown summary file as well
+markdown_content = """# 📊 [한눈에 보는 요약 SHEET] 3040 맞벌이를 위한 서울 최적 아파트 주거지 분석 (v2 정제본 연동)
+
+---
+
+## Ⅰ. 프로젝트 핵심 요약 (Executive Summary)
+
+* **v2 실거래 정제본 연동**: `11_실거래가_정제본_v2.csv` 총 **83,178건** (아파트 유효 거래 **46,644건**) 완벽 연동.
+* **핵심 질문**: *"내 예산으로 출퇴근도 편하고, 하락장에도 집값이 덜 떨어지는 서울 동네는 어디일까?"*
+* **분석 대상**: 서울시 주요 137개 법정동 패널 데이터 (실거래가 + 3040 실측 통근량 + 금리사이클 낙폭율)
+* **회귀 성과**: 머신러닝 Random Forest 회귀 모델 **R² = 83.8%** 달성 (3대 도심 통근시간 기여도 **64.5%**)
+* **한눈에 보는 요약 HTML 파일**: [3040_맞벌이_주거지_분석_한눈에보는_요약.html](file:///d:/26_%EA%B0%95%EC%9D%98%EC%9E%90%EB%A3%8C/%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8/3040_%EB%A7%9E%EB%B2%8C%EC%9D%B4_%EC%A3%BC%EA%B1%B0%EC%A7%80_%EB%B6%84%EC%84%9D_%ED%95%9C%EB%88%88%EC%97%90%EB%B3%B4%EB%8A%94_%EC%90%84%EC%95%BD.html)
+
+---
+
+## Ⅱ. 핵심 데이터 매트릭스 (v2 정제본 대표 아파트 연동)
+
+| 구분 | 자치구 / 법정동 | 중앙 매매가 | v2 연동 대표 아파트 단지명 | 3대도심 통근시간 | 하락장 방어율 | 3040 거주비중 | 핵심 추천 포인트 및 타깃 |
+| :--- | :--- | :---: | :--- | :--- | :---: | :---: | :--- |
+| **실수요 1위** | **영등포구 당산동** | **11.5억 원** | 당산 삼성래미안, 당산 삼환 | YBD 5분 / GBD 15분 | **-12.0% (방어 1위)** | 38.5% | 2·9호선 환승 요충지, 맞벌이 부부 직장 다를 때 최고 절충지 |
+| **자산방어 1위** | **동작구 사당동** | **10.7억 원** | 사당 래미안로이뷰, 사당 우성3차 | GBD 10분 / CBD 20분 | **-7.1% (서울 최저)** | 33.0% | 하락장 낙폭 서울 최저 수준, 강남/도심 20분대 사통팔달 |
+| **가성비 1위** | **강서구 염창동** | **8.3억 원** | 염창 래미안, 염창 동아3차 | YBD 10분 / GBD 25분 | -29.1% | **43.3% (서울 1위)** | 6~8억대 30대 첫 집 및 신혼부부 1순위, 9호선 급행 역세권 |
+| **자산성장 1위** | **마포구 공덕동** | **14.1억 원** | 공덕 래미안4차, 공덕 자이 | YBD 5분 / CBD 10분 | **상승기 +40.9%** | 32.9% | 4개 노선 쿼드러플 환승, 직주근접 종결지 및 금리인하기 반등 폭발 |
+
+---
+
+## Ⅲ. 2대 핵심 추천 모델링 구성
+
+### 1. [추천 1] MCDM TOPSIS 개인 맞춤형 알고리즘
+* **개념**: 사용자 가중치(출퇴근 40% + 방어력 30% + 3040비중 20% + 예산 10%)에 따른 실시간 맞춤 랭킹.
+* **결과**: 신혼부부 1위(`영등포동2가 7.35억`), 자산방어 1위(`영등포동2가 +1.5%`), 도심성장 1위(`강서구 염창동 43.3%`).
+
+### 2. [추천 2] K-Means 4대 주거 세그먼트 (군집 분석)
+* **그룹 1 (가성비 실속)**: 6.0~8.3억 원 | 강서 염창·등촌, 관악 봉천 (3040비중 43.3% 서울 1위)
+* **그룹 2 (광역 허브 & 방어 1위)**: 9.6~11.5억 원 | 영등포 당산, 동작 사당, 구로 신도림 (하락장 낙폭 -7~-12%)
+* **그룹 3 (쿼드러플 & 도심 거점)**: 12.1~15.4억 원 | 마포 공덕·도화, 송파 문정·가락 (상승기 +40.9% 반등 탄력)
+* **그룹 4 (자녀 보육 & 학군 배후)**: 7.5~10.5억 원 | 노원 중계, 강동 고덕·명일 (서울 3대 명문 학군)
+
+---
+
+## Ⅳ. 데이터 검증 및 삭제 노이즈 명세
+
+1. **v2 실거래가 연동**: `11_실거래가_정제본_v2.csv` (83,178건)의 실제 거래 가격, 평당 단가, 건축년도, 대표 아파트 단지명 직결.
+2. **시간대 필터링**: 07:00~09:59 아침 피크 타임 실측 이동량만 정밀 추출.
+3. **전량 삭제 노이즈**: `상권분석서비스(점포수 등)` 주거 평가 노이즈 제거, 빌라/단독/오피스텔 비주거 주택 삭제, 30억 초과 및 나홀로 아파트 제거.
+"""
+
+summary_md_path = r'd:\26_강의자료\프로젝트\3040_맞벌이_주거지_분석_한눈에보는_요약.md'
+with open(summary_md_path, 'w', encoding='utf-8') as f:
+    f.write(markdown_content)
+
+print("Updated Summary Markdown created at:", summary_md_path)

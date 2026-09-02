@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>[발표자료] 3040 맞벌이를 위한 서울 최적 아파트 주거지 분석 및 모델링</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg: #0F172A;
+    --card-bg: #1E293B;
+    --border: #334155;
+    --text-main: #F8FAFC;
+    --text-sub: #94A3B8;
+    --accent-blue: #38BDF8;
+    --accent-green: #34D399;
+    --accent-amber: #FBBF24;
+    --accent-purple: #C084FC;
+    --accent-red: #F87171;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg);
+    color: var(--text-main);
+    font-family: "Gothic A1", sans-serif;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+  }
+
+  .mono { font-family: "IBM Plex Mono", monospace; }
+
+  /* Slide Deck Frame */
+  .deck {
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+  }
+
+  .slide {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.4s ease, transform 0.4s ease;
+    transform: scale(0.97);
+    padding: 60px 80px 100px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .slide.active {
+    opacity: 1;
+    visibility: visible;
+    transform: scale(1);
+  }
+
+  /* Slide Header */
+  .slide-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 16px;
+  }
+  .slide-tag {
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--accent-blue);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .slide-title {
+    font-size: 32px;
+    font-weight: 800;
+    margin: 0;
+    color: var(--text-main);
+  }
+  .slide-num {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 18px;
+    color: var(--text-sub);
+    background: var(--card-bg);
+    padding: 6px 16px;
+    border-radius: 99px;
+    border: 1px solid var(--border);
+  }
+
+  /* Slide Content Area */
+  .slide-body {
+    flex: 1;
+    margin-top: 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  /* Grid Layouts */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+
+  /* Cards */
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+  }
+  .card-blue { border-top: 4px solid var(--accent-blue); }
+  .card-green { border-top: 4px solid var(--accent-green); }
+  .card-amber { border-top: 4px solid var(--accent-amber); }
+  .card-purple { border-top: 4px solid var(--accent-purple); }
+
+  .card-title { font-size: 18px; font-weight: 800; margin-bottom: 10px; }
+  .card-desc { font-size: 14.5px; color: var(--text-sub); line-height: 1.6; }
+
+  /* Highlight Stat Box */
+  .stat-box {
+    background: rgba(56, 189, 248, 0.1);
+    border: 1px solid var(--accent-blue);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+  }
+  .stat-val { font-size: 42px; font-weight: 900; color: var(--accent-blue); }
+  .stat-lbl { font-size: 14px; color: var(--text-sub); margin-top: 4px; }
+
+  /* Title Slide Specifics */
+  .title-slide {
+    justify-content: center;
+    align-items: flex-start;
+    padding: 100px 12px 100px 120px;
+    background: radial-gradient(circle at 80% 20%, #1E3A8A 0%, var(--bg) 60%);
+  }
+  .title-eyebrow {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--accent-blue);
+    letter-spacing: 0.15em;
+    margin-bottom: 20px;
+  }
+  .title-main {
+    font-size: 52px;
+    font-weight: 900;
+    line-height: 1.2;
+    margin-bottom: 24px;
+    max-width: 900px;
+  }
+  .title-sub {
+    font-size: 22px;
+    color: var(--text-sub);
+    max-width: 750px;
+    line-height: 1.6;
+    margin-bottom: 40px;
+  }
+  .title-footer {
+    display: flex;
+    gap: 16px;
+  }
+  .badge {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    padding: 8px 18px;
+    border-radius: 99px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent-blue);
+  }
+
+  /* Table Style */
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { background: var(--border); color: var(--accent-blue); padding: 12px; text-align: left; font-weight: 800; }
+  td { padding: 12px; border-bottom: 1px solid var(--border); color: var(--text-main); }
+  tr:nth-child(even) { background: rgba(255,255,255,0.02); }
+
+  /* Speaker Note Box (Bottom) */
+  .speaker-note {
+    background: rgba(15, 23, 42, 0.9);
+    border: 1px solid var(--accent-amber);
+    border-radius: 10px;
+    padding: 12px 20px;
+    font-size: 13.5px;
+    color: var(--accent-amber);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  /* Navigation Footer Bar */
+  .nav-bar {
+    position: fixed;
+    bottom: 20px;
+    left: 80px; right: 80px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 100;
+  }
+  .nav-btns { display: flex; gap: 12px; }
+  .btn {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    color: var(--text-main);
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn:hover { background: var(--accent-blue); color: var(--bg); }
+  .progress-bar {
+    flex: 1;
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    margin: 0 24px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    width: 10%;
+    background: var(--accent-blue);
+    transition: width 0.3s ease;
+  }
+</style>
+</head>
+<body>
+
+<div class="deck">
+
+  <!-- SLIDE 1: Title -->
+  <div class="slide title-slide active" data-slide="1">
+    <div class="title-eyebrow">FINAL PRESENTATION · 3040 HOUSING MODEL</div>
+    <div class="title-main">3040 맞벌이를 위한 서울 최적 아파트 주거지 분석 및 모델링</div>
+    <div class="title-sub">"내 예산으로 출퇴근도 편하고, 하락장에도 집값이 덜 떨어지는 서울 동네는 어디일까?"</div>
+    <div class="title-footer">
+      <span class="badge">137개 법정동 실측 분석</span>
+      <span class="badge">회귀 설명력 R² 83.8%</span>
+      <span class="badge">MCDM TOPSIS & K-Means</span>
+    </div>
+  </div>
+
+  <!-- SLIDE 2: Problem Statement -->
+  <div class="slide" data-slide="2">
+    <div class="slide-header">
+      <div>
+        <div class="slide-tag">01. PROBLEM DEFINITION</div>
+        <h2 class="slide-title">왜 3040 맞벌이 주거지 모델인가?</h2>
+      </div>
+      <div class="slide-num">02 / 09</div>
+    </div>
+    <div class="slide-body">
+      <div class="grid-3">
+        <div class="card card-blue">
+          <div class="card-title" style="color:var(--accent-blue);">01. 예산의 한계</div>
+          <div class="card-desc">6억~15억 원대 가용 예산 범위 내에서 실질적으로 매수 가능한 아파트 단지 필터링 필요.</div>
+        </div>
+        <div class="card card-green">
+          <div class="card-title" style="color:var(--accent-green);">02. 맞벌이 출퇴근 부담</div>
+          <div class="card-desc">부부의 직장 위치가 서로 다를 때, 3대 업무지구(GBD, YBD, CBD) 20분대 도달 절충지 탐색.</div>
+        </div>
+        <div class="card card-amber">
+          <div class="card-title" style="color:var(--accent-amber);">03. 자산 하락 위험</div>
+          <div class="card-desc">금리 인상기 하락장에서도 매매가가 견고하게 유지되는 방어력 우수 입지 선정.</div>
+        </div>
+      </div>
+    </div>
+    <div class="speaker-note">
+      💡 <b>발표 멘트:</b> "3040 맞벌이 가구는 집값뿐 아니라 부부 두 사람의 출퇴근 소요시간과 자산 방어율을 동시에 고려해야 합니다."
+    </div>
+  </div>
+
+  <!-- SLIDE 3: Data Integration -->
+  <div class="slide" data-slide="3">
+    <div class="slide-header">
+      <div>
+        <div class="slide-tag">02. DATA INTEGRATION & CLEANING</div>
+        <h2 class="slide-title">데이터 통합 및 노이즈 제거 기준</h2>
+      </div>
+      <div class="slide-num">03 / 09</div>
+    </div>
+    <div class="slide-body">
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title" style="color:var(--accent-green);">✅ 필수 결합 데이터 (Core Datasets)</div>
+          <ul style="color:var(--text-sub); font-size:14px; line-height:1.8;">
+            <li><b>국토부 실거래가</b>: 중앙 매매가 및 평당 단가 (예산 필터링)</li>
+            <li><b>3040 실측 통근 이동량</b>: 07~09시 피크 타임 3대 도심 이동시간</li>
+            <li><b>가격 흔들림 순위표</b>: 금리 인상기 하락장 낙폭률 (2021~2022)</li>
+            <li><b>주간/상주 인구</b>: 3040세대 밀집도 및 베드타운 구분</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="card-title" style="color:var(--accent-red);">❌ 제거된 노이즈 데이터 (Noise Cleanup)</div>
+          <ul style="color:var(--text-sub); font-size:14px; line-height:1.8;">
+            <li><b>상권 분석 서비스</b>: 길단위 인구/점포수 데이터 (주거 평가 노이즈)</li>
+            <li><b>비아파트 부동산</b>: 빌라, 단독/다세대, 오피스텔 전량 제외</li>
+            <li><b>이상치 (Outliers)</b>: 30억 초과 초고가 단지 및 나홀로 아파트</li>
+            <li><b>비통근 이동량</b>: 심야 및 주말 이동 데이터 제외</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="speaker-note">
+      💡 <b>발표 멘트:</b> "분석의 정교함을 위해 상권 점포수 같은 노이즈 데이터와 비아파트 부동산은 모두 1차로 제거했습니다."
+    </div>
+  </div>
+
+  <!-- SLIDE 4: Regression Modeling Results -->
+  <div class="slide" data-slide="4">
+    <div class="slide-header">
+      <div>
+        <div class="slide-tag">03. REGRESSION MODELING</div>
+        <h2 class="slide-title">회귀 모델링 결과: 무엇이 주거 만족도를 결정하는가?</h2>
+      </div>
+      <div class="slide-num">04 / 09</div>
+    </div>
+    <div class="slide-body">
+      <div class="grid-2">
+        <div>
+          <div class="stat-box" style="margin-bottom: 16px;">
+            <div class="stat-val mono">R² = 83.8%</div>
+            <div class="stat-lbl">Random Forest 회귀 모델 설명력 (RMSE: 3.55점)</div>
+          </div>
+          <p style="font-size:15px; color:var(--text-sub); line-height:1.6;">
+            137개 서울 법정동 데이터를 머신러닝 회귀로 분석한 결과, 3040 실수요자의 주거 적합도를 결정하는 압도적 1위 요인은 <b>'3대 도심 평균 통근시간'</b>이었습니다.
+          </p>
+        </div>
+        <div class="card">
+          <div class="card-title">📊 특성 중요도 (Feature Importance Top 4)</div>
+          <table style="margin-top:10px;">
+            <tr><th>우선순위</th><th>핵심 변수</th><th>기여도 (%)</th></tr>
+            <tr><td>1위</td><td><b>3대 도심 평균 통근시간</b></td><td><b style="color:var(--accent-blue);">64.5%</b></td></tr>
+            <tr><td>2위</td><td><b>YBD(여의도) 접근시간</b></td><td><b>12.7%</b></td></tr>
+            <tr><td>3위</td><td><b>3040세대 상주인구 비중</b></td><td><b>8.6%</b></td></tr>
+            <tr><td>4위</td><td><b>30대 인구 비율</b></td><td><b>3.0%</b></td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="speaker-note">
+      💡 <b>발표 멘트:</b> "회귀 모델링 결과, 3040 맞벌이 가구의 만족도를 결정하는 77% 이상은 '통근시간 단축'에 있었습니다."
+    </div>
+  </div>
+
+  <!-- SLIDE 5: TOPSIS Recommendation -->
+  <div class="slide" data-slide="5">
+    <div class="slide-header">
+      <div>
+        <div class="slide-tag">04. RECOMMENDATION 1: TOPSIS MODEL</div>
+        <h2 class="slide-title">개인 맞춤형 TOPSIS 의사결정 모델</h2>
+      </div>
+      <div class="slide-num">05 / 09</div>
+    </div>
+    <div class="slide-body">
+      <div class="grid-3">
+        <div class="card card-blue">
+          <div class="card-title">A. 신혼 & 첫 집 (가성비)</div>
+          <p style="font-size:13px; color:var(--accent-blue);">통근 50% | 예산 30% | 방어 10% | 3040 10%</p>
+          <hr style="border-color:var(--border); margin:12px 0;">
+          <ol style="font-size:14px; padding-left:18px; color:var(--text-sub);">
+            <li><b>영등포구 영등포동2가</b> (7.35억)</li>
+            <li><b>종로구 숭인동</b> (5.20억)</li>
+            <li><b>관악구 남현동</b> (7.22억)</li>
+          </ol>
+        </div>
+
+        <div class="card card-green">
+          <div class="card-title">B. 자산방어형 (하락장 방어)</div>
+          <p style="font-size:13px; color:var(--accent-green);">방어 50% | 통근 30% | 3040 10% | 예산 10%</p>
+          <hr style="border-color:var(--border); margin:12px 0;">
+          <ol style="font-size:14px; padding-left:18px; color:var(--text-sub);">
+            <li><b>영등포구 영등포동2가</b> (+1.5%)</li>
+            <li><b>종로구 숭인동</b> (+1.3%)</li>
+            <li><b>구로구 구로동</b> (-2.4%)</li>
+          </ol>
+        </div>
+
+        <div class="card card-amber">
+          <div class="card-title">C. 직주근접 & 도심성장형</div>
+          <p style="font-size:13px; color:var(--accent-amber);">통근 40% | 3040 30% | 방어 20% | 예산 10%</p>
+          <hr style="border-color:var(--border); margin:12px 0;">
+          <ol style="font-size:14px; padding-left:18px; color:var(--text-sub);">
+            <li><b>강서구 염창동</b> (3040 43.3%)</li>
+            <li><b>강서구 가양동</b> (3040 43.3%)</li>
+            <li><b>영등포구 당산동</b> (3040 38.5%)</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+    <div class="speaker-note">
+      💡 <b>발표 멘트:</b> "TOPSIS 모델은 사용자마다 다른 가중치를 반영하여 개인 맞춤형 최적 랭킹을 실시간으로 계산해줍니다."
+    </div>
+  </div>
+
+  <!-- SLIDE 6: K-Means Clustering -->
+  <div class="slide" data-slide="6">
+    <div class="slide-header">
+      <div>
+        <div class="slide-tag">05. RECOMMENDATION 2: K-MEANS CLUSTERING</div>
+        <h2 class="slide-title">K-Means 4대 주거지 세그먼트 분석</h2>
+      </div>
+      <div class="slide-num">06 / 09</div>
+    </div>
+    <div class="slide-body">
+      <div class="grid-2">
+        <div class="card card-blue">
+          <div class="card-title">그룹 1: 가성비 실속 & 실수요 밀집지</div>
+          <p style="font-size:13.5px; color:var(--text-sub);">• 시세: <b>6.0억 ~ 8.3억 원</b> | 통근: 20~25분<br>• 3040 거주비중 43.3% (서울 1위)<br>• 대표 동네: <b>강서 염창·등촌, 관악 봉천</b></p>
+        </div>
+        <div class="card card-green">
+          <div class="card-title">그룹 2: 광역 허브 & 철통 방어선 🏆</div>
+          <p style="font-size:13.5px; color:var(--text-sub);">• 시세: <b>9.6억 ~ 11.5억 원</b> | 통근: 15~20분<br>• 하락장 낙폭률 <b>-7.1% ~ -12.0% (방어 1위)</b><br>• 대표 동네: <b>영등포 당산, 동작 사당, 구로 신도림</b></p>
+        </div>
+        <div class="card card-amber">
+          <div class="card-title">그룹 3: 쿼드러플 & 도심 거점 🚀</div>
+          <p style="font-size:13.5px; color:var(--text-sub);">• 시세: <b>12.1억 ~ 15.4억 원</b> | 통근: 5~10분<br>• 금리 인하기 상승기 반등률 <b>+40.9% (고탄력)</b><br>• 대표 동네: <b>마포 공덕·도화, 송파 문정·가락</b></p>
+        </div>
+        <div class="card card-purple">
+          <div class="card-title">그룹 4: 자녀 보육 & 학군 배후지 🎓</div>
+          <p style="font-size:13.5px; color:var(--text-sub);">• 시세: <b>7.5억 ~ 10.5억 원</b> | 통근: 30~40분<br>• 서울 3대 학군 & 주간인구 70%대 베드타운<br>• 대표 동네: <b>노원 중계(은행사거리), 강동 고덕</b></p>
+        </div>
+      </div>
+    </div>
+    <div class="speaker-note">
+      💡 <b>발표 멘트:</b> "서울 법정동을 4개 군집으로 분류한 결과, 실수요 1위 입지는 방어력 최강인 '그룹 2(당산·사당)'였습니다."
+    </div>
+  </div>
+
+  <!-- SLIDE 7: Key Top 4 Neighborhood Comparison -->
+  <div class="slide" data-slide="7">
+    <div class="slide-header">
+      <div>
+        <div class="slide-tag">06. TOP NEIGHBORHOOD COMPARISON</div>
+        <h2 class="slide-title">핵심 추천 법정동 TOP 4 종합 비교</h2>
+      </div>
+      <div class="slide-num">07 / 09</div>
+    </div>
+    <div class="slide-body">
+      <table>
+        <thead>
+          <tr><th>법정동</th><th>중앙 매매가</th><th>3대도심 통근</th><th>하락장 낙폭</th><th>3040 비중</th><th>추천 포인트 및 대상</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><b>영등포구 당산동</b></td><td><b>11.5억 원</b></td><td>YBD 5분 / GBD 15분</td><td style="color:var(--accent-green); font-weight:bold;">-12.0% (방어 1위)</td><td>38.5%</td><td>맞벌이 추천 1위, 2·9호선 환승 요충지</td></tr>
+          <tr><td><b>동작구 사당동</b></td><td><b>10.7억 원</b></td><td>GBD 10분 / CBD 20분</td><td style="color:var(--accent-green); font-weight:bold;">-7.1% (방어 1위)</td><td>33.0%</td><td>강남/도심 절충지, 2·4·7호선 사통팔달</td></tr>
+          <tr><td><b>강서구 염창동</b></td><td><b>8.3억 원</b></td><td>YBD 10분 / GBD 25분</td><td>-29.1%</td><td style="color:var(--accent-blue); font-weight:bold;">43.3% (서울 1위)</td><td>6~8억대 가성비 실속형, 9호선 급행 역세권</td></tr>
+          <tr><td><b>마포구 공덕동</b></td><td><b>14.1억 원</b></td><td>YBD 5분 / CBD 10분</td><td>상승기 +40.9%</td><td>32.9%</td><td>직주근접 종결지, 4개 노선 쿼드러플 환승</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="speaker-note">
+      💡 <b>발표 멘트:</b> "예산 8억대는 염창동, 10억대는 당산/사당동, 14억대는 공덕동이 가장 확실한 선택지입니다."
+    </div>
+  </div>
+
+  <!-- SLIDE 8: Checklists & Verification -->
+  <div class="slide" data-slide="8">
+    <div class="slide-header">
+      <div>
+        <div class="slide-tag">07. DATA QA & CHECKLIST</div>
+        <h2 class="slide-title">데이터 검증 및 품질 관리 (QA)</h2>
+      </div>
+      <div class="slide-num">08 / 09</div>
+    </div>
+    <div class="slide-body">
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">✔️ 수치 검증 및 전처리 완료 사항</div>
+          <ul style="font-size:13.5px; color:var(--text-sub); line-height:1.7;">
+            <li>`단가×면적` 착시 대신 국토부 실거래가 <b>`가격_중앙값_만원`</b> 직접 사용.</li>
+            <li>07:00~09:59 아침 피크 타임 실측 통근량만 정확히 필터링.</li>
+            <li>다공선성(Multicollinearity) 해결을 위해 <b>Ridge Regression</b> 정규화 적용.</li>
+            <li>K-Means 군집화 시 <code>random_state=42</code> 고정으로 결과 재현성 확보.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="card-title">⚠️ 데이터 해석 시 유의점 (Limitations)</div>
+          <ul style="font-size:13.5px; color:var(--text-sub); line-height:1.7;">
+            <li>과거 하락기 낙폭 방어율이 미래의 집값 방어를 100% 보장하지는 않음.</li>
+            <li>아파트 전용 분석이므로 다세대/빌라 주택 시장과는 차이가 있음.</li>
+            <li>단지별 개별 연식 및 향/층수는 법정동 평균 시세로 1차 스크리닝함.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="speaker-note">
+      💡 <b>발표 멘트:</b> "착시 현상을 막기 위해 중앙 매매가를 직접 사용했고, 머신러닝 난수를 고정하여 재현성을 검증했습니다."
+    </div>
+  </div>
+
+  <!-- SLIDE 9: Conclusion & Q&A -->
+  <div class="slide" data-slide="9">
+    <div class="slide-header">
+      <div>
+        <div class="slide-tag">08. CONCLUSION & NEXT STEPS</div>
+        <h2 class="slide-title">결론 및 향후 연동 계획</h2>
+      </div>
+      <div class="slide-num">09 / 09</div>
+    </div>
+    <div class="slide-body">
+      <div class="grid-2">
+        <div class="card card-blue">
+          <div class="card-title">📌 프로젝트 핵심 요약</div>
+          <p style="font-size:14px; color:var(--text-sub); line-height:1.6;">
+            1. 3040 맞벌이 만족도의 77%는 <b>'통근시간 단축'</b>이 결정함.<br>
+            2. 하락장 자산 방어력 1위 입지는 <b>'영등포 당산동 / 동작 사당동'</b>임.<br>
+            3. 가용 예산별 4대 세그먼트 모델로 <b>맞춤형 동네 스크리닝 완성</b>.
+          </p>
+        </div>
+        <div class="card card-green">
+          <div class="card-title">🚀 대시보드 탑재 계획</div>
+          <p style="font-size:14px; color:var(--text-sub); line-height:1.6;">
+            • 인터랙티브 HTML 대시보드(<code>3040_맞벌이_주거지_분석_및_모델링_팀공유리포트.html</code>) 공유.<br>
+            • 사용자가 직접 예산 및 가중치를 조절하는 <b>실시간 랭킹 시스템 서빙</b>.
+          </p>
+        </div>
+      </div>
+      <div style="text-align:center; margin-top:40px;">
+        <h3 style="font-size:28px; color:var(--accent-blue);">경청해 주셔서 감사합니다 (Q & A)</h3>
+      </div>
+    </div>
+    <div class="speaker-note">
+      💡 <b>발표 멘트:</b> "이상으로 발표를 마치며, 질의응답 시간을 갖도록 하겠습니다. 감사합니다."
+    </div>
+  </div>
+
+</div>
+
+<!-- Navigation Controls -->
+<div class="nav-bar">
+  <div class="nav-btns">
+    <button class="btn" id="prev-btn">◄ 이전 (Left)</button>
+    <button class="btn" id="next-btn">다음 (Right) ►</button>
+  </div>
+  <div class="progress-bar">
+    <div class="progress-fill" id="progress-fill"></div>
+  </div>
+  <div style="font-family:'IBM Plex Mono',monospace; font-size:14px; color:var(--text-sub);" id="page-indicator">
+    SLIDE 1 / 9
+  </div>
+</div>
+
+<script>
+  let currentSlide = 1;
+  const totalSlides = 9;
+
+  const slides = document.querySelectorAll('.slide');
+  const prevBtn = document.getElementById('prev-btn');
+  const nextBtn = document.getElementById('next-btn');
+  const progressFill = document.getElementById('progress-fill');
+  const pageIndicator = document.getElementById('page-indicator');
+
+  function showSlide(index) {
+    if(index < 1) index = 1;
+    if(index > totalSlides) index = totalSlides;
+    currentSlide = index;
+
+    slides.forEach(s => s.classList.remove('active'));
+    document.querySelector(`.slide[data-slide="${currentSlide}"]`).classList.add('active');
+
+    progressFill.style.width = `${(currentSlide / totalSlides) * 100}%`;
+    pageIndicator.textContent = `SLIDE ${currentSlide} / ${totalSlides}`;
+  }
+
+  prevBtn.addEventListener('click', () => showSlide(currentSlide - 1));
+  nextBtn.addEventListener('click', () => showSlide(currentSlide + 1));
+
+  document.addEventListener('keydown', (e) => {
+    if(e.key === 'ArrowLeft' || e.key === 'PageUp') showSlide(currentSlide - 1);
+    if(e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') showSlide(currentSlide + 1);
+  });
+</script>
+
+</body>
+</html>

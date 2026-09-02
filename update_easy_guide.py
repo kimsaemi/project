@@ -1,0 +1,192 @@
+import sys
+import os
+
+if sys.platform == 'win32':
+    sys.stdout.reconfigure(encoding='utf-8')
+    sys.stderr.reconfigure(encoding='utf-8')
+
+# Re-build easy guide with refined weighted travel times
+easy_html = """<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>[초간단 가이드] 3040 맞벌이를 위한 서울 아파트 동네 추천 (v2 실거래 & 정밀 통근 연동)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg: #F4F7FB;
+    --paper: #FFFFFF;
+    --border: #DCE4EF;
+    --text-main: #172033;
+    --text-sub: #5F6B7A;
+    --blue: #2855D9;
+    --blue-soft: #EAF0FF;
+    --green: #1D7950;
+    --green-soft: #E9F8F0;
+    --amber: #A86F00;
+    --amber-soft: #FFF4D6;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #101522;
+      --paper: #171E2C;
+      --border: #303A4D;
+      --text-main: #EDF2FB;
+      --text-sub: #A7B2C4;
+      --blue: #91ADFF;
+      --blue-soft: #1B2A50;
+      --green: #85DBAF;
+      --green-soft: #173728;
+      --amber: #FFD47A;
+      --amber-soft: #382D16;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 24px;
+    background-color: var(--bg);
+    color: var(--text-main);
+    font-family: "Pretendard", -apple-system, sans-serif;
+    line-height: 1.7;
+  }
+
+  .wrap { max-width: 860px; margin: 0 auto; }
+
+  header {
+    background: linear-gradient(135deg, #18356F 0%, #2855D9 100%);
+    color: white;
+    padding: 28px 32px;
+    border-radius: 18px;
+    margin-bottom: 24px;
+  }
+  .eyebrow { font-size: 13px; font-weight: 800; opacity: 0.9; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px; }
+  h1 { font-size: 25px; font-weight: 900; margin: 0 0 8px; line-height: 1.3; }
+  .lead { font-size: 15px; opacity: 0.92; margin: 0; line-height: 1.5; }
+
+  .card {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 22px 24px;
+    margin-bottom: 18px;
+  }
+
+  .card-num {
+    display: inline-block;
+    background: var(--blue-soft);
+    color: var(--blue);
+    font-weight: 900;
+    font-size: 13px;
+    padding: 3px 10px;
+    border-radius: 99px;
+    margin-bottom: 8px;
+  }
+
+  .card-title {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text-main);
+    margin: 0 0 10px;
+  }
+
+  .highlight-box {
+    background: var(--blue-soft);
+    border-left: 4px solid var(--blue);
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+    font-weight: 700;
+    font-size: 14.5px;
+    color: var(--blue);
+    margin-top: 10px;
+  }
+
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 12px; font-weight: 800; margin-right: 6px; }
+  .badge-green { background: var(--green-soft); color: var(--green); }
+  .badge-amber { background: var(--amber-soft); color: var(--amber); }
+
+  .btn-print {
+    position: fixed;
+    top: 24px; right: 24px;
+    background: #0F172A; color: white; border: none; padding: 9px 18px; border-radius: 99px; font-weight: 800; font-size: 13px; cursor: pointer; z-index: 999;
+  }
+  @media print { .btn-print { display: none; } body { padding: 0; background: white; } }
+</style>
+</head>
+<body>
+
+<button class="btn-print" onclick="window.print()">🖨️ 가이드 인쇄 / PDF 저장</button>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">3-MINUTE EASY GUIDE (정밀 통근 수치 교정 완료)</div>
+    <h1>3040 맞벌이를 위한 서울 동네 추천 3분 가이드</h1>
+    <p class="lead">복잡한 머신러닝 통계 용어 없이, 3040 맞벌이 부부에게 꼭 필요한 4대 추천 동네와 실생활 핵심 정보를 가장 쉽게 정리했습니다.</p>
+  </header>
+
+  <!-- Card 1 -->
+  <div class="card">
+    <div class="card-num">TOP 1. 실수요 맞벌이 1순위 추천</div>
+    <div class="card-title">📍 영등포구 당산동 (중앙 매매가 11.5억 원)</div>
+    <p><b>• 대표 아파트 단지</b>: 당산 삼성래미안, 당산 삼환아파트<br>
+    <b>• 핵심 출퇴근 시간</b>: 여의동(YBD) <b>5.2분</b> / 강남(GBD) <b>15.4분</b> (2·9호선 환승 역세권)<br>
+    <b>• 자산 방어력</b>: 하락장 낙폭 <b>-12.0%</b> (서울 최상위 자산 방어선)</p>
+    <div class="highlight-box">
+      💡 "남편은 여의도, 아내는 강남으로 출근하나요? 두 부부의 직장 위치가 다를 때 선택할 수 있는 서울 최고의 1등 동네입니다."
+    </div>
+  </div>
+
+  <!-- Card 2 -->
+  <div class="card">
+    <div class="card-num">TOP 2. 자산 방어력 서울 1위</div>
+    <div class="card-title">📍 동작구 사당동 (중앙 매매가 10.7억 원)</div>
+    <p><b>• 대표 아파트 단지</b>: 사당 래미안로이뷰, 사당 우성3차<br>
+    <b>• 핵심 출퇴근 시간</b>: 강남(GBD) <b>10.2분</b> / 도심(CBD) <b>20.4분</b> (2·4·7호선 사통팔달)<br>
+    <b>• 자산 방어력</b>: 하락장 낙폭 <span class="badge badge-green">-7.1%</span> (서울 최저 수준 철통 방어선)</p>
+    <div class="highlight-box">
+      💡 "금리가 올라 집값이 떨어질까 봐 걱정되시나요? 금리 인상기 하락장에서도 집값이 서울에서 가장 단단하게 방어된 1위 동네입니다."
+    </div>
+  </div>
+
+  <!-- Card 3 -->
+  <div class="card">
+    <div class="card-num">TOP 3. 6~8억 대 가성비 1위</div>
+    <div class="card-title">📍 강서구 염창동 (중앙 매매가 9.0억 원)</div>
+    <p><b>• 대표 아파트 단지</b>: 염창 동아아파트, 염창 동아3차<br>
+    <b>• 핵심 출퇴근 시간</b>: 여의동(YBD) <b>14.8분</b> / 강남(GBD) <b>25.1분</b> (9호선 급행 역세권)<br>
+    <b>• 이웃 환경</b>: 3040 세대 상주 비율 <span class="badge badge-amber">44.6%</span> (서울 1위 밀집지)</p>
+    <div class="highlight-box">
+      💡 "30대 첫 집 및 신혼부부 예산(6~8억 대)으로 시작하시나요? 9호선 급행을 타고 여의도 15분, 강남 25분 만에 직결되는 가성비 1등 동네입니다."
+    </div>
+  </div>
+
+  <!-- Card 4 -->
+  <div class="card">
+    <div class="card-num">TOP 4. 직주근접 & 고탄력 자산성장</div>
+    <div class="card-title">📍 마포구 공덕동 (중앙 매매가 14.1억 원)</div>
+    <p><b>• 대표 아파트 단지</b>: 공덕 래미안4차, 공덕 자이<br>
+    <b>• 핵심 출퇴근 시간</b>: 여의동(YBD) <b>5.1분</b> / 도심(CBD) <b>10.3분</b> (4개 노선 쿼드러플 환승)<br>
+    <b>• 상승기 탄력</b>: 저점 대비 상승기 반등률 <span class="badge badge-amber">+40.9%</span> (고탄력 상승지)</p>
+    <div class="highlight-box">
+      💡 "출퇴근 길에서 허비하는 시간이 제일 아까우신가요? 4개 지하철 노선이 겹치는 서울 최고의 직주근접 중심지입니다."
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
+"""
+
+guide_path = r'd:\26_강의자료\프로젝트\3040_맞벌이_쉬운_동네추천_가이드.html'
+with open(guide_path, 'w', encoding='utf-8') as f:
+    f.write(easy_html)
+
+import shutil
+shutil.copy2(guide_path, r'd:\26_강의자료\프로젝트\발표용 공유\3040_맞벌이_쉬운_동네추천_가이드.html')
+print("Updated Easy Guide HTML and copied to share folder!")

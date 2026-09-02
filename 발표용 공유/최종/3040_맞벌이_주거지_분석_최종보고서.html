@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3040 맞벌이를 위한 서울 아파트 주거지 분석 - 발표용 최종 보고서</title>
+  
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    :root {
+      --bg-dark: #0b1120;
+      --card-bg: #1e293b;
+      --card-inner: #0f172a;
+      --accent: #3b82f6;
+      --accent-light: #38bdf8;
+      --gold: #fbbf24;
+      --green: #34d399;
+      --purple: #a78bfa;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: #334155;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Pretendard", -apple-system, sans-serif; }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text);
+      line-height: 1.8;
+      padding: 40px 20px;
+    }
+
+    .report-wrapper {
+      max-width: 1050px;
+      margin: 0 auto;
+      background: rgba(30, 41, 59, 0.75);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 50px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(16px);
+    }
+
+    .report-header {
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 25px;
+      margin-bottom: 35px;
+    }
+
+    .top-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 14px;
+      background: rgba(59, 130, 246, 0.15);
+      border: 1px solid rgba(59, 130, 246, 0.4);
+      color: var(--accent-light);
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 800;
+      margin-bottom: 12px;
+    }
+
+    .report-title {
+      font-size: 30px;
+      font-weight: 900;
+      color: #ffffff;
+      line-height: 1.3;
+    }
+
+    .report-subtitle {
+      font-size: 14.5px;
+      color: var(--text-muted);
+      margin-top: 8px;
+    }
+
+    .section-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--accent-light);
+      margin-top: 40px;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+    }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px; }
+
+    .feature-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 22px;
+    }
+
+    .table-container {
+      width: 100%;
+      overflow-x: auto;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      margin: 20px 0 30px 0;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13.5px;
+    }
+
+    .data-table th {
+      background: #0f172a;
+      color: var(--accent-light);
+      font-weight: 800;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    .data-table td {
+      padding: 13px 16px;
+      border-bottom: 1px solid var(--border);
+      color: #e2e8f0;
+    }
+
+    .data-table tr:hover td { background: rgba(51, 65, 85, 0.4); }
+
+    .tag {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 800;
+    }
+    .tag-blue { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
+    .tag-green { background: rgba(52, 211, 153, 0.2); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.3); }
+    .tag-gold { background: rgba(251, 191, 36, 0.2); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.3); }
+
+    .chart-container-box {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px;
+      margin: 25px 0;
+    }
+
+    .stat-hero-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 25px;
+    }
+    .stat-hero-card {
+      background: var(--card-inner);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+    }
+    .stat-hero-val { font-size: 22px; font-weight: 900; color: var(--gold); }
+    .stat-hero-lbl { font-size: 11.5px; color: var(--text-muted); margin-top: 4px; }
+  </style>
+</head>
+<body>
+
+  <div class="report-wrapper">
+    <div class="report-header">
+      <div class="top-badge"><i class="fa-solid fa-file-invoice"></i> 프로젝트 발표용 공식 종합 보고서</div>
+      <h1 class="report-title">3040 맞벌이를 위한 서울 아파트 주거지 분석</h1>
+      <p class="report-subtitle">패널 실거래 정제본 연동 · 서울시 공공통계(43.8분) Anchor · 다기준 TOPSIS 추천 분석 리포트</p>
+    </div>
+
+    <div class="stat-hero-grid">
+      <div class="stat-hero-card">
+        <div class="stat-hero-val" style="color:#38bdf8;">137개</div>
+        <div class="stat-hero-lbl">서울 분석 법정동</div>
+      </div>
+      <div class="stat-hero-card">
+        <div class="stat-hero-val" style="color:#34d399;">43.8분</div>
+        <div class="stat-hero-lbl">서울 출퇴근 평균 앵커</div>
+      </div>
+      <div class="stat-hero-card">
+        <div class="stat-hero-val" style="color:#fbbf24;">영등포 당산</div>
+        <div class="stat-hero-lbl">종합 추천 1위</div>
+      </div>
+      <div class="stat-hero-card">
+        <div class="stat-hero-val" style="color:#a78bfa;">-12.0%</div>
+        <div class="stat-hero-lbl">하락장 방어 1위</div>
+      </div>
+    </div>
+
+    <!-- Section 1 -->
+    <div class="section-title">
+      <i class="fa-solid fa-square-poll-vertical"></i> Ⅰ. 분석 개요 및 4대 평가 비중
+    </div>
+    
+    <div class="grid-2">
+      <div class="feature-card">
+        <h3 style="font-size:16px; font-weight:800; color:#fff; margin-bottom:10px;">📌 연구 배경 및 타깃 정의</h3>
+        <p style="font-size:13.5px; color:#cbd5e1; line-height:1.7;">
+          본 연구는 3040 맞벌이 가구의 주거지 선택 기준을 직관적이고 다기준적으로 분석하기 위해 기획되었습니다.<br>
+          3040 맞벌이 직장인의 최우선 과제인 <b>[통근시간 단축 (35%)]</b>과 <b>[자산 가격 방어력 (30%)]</b>을 핵심 평가 지표로 설정하고, 서울시 공식 생활이동 통계(평균 43.8분)를 앵커 기준점으로 삼았습니다.
+        </p>
+      </div>
+
+      <div class="chart-container-box" style="margin:0; padding:16px;">
+        <div style="font-size:14px; font-weight:800; color:#fff; margin-bottom:8px; text-align:center;">📊 4대 지표 평가 가중치 분포</div>
+        <div style="max-width:320px; margin:0 auto;">
+          <canvas id="reportWeightChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 2 -->
+    <div class="section-title">
+      <i class="fa-solid fa-table-list"></i> Ⅱ. 실거래 정제 데이터 세부 매트릭스
+    </div>
+
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>분석 면적</th>
+            <th>추천 구분</th>
+            <th>자치구 / 법정동</th>
+            <th>중앙 매매가</th>
+            <th>대표 아파트 단지명</th>
+            <th>3대도심 통근시간</th>
+            <th>하락장 낙폭</th>
+            <th>3040 비중</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="tag tag-blue">59㎡ 소형</span></td>
+            <td><span class="tag tag-gold">종합 1위</span></td>
+            <td><b>영등포구 당산동</b></td>
+            <td><b style="color:#facc15;">11.0억 원</b></td>
+            <td>당산 삼성래미안, 당산 삼환</td>
+            <td>YBD 5분 / GBD 15분</td>
+            <td><span style="color:#34d399; font-weight:800;">-12.0% (방어 1위)</span></td>
+            <td>38.5%</td>
+          </tr>
+          <tr>
+            <td><span class="tag tag-blue">59㎡ 소형</span></td>
+            <td><span class="tag tag-green">가성비 1위</span></td>
+            <td><b>강서구 염창동</b></td>
+            <td><b style="color:#facc15;">8.3억 원</b></td>
+            <td>염창 래미안, 염창 동아3차</td>
+            <td>YBD 10분 / GBD 25분</td>
+            <td>-29.1%</td>
+            <td><span style="color:#fbbf24; font-weight:800;">43.3% (서울 1위)</span></td>
+          </tr>
+          <tr>
+            <td><span class="tag tag-blue">84㎡ 국평</span></td>
+            <td><span class="tag tag-gold">종합 1위</span></td>
+            <td><b>영등포구 당산동5가</b></td>
+            <td><b style="color:#facc15;">19.6억 원</b></td>
+            <td>당산 래미안1차, 당산 효성</td>
+            <td>YBD 5분 / GBD 15분</td>
+            <td><span style="color:#34d399; font-weight:800;">-2.4%</span></td>
+            <td>46.8%</td>
+          </tr>
+          <tr>
+            <td><span class="tag tag-blue">84㎡ 국평</span></td>
+            <td><span class="tag tag-green">자산방어 1위</span></td>
+            <td><b>동작구 대방동</b></td>
+            <td><b style="color:#facc15;">12.0억 원</b></td>
+            <td>대방 대림, 대방 현대</td>
+            <td>YBD 5분 / GBD 20분</td>
+            <td><span style="color:#34d399; font-weight:800;">-10.2%</span></td>
+            <td>31.6%</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Section 3 -->
+    <div class="section-title">
+      <i class="fa-solid fa-users-viewfinder"></i> Ⅲ. 맞벌이 3대 직장 조합 시나리오 분석
+    </div>
+
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>맞벌이 부부 직장 조합</th>
+            <th>추천 1위 동네</th>
+            <th>중앙가</th>
+            <th>부부 평균 통근시간</th>
+            <th>핵심 추천 사유</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><b>🏢 강남 × 🏛️ 광화문</b></td>
+            <td><b>서대문구 연희동</b></td>
+            <td><b>7.2억 원</b></td>
+            <td>GBD 35분 / CBD 15분</td>
+            <td>양 직장 중간 지점, 가성비 최상위 1위</td>
+          </tr>
+          <tr>
+            <td><b>🏢 강남 × 🌇 여의도</b></td>
+            <td><b>영등포구 당산동</b></td>
+            <td><b>11.0억 원</b></td>
+            <td>GBD 15분 / YBD 5분</td>
+            <td>2·9호선 급행 환승 초역세권 라인</td>
+          </tr>
+          <tr>
+            <td><b>🌇 여의도 × 🏛️ 광화문</b></td>
+            <td><b>마포구 공덕동</b></td>
+            <td><b>14.1억 원</b></td>
+            <td>YBD 5분 / CBD 10분</td>
+            <td>5호선 직결 쿼드러플 환승 교통 중심지</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Section 4 -->
+    <div class="section-title">
+      <i class="fa-solid fa-award"></i> Ⅳ. 최종 종합 결론 및 총평
+    </div>
+
+    <div class="feature-card" style="border: 2px solid var(--gold);">
+      <h3 style="font-size:18px; font-weight:900; color:var(--gold); margin-bottom:10px;">🏆 3040 맞벌이 서울 최적 주거지 종합 1위: 영등포구 당산동</h3>
+      <p style="font-size:14px; color:#e2e8f0; line-height:1.8;">
+        1. <b>입지 및 교통 (35%)</b>: 여의도 5분, 강남 15분 도착 가능한 2·9호선 환승 요충지로 맞벌이 부부 통근 최적 절충지 입증.<br>
+        2. <b>자산 안정성 (30%)</b>: 최근 금리 인상 폭락장에서도 집값 낙폭이 <b>-12.0%</b>에 불과하여 서울 최상위 자산 방어선 증명.<br>
+        3. <b>실수요 밀집 (25%)</b>: 3040 세대 거주 비중이 38.5%로 육아 및 거주 인프라 우수.
+      </p>
+    </div>
+
+  </div>
+
+  <script>
+    new Chart(document.getElementById('reportWeightChart'), {
+      type: 'doughnut',
+      data: {
+        labels: ['통근 편리성 (35%)', '가격 방어력 (30%)', '3040 친화도 (25%)', '거래 유동성 (10%)'],
+        datasets: [{
+          data: [35, 30, 25, 10],
+          backgroundColor: ['#38bdf8', '#34d399', '#fbbf24', '#a78bfa'],
+          borderColor: '#1e293b',
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { position: 'bottom', labels: { color: '#f8fafc', font: { family: 'Pretendard', size: 11 } } } }
+      }
+    });
+  </script>
+</body>
+</html>

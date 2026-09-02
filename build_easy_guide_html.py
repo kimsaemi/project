@@ -1,0 +1,374 @@
+import sys
+import os
+
+if sys.platform == 'win32':
+    sys.stdout.reconfigure(encoding='utf-8')
+    sys.stderr.reconfigure(encoding='utf-8')
+
+html_easy = """<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>[쉬운버전] 3분 만에 읽는 3040 맞벌이 서울 동네 추천 가이드</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg: #F8FAFC;
+    --paper: #FFFFFF;
+    --border: #E2E8F0;
+    --ink: #0F172A;
+    --muted: #475569;
+    --blue: #2563EB;
+    --blue-soft: #EFF6FF;
+    --green: #059669;
+    --green-soft: #ECFDF5;
+    --amber: #D97706;
+    --amber-soft: #FFFBEB;
+    --purple: #7C3AED;
+    --purple-soft: #F5F3FF;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0F172A;
+      --paper: #1E293B;
+      --border: #334155;
+      --ink: #F8FAFC;
+      --muted: #94A3B8;
+      --blue: #60A5FA;
+      --blue-soft: #1E3A8A;
+      --green: #34D399;
+      --green-soft: #064E3B;
+      --amber: #FBBF24;
+      --amber-soft: #451A03;
+      --purple: #C084FC;
+      --purple-soft: #3B0764;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 24px 16px;
+    background-color: var(--bg);
+    color: var(--ink);
+    font-family: "Pretendard", -apple-system, sans-serif;
+    line-height: 1.65;
+  }
+
+  .wrap { max-width: 840px; margin: 0 auto; }
+
+  /* Main Header */
+  header {
+    background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%);
+    color: white;
+    padding: 36px 28px;
+    border-radius: 20px;
+    margin-bottom: 24px;
+    box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.25);
+  }
+  .eyebrow { font-size: 13.5px; font-weight: 800; opacity: 0.9; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 8px; }
+  h1 { font-size: clamp(24px, 4.5vw, 34px); font-weight: 900; margin: 0 0 12px; line-height: 1.25; word-break: keep-all; }
+  .lead { font-size: 15.5px; opacity: 0.95; line-height: 1.6; margin: 0; word-break: keep-all; }
+
+  /* Sections */
+  section {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 26px 24px;
+    margin-bottom: 20px;
+  }
+
+  h2 { font-size: 20px; font-weight: 800; margin: 0 0 16px; color: var(--ink); display: flex; align-items: center; gap: 8px; }
+  h3 { font-size: 16.5px; font-weight: 800; margin: 18px 0 8px; color: var(--ink); }
+  p { font-size: 14.5px; color: var(--muted); margin: 0 0 10px; word-break: keep-all; }
+
+  /* Highlight Key Cards */
+  .key-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 14px; }
+  @media (max-width: 650px) { .key-grid { grid-template-columns: 1fr; } }
+  .key-card { background: var(--bg); border: 1px solid var(--border); border-radius: 14px; padding: 16px; text-align: center; }
+  .key-num { font-size: 24px; font-weight: 900; color: var(--blue); margin-bottom: 4px; }
+  .key-lbl { font-size: 13px; color: var(--muted); }
+
+  /* Easy Recommendation Cards */
+  .rec-card {
+    border: 1.5px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 16px;
+    background: var(--paper);
+    position: relative;
+  }
+  .rec-card:last-child { margin-bottom: 0; }
+  .rec-card.c1 { border-left: 6px solid var(--blue); }
+  .rec-card.c2 { border-left: 6px solid var(--green); }
+  .rec-card.c3 { border-left: 6px solid var(--amber); }
+  .rec-card.c4 { border-left: 6px solid var(--purple); }
+
+  .rec-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px; }
+  .rec-title { font-size: 17px; font-weight: 800; color: var(--ink); }
+  .rec-price { font-size: 13px; font-weight: 800; padding: 4px 10px; border-radius: 99px; }
+  .c1 .rec-price { background: var(--blue-soft); color: var(--blue); }
+  .c2 .rec-price { background: var(--green-soft); color: var(--green); }
+  .c3 .rec-price { background: var(--amber-soft); color: var(--amber); }
+  .c4 .rec-price { background: var(--purple-soft); color: var(--purple); }
+
+  .rec-dongs { font-size: 15px; font-weight: 800; color: var(--ink); margin-bottom: 8px; }
+  .rec-desc { font-size: 14px; color: var(--muted); margin: 0; line-height: 1.6; }
+
+  /* Table Style */
+  .table-wrap { overflow-x: auto; margin-top: 14px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; min-width: 600px; }
+  th { background: var(--bg); color: var(--ink); font-weight: 800; padding: 10px 12px; text-align: left; border-bottom: 1.5px solid var(--border); }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--muted); }
+  tr:last-child td { border-bottom: 0; }
+  td.strong { font-weight: 800; color: var(--ink); }
+
+  /* Q&A Accordion Box */
+  .qa-box { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; margin-bottom: 12px; }
+  .qa-q { font-size: 15px; font-weight: 800; color: var(--blue); margin-bottom: 6px; }
+  .qa-a { font-size: 13.5px; color: var(--muted); margin: 0; line-height: 1.6; }
+
+  /* Print Button */
+  .print-btn {
+    position: fixed;
+    top: 20px; right: 20px;
+    background: #0F172A;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 99px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    z-index: 100;
+  }
+  @media print { .print-btn { display: none; } body { padding: 0; } }
+</style>
+</head>
+<body>
+
+<button class="print-btn" onclick="window.print()">🖨️ 공유용 출력 / PDF 저장</button>
+
+<div class="wrap">
+  <!-- Header -->
+  <header>
+    <div class="eyebrow">3분 완전 정독 가이드</div>
+    <h1>3040 맞벌이를 위한 서울 아파트 동네 추천 가이드</h1>
+    <p class="lead">내 예산에 딱 맞으면서, 출퇴근도 편하고, 집값도 덜 떨어지는 서울 동네는 어디일까? 어려운 데이터 용어를 빼고 핵심만 쉽게 정리했습니다.</p>
+  </header>
+
+  <!-- 1. 30초 요약 -->
+  <section>
+    <h2>💡 30초 요약 (가장 중요한 3가지)</h2>
+    <div class="key-grid">
+      <div class="key-card">
+        <div class="key-num">1위</div>
+        <div class="key-lbl"><b>출퇴근 시간 단축</b>이 3040 주거 만족도의 77%를 결정함</div>
+      </div>
+      <div class="key-card">
+        <div class="key-num">당산·사당</div>
+        <div class="key-lbl">금리 하락장에도 집값이 가장 안 떨어진 <b>서울 자산방어 1위</b></div>
+      </div>
+      <div class="key-card">
+        <div class="key-num">염창·봉천</div>
+        <div class="key-lbl">6~8억 대 예산으로 강남/여의도 20분 컷 <b>가성비 1위</b></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. 예산대별 추천 동네 4가지 유형 -->
+  <section>
+    <h2>💰 내 예산으로 어디까지 갈 수 있을까? (4가지 유형)</h2>
+    <p>서울시 137개 아파트 동네를 조사해 예산과 특징별로 4가지 유형으로 정리했습니다.</p>
+
+    <!-- Type 1 -->
+    <div class="rec-card c1">
+      <div class="rec-header">
+        <div class="rec-title">유형 1. 가성비 최고! 첫 집 & 신혼부부 추천</div>
+        <div class="rec-price">예산 6억 ~ 8억 대</div>
+      </div>
+      <div class="rec-dongs">📍 강서구 염창동 · 등촌동 · 가양동 | 관악구 봉천동</div>
+      <div class="rec-desc">
+        • <b>추천 이유:</b> 9호선 급행(염창)과 신림선(봉천)으로 여의도 10분, 강남 20분 만에 갑니다.<br>
+        • <b>동네 특징:</b> 서울에서 30~40대 젊은 층 비율이 가장 높고, 한강변 평지 자전거길과 대단지 아파트가 잘 형성되어 있습니다.
+      </div>
+    </div>
+
+    <!-- Type 2 -->
+    <div class="rec-card c2">
+      <div class="rec-header">
+        <div class="rec-title">유형 2. 집값 제일 안 떨어지는 철통 방어선 ★ (추천 1위)</div>
+        <div class="rec-price">예산 9억 ~ 11억 대</div>
+      </div>
+      <div class="rec-dongs">📍 영등포구 당산동 | 동작구 사당동 | 구로구 신도림동</div>
+      <div class="rec-desc">
+        • <b>추천 이유:</b> 부동산 하락장에서도 집값 낙폭이 <b>-7%~-12% (서울 최저)</b>로 자산을 가장 안전하게 지킨 곳입니다.<br>
+        • <b>동네 특징:</b> 2·9호선(당산), 2·4·7호선(사당) 등 지하철 노선이 집중되어 부부 직장 위치가 서로 다를 때 최적의 절충지입니다.
+      </div>
+    </div>
+
+    <!-- Type 3 -->
+    <div class="rec-card c3">
+      <div class="rec-header">
+        <div class="rec-title">유형 3. 어디든 10분 컷! 상승기 집값 팍팍 오르는 동네 🚀</div>
+        <div class="rec-price">예산 12억 ~ 15억 대</div>
+      </div>
+      <div class="rec-dongs">📍 마포구 공덕동 · 도화동 | 송파구 문정동 · 가락동</div>
+      <div class="rec-desc">
+        • <b>추천 이유:</b> 지하철 노선이 4개나 지나가는 핵심 거점입니다. 집값이 오를 때 <b>+40% 이상 강하게 반등</b>하는 특징이 있습니다.<br>
+        • <b>동네 특징:</b> 여의도·광화문 5~10분 초근근접 직주근접과 학원가 인프라를 모두 갖춘 3040 성공형 추천 지역입니다.
+      </div>
+    </div>
+
+    <!-- Type 4 -->
+    <div class="rec-card c4">
+      <div class="rec-header">
+        <div class="rec-title">유형 4. 아이 교육과 조용한 주거환경 최우선 🎓</div>
+        <div class="rec-price">예산 7.5억 ~ 10.5억 대</div>
+      </div>
+      <div class="rec-dongs">📍 노원구 중계동 (은행사거리) | 강동구 고덕동 · 명일동</div>
+      <div class="rec-desc">
+        • <b>추천 이유:</b> 서울 3대 명문 학원가를 끼고 있어 초등~중고등 자녀를 둔 학부모 가정에 가장 인기 있는 곳입니다.<br>
+        • <b>동네 특징:</b> 출퇴근 30~40분을 감수하는 대신 쾌적한 공원/숲세권 환경과 넓은 아파트 평형을 누릴 수 있습니다.
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. 핵심 추천 동네 TOP 4 한눈에 비교 -->
+  <section>
+    <h2>🏆 가장 많이 찾는 대표 동네 4곳 한눈에 비교</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>동네 이름</th>
+            <th>아파트 대표 매매가</th>
+            <th>3대 업무지구 출퇴근 소요시간</th>
+            <th>하락장 집값 방어력</th>
+            <th>한 줄 요약</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="strong">영등포구 당산동</td>
+            <td class="strong">11.5억 원</td>
+            <td>여의도 5분 / 강남 15분</td>
+            <td style="color:var(--green); font-weight:bold;">하락장 낙폭 -12% (방어 1위)</td>
+            <td>맞벌이 1순위 추천, 최고의 교통 요충지</td>
+          </tr>
+          <tr>
+            <td class="strong">동작구 사당동</td>
+            <td class="strong">10.7억 원</td>
+            <td>강남 10분 / 광화문 20분</td>
+            <td style="color:var(--green); font-weight:bold;">하락장 낙폭 -7% (서울 최저)</td>
+            <td>강남·도심 중간 지점, 집값 하락 위험 최저</td>
+          </tr>
+          <tr>
+            <td class="strong">강서구 염창동</td>
+            <td class="strong">8.3억 원</td>
+            <td>여의도 10분 / 강남 25분</td>
+            <td>보통 수준 (-29%)</td>
+            <td>6~8억대 가성비 1등, 9호선 급행 평지 단지</td>
+          </tr>
+          <tr>
+            <td class="strong">마포구 공덕동</td>
+            <td class="strong">14.1억 원</td>
+            <td>여의도 5분 / 광화문 10분</td>
+            <td style="color:var(--amber); font-weight:bold;">상승장 반등률 +40.9%</td>
+            <td>직주근접 종결지, 오를 때 가장 크게 오름</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 4. 자주 묻는 질문 Q&A -->
+  <section>
+    <h2>❓ 자주 묻는 질문 (Q&A)</h2>
+    
+    <div class="qa-box">
+      <div class="qa-q">Q1. 하락장 방어력이 높다는 게 무슨 뜻인가요?</div>
+      <div class="qa-a">금리가 크게 올라 서울 전체 집값이 떨어질 때도, 이 동네 아파트는 탄탄한 실수요와 출퇴근 인기 덕분에 집값이 떨어지지 않고 잘 견뎌냈다는 뜻입니다.</div>
+    </div>
+
+    <div class="qa-box">
+      <div class="qa-q">Q2. 맞벌이라 부부 직장 위치가 서로 다른데 어떻게 고르면 될까요?</div>
+      <div class="qa-a">부부 한 명은 강남, 한 명은 여의도/광화문이라면 <b>2·9호선이 교차하는 당산동</b>이나 <b>2·4·7호선이 교차하는 사당동</b>을 선택하시는 것이 가장 이상적입니다.</div>
+    </div>
+
+    <div class="qa-box">
+      <div class="qa-q">Q3. 빌라나 오피스텔도 포함된 분석인가요?</div>
+      <div class="qa-a">아닙니다. 실수요 3040세대가 선호하는 <b>순수 아파트 실거래가 기준</b>으로만 분석하여 환금성과 자산 가치를 명확히 반영했습니다.</div>
+    </div>
+  </section>
+
+</div>
+
+</body>
+</html>
+"""
+
+easy_html_path = r'd:\26_강의자료\프로젝트\3040_맞벌이_쉬운_동네추천_가이드.html'
+with open(easy_html_path, 'w', encoding='utf-8') as f:
+    f.write(html_easy)
+
+print("Easy Guide HTML created at:", easy_html_path)
+
+# Generate Easy Markdown version as well
+easy_md = """# 💡 [쉬운버전] 3분 만에 읽는 3040 맞벌이 서울 동네 추천 가이드
+
+---
+
+## 📌 30초 요약 (가장 중요한 3가지)
+1. **출퇴근 시간 단축**이 3040 세대의 주거 만족도의 77% 이상을 결정합니다.
+2. **영등포 당산동·동작 사당동**은 금리 하락장에서도 집값이 가장 안 떨어진 **서울 자산방어 1위 동네**입니다.
+3. **강서 염창동·관악 봉천동**은 6~8억 대 예산으로 강남/여의도 20분 컷이 가능한 **가성비 1위 동네**입니다.
+4. **쉬운 버전 HTML 가이드**: [3040_맞벌이_쉬운_동네추천_가이드.html](file:///d:/26_%EA%B0%95%EC%9D%98%EC%9E%90%EB%A3%8C/%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8/3040_%EB%A7%9E%EB%B2%8C%EC%9D%B4_%EC%87%BD%EC%9D%80_%EB%8F%99%EB%84%A4%EC%B6%94%EC%B2%9C_%EA%B0%80%EC%9D%B4%EB%93%9C.html)
+
+---
+
+## 💰 내 예산으로 어디까지 갈 수 있을까? (4가지 유형)
+
+### 1. 유형 1. 가성비 최고! 첫 집 & 신혼부부 추천 (예산 6억 ~ 8억 대)
+* **대표 동네**: 강서구 **염창동·등촌동·가양동**, 관악구 **봉천동**
+* **추천 이유**: 9호선 급행(염창)과 신림선(봉천)으로 여의도 10분, 강남 20분 진입.
+* **동네 특징**: 3040 비율 서울 1위(43.3%), 평지 자전거길 및 대단지 아파트 형성.
+
+### 2. 유형 2. 집값 제일 안 떨어지는 철통 방어선 ★ [실수요 1위] (예산 9억 ~ 11억 대)
+* **대표 동네**: 영등포구 **당산동**, 동작구 **사당동**, 구로구 **신도림동**
+* **추천 이유**: 부동산 하락장 낙폭 **-7%~-12% (서울 최저)**로 자산을 가장 안전하게 지킴.
+* **동네 특징**: 2·9호선(당산), 2·4·7호선(사당) 환승 요충지, 부부 직장 위치 다를 때 최적 절충지.
+
+### 3. 유형 3. 어디든 10분 컷! 상승기 집값 팍팍 오르는 동네 (예산 12억 ~ 15억 대)
+* **대표 동네**: 마포구 **공덕동·도화동**, 송파구 **문정동·가락동**
+* **추천 이유**: 4개 노선 쿼드러플 환승지. 상승장에 **+40% 이상 강하게 반등**.
+* **동네 특징**: 여의도·광화문 5~10분 직주근접 및 마포/송파 명문 학원가 결합.
+
+### 4. 유형 4. 아이 교육과 조용한 주거환경 최우선 (예산 7.5억 ~ 10.5억 대)
+* **대표 동네**: 노원구 **중계동 (은행사거리)**, 강동구 **고덕동·명일동**
+* **추천 이유**: 서울 3대 명문 학원가 위치, 영유아/학령기 자녀 학부모 최선호.
+* **동네 특징**: 출퇴근 30~40분 감수 대신 쾌적한 숲세권 및 넓은 평형 확보.
+
+---
+
+## 🏆 대표 동네 4곳 한눈에 비교
+
+| 동네 이름 | 아파트 대표 매매가 | 출퇴근 소요시간 | 하락장 집값 방어력 | 한 줄 요약 |
+| :--- | :---: | :--- | :---: | :--- |
+| **영등포구 당산동** | **11.5억 원** | 여의도 5분 / 강남 15분 | **낙폭 -12% (방어 1위)** | 맞벌이 부부 1순위 추천, 최고의 교통 요충지 |
+| **동작구 사당동** | **10.7억 원** | 강남 10분 / 광화문 20분 | **낙폭 -7% (서울 최저)** | 강남/도심 중간 지점, 집값 하락 위험 최저 |
+| **강서구 염창동** | **8.3억 원** | 여의도 10분 / 강남 25분 | 보통 수준 (-29%) | 6~8억대 가성비 1등, 9호선 급행 평지 단지 |
+| **마포구 공덕동** | **14.1억 원** | 여의도 5분 / 광화문 10분 | **상승장 반등률 +40.9%** | 직주근접 종결지, 오를 때 가장 크게 오름 |
+"""
+
+easy_md_path = r'd:\26_강의자료\프로젝트\3040_맞벌이_쉬운_동네추천_가이드.md'
+with open(easy_md_path, 'w', encoding='utf-8') as f:
+    f.write(easy_md)
+
+print("Easy Guide Markdown created at:", easy_md_path)

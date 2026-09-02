@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3040 맞벌이 서울 아파트 주거지 분석 - 최종 통합 포털 v3.5</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0F172A;
+    --card: #1E293B;
+    --border: #334155;
+    --text: #F8FAFC;
+    --sub: #94A3B8;
+    --cyan: #38BDF8;
+    --amber: #FBBF24;
+    --green: #34D399;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Pretendard', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 20px;
+  }
+  .portal-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 48px;
+    max-width: 900px;
+    width: 100%;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+  }
+  .tag { display: inline-block; background: rgba(56,189,248,0.2); color: var(--cyan); font-size: 13px; font-weight: 800; padding: 4px 12px; border-radius: 99px; margin-bottom: 12px; }
+  h1 { font-size: 32px; font-weight: 900; margin-bottom: 12px; }
+  p { color: var(--sub); font-size: 15px; margin-bottom: 32px; }
+
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .item-card {
+    background: #0F172A;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    text-decoration: none;
+    color: var(--text);
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .item-card:hover { transform: translateY(-4px); border-color: var(--cyan); box-shadow: 0 10px 20px rgba(56,189,248,0.2); }
+  .item-title { font-size: 18px; font-weight: 800; color: var(--cyan); margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
+  .item-desc { font-size: 13px; color: var(--sub); line-height: 1.6; }
+  .btn-link { font-size: 13px; font-weight: 700; color: var(--amber); margin-top: 16px; display: inline-flex; align-items: center; gap: 4px; }
+</style>
+</head>
+<body>
+
+<div class="portal-card">
+  <span class="tag">FINAL DELIVERABLES PACK v3.5</span>
+  <h1>3040 맞벌이 주거지 분석 - 최종 통합 포털</h1>
+  <p>실시간 가중치 조절 바 지도 대시보드 v3.5 & 최종 통합 리포트 v3.5 모음입니다.</p>
+
+  <div class="grid">
+    <a href="3040_맞벌이_주거지_지도_대시보드_v3.5.html" class="item-card">
+      <div>
+        <div class="item-title">🗺️ 지도 대시보드 v3.5 <span>➔</span></div>
+        <div class="item-desc">Leaflet 반응형 추천 지도, 137개동 실데이터 연동, 가중치 슬라이더 실시간 재계산 & 상세 분석 패널 수록</div>
+      </div>
+      <div class="btn-link">실행하기 ➔</div>
+    </a>
+
+    <a href="3040_맞벌이_주거지_최적화_통합리포트_v3.5.html" class="item-card">
+      <div>
+        <div class="item-title">📊 통합 리포트 v3.5 <span>➔</span></div>
+        <div class="item-desc">한눈에 보는 결론, 세부 채점 공식 표, 서울시 43.8분 앵커, TOP 3 커플 시나리오 & 4대 세그먼트 표 수록</div>
+      </div>
+      <div class="btn-link">열기 ➔</div>
+    </a>
+
+    <a href="3040_맞벌이_주거지_분석_최종발표_슬라이드.html" class="item-card">
+      <div>
+        <div class="item-title">🖥️ PPT 발표 슬라이드 <span>➔</span></div>
+        <div class="item-desc">12개 슬라이드 웹 프레젠테이션 (키보드 방향키 이동, 풀스크린 지원)</div>
+      </div>
+      <div class="btn-link">열기 ➔</div>
+    </a>
+
+    <a href="3040_맞벌이_주거지_분석_최종_발표대본.html" class="item-card">
+      <div>
+        <div class="item-title">🎙️ 발표자료 대본 <span>➔</span></div>
+        <div class="item-desc">슬라이드 1~12 1:1 대응 발표 대본 (10~12분 소요) & 심사위원 예상 Q&A 방어 논리 수록</div>
+      </div>
+      <div class="btn-link">열기 ➔</div>
+    </a>
+  </div>
+</div>
+
+</body>
+</html>

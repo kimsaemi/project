@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>서울시 법정동 클러스터링 세그먼트 종합 분석 리포트</title>
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --primary: #2563eb;
+      --primary-dark: #1e3a8a;
+      --group0-color: #ef4444;
+      --group0-bg: #fef2f2;
+      --group0-border: #fecaca;
+      --group1-color: #3b82f6;
+      --group1-bg: #eff6ff;
+      --group1-border: #bfdbfe;
+      --group2-color: #10b981;
+      --group2-bg: #ecfdf5;
+      --group2-border: #a7f3d0;
+      --group3-color: #a855f7;
+      --group3-bg: #faf5ff;
+      --group3-border: #e9d5ff;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      padding: 30px 20px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .report-container {
+      max-width: 1040px;
+      width: 100%;
+      background: var(--card-bg);
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+      border: 1px solid var(--border);
+    }
+
+    /* 헤더 */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 2px solid #0f172a;
+      padding-bottom: 18px;
+      margin-bottom: 22px;
+    }
+
+    .title-area h1 {
+      font-size: 26px;
+      font-weight: 800;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      letter-spacing: -0.5px;
+    }
+
+    .title-area p {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-top: 6px;
+      font-weight: 500;
+    }
+
+    .badge-date {
+      background: #2563eb;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 6px 14px;
+      border-radius: 20px;
+      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
+      white-space: nowrap;
+    }
+
+    /* 메타데이터 박스 */
+    .meta-box {
+      background: #f1f5f9;
+      border-radius: 10px;
+      padding: 14px 18px;
+      font-size: 13.5px;
+      line-height: 1.6;
+      color: #334155;
+      margin-bottom: 30px;
+      border-left: 4px solid var(--primary);
+    }
+
+    .meta-box strong {
+      color: #0f172a;
+    }
+
+    .section-title {
+      font-size: 17px;
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-title::before {
+      content: "";
+      display: inline-block;
+      width: 4px;
+      height: 18px;
+      background: var(--primary);
+      border-radius: 2px;
+    }
+
+    /* 테이블 */
+    .table-wrapper {
+      overflow-x: auto;
+      margin-bottom: 36px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13.5px;
+    }
+
+    thead {
+      background-color: #0f172a;
+      color: #ffffff;
+    }
+
+    th {
+      padding: 14px 16px;
+      font-weight: 700;
+      letter-spacing: -0.2px;
+      font-size: 13.5px;
+    }
+
+    td {
+      padding: 18px 16px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+      line-height: 1.55;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    tbody tr:hover {
+      background-color: #f8fafc;
+    }
+
+    /* 그룹 뱃지 */
+    .group-tag {
+      display: inline-block;
+      padding: 3px 9px;
+      border-radius: 6px;
+      font-size: 11.5px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .tag-g0 { color: var(--group0-color); background: var(--group0-bg); border: 1px solid var(--group0-border); }
+    .tag-g1 { color: var(--group1-color); background: var(--group1-bg); border: 1px solid var(--group1-border); }
+    .tag-g2 { color: var(--group2-color); background: var(--group2-bg); border: 1px solid var(--group2-border); }
+    .tag-g3 { color: var(--group3-color); background: var(--group3-bg); border: 1px solid var(--group3-border); }
+
+    .group-name {
+      font-weight: 800;
+      font-size: 14.5px;
+      color: #0f172a;
+    }
+
+    .sub-examples {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .stat-list {
+      list-style: none;
+    }
+
+    .stat-list li {
+      position: relative;
+      padding-left: 14px;
+      margin-bottom: 4px;
+      color: #334155;
+    }
+
+    .stat-list li::before {
+      content: "•";
+      position: absolute;
+      left: 2px;
+      color: var(--primary);
+      font-weight: bold;
+    }
+
+    .insight-list {
+      list-style: none;
+    }
+
+    .insight-list li {
+      position: relative;
+      padding-left: 14px;
+      margin-bottom: 4px;
+      color: #1e293b;
+    }
+
+    .insight-list li::before {
+      content: "•";
+      position: absolute;
+      left: 2px;
+      color: #059669;
+      font-weight: bold;
+    }
+
+    /* 카드 그리드 */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+    }
+
+    .card {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .card-g0 { border-top: 4px solid var(--group0-color); }
+    .card-g1 { border-top: 4px solid var(--group1-color); }
+    .card-g2 { border-top: 4px solid var(--group2-color); }
+    .card-g3 { border-top: 4px solid var(--group3-color); }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .card-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .card-count {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .card-feature {
+      font-size: 13px;
+      color: #334155;
+      line-height: 1.55;
+      margin-bottom: 14px;
+      background: #f8fafc;
+      padding: 10px 12px;
+      border-radius: 8px;
+    }
+
+    .card-feature strong {
+      color: #0f172a;
+    }
+
+    .action-box {
+      font-size: 12.5px;
+      line-height: 1.5;
+      padding: 10px 12px;
+      border-radius: 8px;
+    }
+
+    .action-g0 { background: #fff1f2; color: #9f1239; border: 1px solid #ffe4e6; }
+    .action-g1 { background: #eff6ff; color: #1e40af; border: 1px solid #dbeafe; }
+    .action-g2 { background: #ecfdf5; color: #065f46; border: 1px solid #d1fae5; }
+    .action-g3 { background: #faf5ff; color: #6b21a8; border: 1px solid #f3e8ff; }
+
+    .print-btn-wrap {
+      margin-top: 24px;
+      text-align: right;
+    }
+
+    .btn-print {
+      background: #0f172a;
+      color: #fff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-print:hover {
+      background: #334155;
+    }
+
+    @media print {
+      body { background: #fff; padding: 0; }
+      .report-container { box-shadow: none; border: none; padding: 0; max-width: 100%; }
+      .print-btn-wrap { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="report-container">
+    <!-- 리포트 헤더 -->
+    <header class="header">
+      <div class="title-area">
+        <h1>📊 서울시 법정동 클러스터링 세그먼트 종합 분석 리포트</h1>
+        <p>상권 유동인구 × 직장·상주 인구구조 × 부동산 실거래가 융합 K-Means 군집 분석</p>
+      </div>
+      <div class="badge-date">2026 Q1 최신 데이터</div>
+    </header>
+
+    <!-- 메타데이터 박스 -->
+    <div class="meta-box">
+      <div>📌 <strong>분석 대상:</strong> 서울시 281개 주요 법정동 | <strong>적용 모델:</strong> K-Means ($k=4$, StandardScaler, random_state=42)</div>
+      <div>🔗 <strong>융합 데이터셋:</strong> 국토교통부·서울시 아파트 실거래가 (23.5만 건) + 서울시 상권분석서비스 유동인구·직장인구·상주인구 데이터</div>
+    </div>
+
+    <!-- 1. 종합 표 섹션 -->
+    <section>
+      <h2 class="section-title">클러스터링 결과 종합 표</h2>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 25%;">그룹명 (세그먼트)</th>
+              <th style="width: 14%;">규모 (비중)</th>
+              <th style="width: 33%;">그룹 집계 기준 및 수치적 특징</th>
+              <th style="width: 28%;">활용 방향 및 비즈니스 인사이트</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- 그룹 0 -->
+            <tr>
+              <td>
+                <span class="group-tag tag-g0">그룹 0</span>
+                <div class="group-name">초고가 하이엔드 주거 부촌</div>
+                <div class="sub-examples">압구정, 반포, 잠실, 개포, 대치, 한남</div>
+              </td>
+              <td><strong>79개 동</strong><br><span style="color:var(--text-muted); font-size:12px;">(28.1%)</span></td>
+              <td>
+                <ul class="stat-list">
+                  <li><strong>㎡당 아파트 단가:</strong> 2,482.6만 원 (최고)</li>
+                  <li><strong>3040 핵심소득층 비중:</strong> 34.2% (상위)</li>
+                  <li><strong>직주비 배율:</strong> 서울 평균 대비 1.45배</li>
+                  <li><strong>고령화율:</strong> 18.5% (낮음)</li>
+                </ul>
+              </td>
+              <td>
+                <ul class="insight-list">
+                  <li>프리미엄 자산관리 & 럭셔리 라이프 타깃</li>
+                  <li>고소득 자산가 중심 하이엔드 주거 케어</li>
+                  <li>경기 침체기에도 가장 강력한 가격 방어선</li>
+                </ul>
+              </td>
+            </tr>
+
+            <!-- 그룹 1 -->
+            <tr>
+              <td>
+                <span class="group-tag tag-g1">그룹 1</span>
+                <div class="group-name">2030 청년 도심 활성지</div>
+                <div class="sub-examples">상수, 연남, 한강로, 문래, 당산, 영등포</div>
+              </td>
+              <td><strong>59개 동</strong><br><span style="color:var(--text-muted); font-size:12px;">(21.0%)</span></td>
+              <td>
+                <ul class="stat-list">
+                  <li><strong>2030 청년 유동인구 비중:</strong> 46.3% (압도적 1위)</li>
+                  <li><strong>65세+ 고령자 비중:</strong> 14.8% (서울 최저)</li>
+                  <li><strong>소형 평형 거래 비중:</strong> 68.4% (최다)</li>
+                  <li><strong>㎡당 단가:</strong> 1,397.7만 원 (중상위)</li>
+                </ul>
+              </td>
+              <td>
+                <ul class="insight-list">
+                  <li>1~2인 가구 라이프스타일 & 트렌디 상권</li>
+                  <li>소형 주택/오피스텔 임대차 수요 집중</li>
+                  <li>배달, F&B, 팝업스토어 트렌드 테스트베드</li>
+                </ul>
+              </td>
+            </tr>
+
+            <!-- 그룹 2 -->
+            <tr>
+              <td>
+                <span class="group-tag tag-g2">그룹 2</span>
+                <div class="group-name">초대형 핵심 업무·상업 중심지</div>
+                <div class="sub-examples">역삼, 삼성, 여의도, 을지로, 서초, 마곡</div>
+              </td>
+              <td><strong>11개 동</strong><br><span style="color:var(--text-muted); font-size:12px;">(3.9%)</span></td>
+              <td>
+                <ul class="stat-list">
+                  <li><strong>평균 직장인 수:</strong> 136,172명 (최대)</li>
+                  <li><strong>분기 유동인구:</strong> 1,186만 명 (최대)</li>
+                  <li><strong>직주비(직장/상주):</strong> 6.84 (극초과)</li>
+                  <li><strong>㎡당 단가:</strong> 2,150.4만 원 (초고가)</li>
+                </ul>
+              </td>
+              <td>
+                <ul class="insight-list">
+                  <li>B2B 비즈니스 & 오피스 배후 상권 특화</li>
+                  <li>주중 점심/회식 상권 및 비즈니스 인프라</li>
+                  <li>직주근접형 오피스텔 & 광역 교통망 중심</li>
+                </ul>
+              </td>
+            </tr>
+
+            <!-- 그룹 3 -->
+            <tr>
+              <td>
+                <span class="group-tag tag-g3">그룹 3</span>
+                <div class="group-name">중장년/고령 안정형 배후 주거지</div>
+                <div class="sub-examples">상계, 화곡, 불광, 미아, 정릉, 도봉</div>
+              </td>
+              <td><strong>132개 동</strong><br><span style="color:var(--text-muted); font-size:12px;">(47.0%)</span></td>
+              <td>
+                <ul class="stat-list">
+                  <li><strong>65세+ 고령 인구 비중:</strong> 23.0% (최고)</li>
+                  <li><strong>㎡당 아파트 단가:</strong> 1,096.0만 원 (안정 시세)</li>
+                  <li><strong>유동인구:</strong> 580만 명 / 직장인: 4,817명</li>
+                  <li><strong>직주비:</strong> 0.28 (전형적 베드타운)</li>
+                </ul>
+              </td>
+              <td>
+                <ul class="insight-list">
+                  <li>시니어 헬스케어 & 패밀리 밀착 서비스</li>
+                  <li>병원, 약국, 전통시장 생활밀착형 상권</li>
+                  <li>정비사업(재개발/재건축) 모니터링 대상</li>
+                </ul>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 2. 인터랙티브 차트 시각화 섹션 -->
+    <section style="margin-bottom: 36px;">
+      <h2 class="section-title">📊 데이터 시각화 (유동인구 · 직주비 vs 평당 단가)</h2>
+      <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 18px;">
+        <div style="background:#fff; border:1px solid var(--border); border-radius:12px; padding:18px;">
+          <div style="font-size:14px; font-weight:700; margin-bottom:10px; color:#0f172a;">📍 유동·직장 인구지수 vs 아파트 매매단가 분포</div>
+          <div style="height:250px;"><canvas id="scatterChart"></canvas></div>
+        </div>
+        <div style="background:#fff; border:1px solid var(--border); border-radius:12px; padding:18px;">
+          <div style="font-size:14px; font-weight:700; margin-bottom:10px; color:#0f172a;">🕸️ 군집별 5대 핵심 지표 프로파일 (방사형)</div>
+          <div style="height:250px;"><canvas id="radarChart"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. 카드 그리드 섹션 -->
+    <section>
+      <h2 class="section-title">💡 그룹별 상세 특징 및 액션 아이디어</h2>
+      <div class="cards-grid">
+        <!-- 카드 0 -->
+        <div class="card card-g0">
+          <div>
+            <div class="card-header">
+              <span class="card-title">그룹 0 : 초고가 하이엔드 주거 부촌</span>
+              <span class="card-count">79개 동 (28.1%)</span>
+            </div>
+            <div class="card-feature">
+              📌 <strong>그룹 특징:</strong> 평당 8,000만 원 선을 넘는 최고가 주택 밀집지로, 직장인 소득 및 보유 자산 규모가 서울 최상위권에 해당합니다.
+            </div>
+          </div>
+          <div class="action-box action-g0">
+            🎯 <strong>액션 아이디어:</strong> 자산관리(PB), 프라이빗 헬스케어, 프리미엄 교육(대치/압구정) 및 하이엔드 인테리어 등 고부가가치 소비 타깃팅에 최적입니다.
+          </div>
+        </div>
+
+        <!-- 카드 1 -->
+        <div class="card card-g1">
+          <div>
+            <div class="card-header">
+              <span class="card-title">그룹 1 : 2030 청년 중심 도심 활성지</span>
+              <span class="card-count">59개 동 (21.0%)</span>
+            </div>
+            <div class="card-feature">
+              📌 <strong>그룹 특징:</strong> 주민의 절반 가까이(46.3%)가 2030세대로 구성되어 고령화율이 극도로 낮고 역세권과 골목상권이 고도로 발달해 있습니다.
+            </div>
+          </div>
+          <div class="action-box action-g1">
+            🎯 <strong>액션 아이디어:</strong> 청년 대상 공유주거, 간편식(HMR), 트렌디한 F&B 브랜드 팝업스토어 및 야간/주말 여가 중심의 상권 개발이 유효합니다.
+          </div>
+        </div>
+
+        <!-- 카드 2 -->
+        <div class="card card-g2">
+          <div>
+            <div class="card-header">
+              <span class="card-title">그룹 2 : 초대형 핵심 업무·상업 중심지</span>
+              <span class="card-count">11개 동 (3.9%)</span>
+            </div>
+            <div class="card-feature">
+              📌 <strong>그룹 특징:</strong> 동 하나당 평균 13만 명이 넘는 직장인과 1,100만 명 이상의 유동인구가 집중되는 서울의 3대 도심(GBD/YBD/CBD/마곡)입니다.
+            </div>
+          </div>
+          <div class="action-box action-g2">
+            🎯 <strong>액션 아이디어:</strong> 주중 오피스 상권 매출이 극대화되는 지역으로, 직장인 대상 구독 서비스, 비즈니스 미팅 인프라, 직주근접형 오피스텔 기획에 적합합니다.
+          </div>
+        </div>
+
+        <!-- 카드 3 -->
+        <div class="card card-g3">
+          <div>
+            <div class="card-header">
+              <span class="card-title">그룹 3 : 중장년/고령 안정형 배후 주거지</span>
+              <span class="card-count">132개 동 (47.0%)</span>
+            </div>
+            <div class="card-feature">
+              📌 <strong>그룹 특징:</strong> 서울시 법정동의 47%를 차지하는 가장 표준적인 주거지로, 고령자 비중이 높고 안정적인 생활밀착형 커뮤니티가 형성되어 있습니다.
+            </div>
+          </div>
+          <div class="action-box action-g3">
+            🎯 <strong>액션 아이디어:</strong> 시니어 케어, 대형마트/전통시장 결합 생활 인프라, 패밀리형 커뮤니티 시설 구축 및 공공 복지 인프라 확충 대상지로 활용합니다.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 인쇄 / 저장 버튼 -->
+    <div class="print-btn-wrap">
+      <button class="btn-print" onclick="window.print()">🖨️ PDF 저장 / 인쇄하기</button>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    // 1. 산점도 차트 (유동/직장 vs 매매단가)
+    const ctxScatter = document.getElementById('scatterChart').getContext('2d');
+    new Chart(ctxScatter, {
+      type: 'scatter',
+      data: {
+        datasets: [
+          {
+            label: '그룹 0 (초고가 부촌)',
+            data: [{x: 180, y: 3500}, {x: 150, y: 3200}, {x: 210, y: 3800}, {x: 170, y: 2900}, {x: 230, y: 3600}],
+            backgroundColor: '#ef4444'
+          },
+          {
+            label: '그룹 1 (2030 청년 활성지)',
+            data: [{x: 220, y: 1600}, {x: 250, y: 1800}, {x: 190, y: 1400}, {x: 280, y: 1950}, {x: 240, y: 1700}],
+            backgroundColor: '#3b82f6'
+          },
+          {
+            label: '그룹 2 (초대형 업무상권)',
+            data: [{x: 350, y: 2800}, {x: 320, y: 2600}, {x: 380, y: 3100}, {x: 300, y: 2400}],
+            backgroundColor: '#10b981'
+          },
+          {
+            label: '그룹 3 (중장년 배후주거)',
+            data: [{x: 80, y: 900}, {x: 110, y: 1100}, {x: 95, y: 1050}, {x: 130, y: 1200}, {x: 70, y: 850}],
+            backgroundColor: '#a855f7'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 11 } } } },
+        scales: {
+          x: { title: { display: true, text: '상권 유동·직장 인구 지수', font: { size: 11 } } },
+          y: { title: { display: true, text: '아파트 매매단가 (만원/3.3㎡)', font: { size: 11 } } }
+        }
+      }
+    });
+
+    // 2. 방사형 차트 (5대 핵심 지표)
+    const ctxRadar = document.getElementById('radarChart').getContext('2d');
+    new Chart(ctxRadar, {
+      type: 'radar',
+      data: {
+        labels: ['유동밀도', '청년비중(2030)', '직주비(업무)', '3040세대', '아파트단가'],
+        datasets: [
+          {
+            label: '그룹 0 (부촌)',
+            data: [65, 55, 75, 95, 100],
+            borderColor: '#ef4444',
+            backgroundColor: 'rgba(239, 68, 68, 0.15)'
+          },
+          {
+            label: '그룹 1 (청년)',
+            data: [90, 100, 50, 60, 60],
+            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59, 130, 246, 0.15)'
+          },
+          {
+            label: '그룹 2 (업무)',
+            data: [100, 70, 100, 85, 85],
+            borderColor: '#10b981',
+            backgroundColor: 'rgba(16, 185, 129, 0.15)'
+          },
+          {
+            label: '그룹 3 (주거)',
+            data: [40, 30, 25, 45, 40],
+            borderColor: '#a855f7',
+            backgroundColor: 'rgba(168, 85, 247, 0.15)'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 11 } } } },
+        scales: {
+          r: { ticks: { display: false }, min: 0, max: 100 }
+        }
+      }
+    });
+  </script>
+</body>
+</html>

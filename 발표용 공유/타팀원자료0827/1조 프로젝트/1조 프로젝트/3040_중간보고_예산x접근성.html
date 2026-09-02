@@ -1,0 +1,370 @@
+<title>예산×접근성 동네 추천 중간보고</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gothic+A1:wght@400;500;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root {
+    --ink: #1c2430;
+    --ink-soft: #4b5563;
+    --ink-faint: #7b8494;
+    --paper: #f1f3f1;
+    --surface: #ffffff;
+    --line: #dbdfdb;
+    --line-strong: #b9c0bb;
+    --gbd: #b8792e;
+    --gbd-soft: #f3e6d3;
+    --ybd: #2c7a79;
+    --ybd-soft: #dcecea;
+    --cbd: #8b3a42;
+    --cbd-soft: #f1dcde;
+    --indigo: #2e3a66;
+    --indigo-soft: #e3e6f0;
+    --good: #2f7a4f;
+    --good-soft: #e0f0e5;
+    --warn: #a8641f;
+    --warn-soft: #f5e7d5;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #e9ecf1; --ink-soft: #a7afc0; --ink-faint: #7d859a;
+      --paper: #14181f; --surface: #1b212b;
+      --line: #2c333f; --line-strong: #3c4453;
+      --gbd: #d99a4e; --gbd-soft: #3a2f1e;
+      --ybd: #56b0ad; --ybd-soft: #1c3230;
+      --cbd: #d1727c; --cbd-soft: #3a2226;
+      --indigo: #8b97c9; --indigo-soft: #232a44;
+      --good: #5fbb84; --good-soft: #1c3226;
+      --warn: #dba15c; --warn-soft: #3a2c1a;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ink: #e9ecf1; --ink-soft: #a7afc0; --ink-faint: #7d859a;
+    --paper: #14181f; --surface: #1b212b;
+    --line: #2c333f; --line-strong: #3c4453;
+    --gbd: #d99a4e; --gbd-soft: #3a2f1e;
+    --ybd: #56b0ad; --ybd-soft: #1c3230;
+    --cbd: #d1727c; --cbd-soft: #3a2226;
+    --indigo: #8b97c9; --indigo-soft: #232a44;
+    --good: #5fbb84; --good-soft: #1c3226;
+    --warn: #dba15c; --warn-soft: #3a2c1a;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Gothic A1', 'Noto Sans KR', sans-serif;
+    line-height: 1.68;
+    -webkit-font-smoothing: antialiased;
+  }
+  .mono { font-family: 'IBM Plex Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+
+  .doc {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 52px 26px 100px;
+  }
+
+  /* ---- Cover block ---- */
+  .cover {
+    padding-bottom: 26px;
+    border-bottom: 2px solid var(--ink);
+    margin-bottom: 40px;
+  }
+  .cover .eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .cover h1 {
+    font-family: 'Gowun Batang', serif;
+    font-weight: 700;
+    font-size: clamp(24px, 3.6vw, 32px);
+    line-height: 1.35;
+    margin: 8px 0 14px;
+    text-wrap: balance;
+  }
+  .cover .meta {
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+  .cover .meta b { color: var(--ink); font-weight: 700; }
+
+  /* ---- Section headers ---- */
+  h2.sec {
+    font-family: 'Gowun Batang', serif;
+    font-size: 20px;
+    font-weight: 700;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin: 46px 0 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--line-strong);
+  }
+  h2.sec:first-of-type { margin-top: 0; }
+  h2.sec .n {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 14px;
+    color: var(--surface);
+    background: var(--ink);
+    padding: 2px 8px;
+    border-radius: 2px;
+    flex: none;
+  }
+  h3.sub {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--indigo);
+    letter-spacing: 0.02em;
+    margin: 28px 0 10px;
+  }
+
+  p { margin: 0 0 12px; max-width: 66ch; }
+  ul.plain { margin: 0 0 14px; padding-left: 20px; }
+  ul.plain li { margin-bottom: 6px; max-width: 64ch; }
+  ul.plain.nested { margin-top: 6px; margin-bottom: 10px; }
+  b { font-weight: 700; color: var(--ink); }
+
+  /* ---- Data tables ---- */
+  .tbl-wrap { overflow-x: auto; margin: 10px 0 18px; }
+  table.data {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+    background: var(--surface);
+  }
+  table.data th {
+    text-align: left;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    background: var(--paper);
+    padding: 9px 10px;
+    border-bottom: 1px solid var(--line-strong);
+    border-top: 1px solid var(--line-strong);
+    white-space: nowrap;
+  }
+  table.data td {
+    padding: 9px 10px;
+    border-bottom: 1px solid var(--line);
+  }
+  table.data td.n { font-family: 'IBM Plex Mono', monospace; text-align: right; }
+  table.data tr:last-child td { border-bottom: 1px solid var(--line-strong); }
+  table.data tr.hl td { background: var(--good-soft); font-weight: 600; }
+
+  .tag {
+    display: inline-block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.04em;
+    padding: 1px 7px;
+    border-radius: 10px;
+    font-weight: 600;
+  }
+  .tag.gbd { background: var(--gbd-soft); color: var(--gbd); }
+  .tag.ybd { background: var(--ybd-soft); color: var(--ybd); }
+  .tag.cbd { background: var(--cbd-soft); color: var(--cbd); }
+
+  /* ---- Callouts (feedback asks) ---- */
+  .ask {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--indigo);
+    border-radius: 3px;
+    padding: 16px 18px;
+    margin: 8px 0 22px;
+  }
+  .ask .q { font-weight: 700; margin-bottom: 6px; }
+  .ask .ex {
+    margin-top: 8px;
+    font-size: 13px;
+    color: var(--ink-soft);
+    display: flex;
+    gap: 8px;
+  }
+  .ask .ex .lbl {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--indigo);
+    flex: none;
+  }
+
+  .note {
+    font-size: 12.5px;
+    color: var(--ink-faint);
+    border-top: 1px dashed var(--line-strong);
+    padding-top: 8px;
+    margin-top: -4px;
+  }
+
+  footer {
+    margin-top: 60px;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-faint);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  @media (max-width: 560px) {
+    table.data { font-size: 12px; }
+  }
+</style>
+
+<div class="doc">
+
+  <div class="cover">
+    <div class="eyebrow">프로젝트 Pre 발표 · 중간보고</div>
+    <h1>3040세대 예산 맞춤형 동네 추천 — 예산으로 갈 수 있는 동네와 그 동네의 직장 접근성 분석</h1>
+    <div class="meta">
+      <span><b>조</b> 1조</span>
+      <span><b>데이터</b> 2026년 서울시 아파트 실거래가 · 수도권 생활이동</span>
+      <span><b>단위</b> 법정동×면적구간 506개 조합</span>
+    </div>
+  </div>
+
+  <h2 class="sec"><span class="n">1</span>프로젝트 주제</h2>
+  <p>예산 조건과 직장 접근성을 함께 고려해, 3040세대가 실제로 검토할 수 있는 서울 동네를 추천하는 것을 목표로 함.</p>
+  <ul class="plain">
+    <li>예산은 추천을 제한하는 조건이 아니라, <b>그 예산 안에서 통근·가격안정성이 가장 좋은 동네를 찾기 위한 필터 기준</b>으로 활용함</li>
+    <li>3대 업무지구(강남·여의도·광화문) 접근성은 특정 직장을 전제하지 않고, 부부가 어느 조합으로 맞벌이를 하든 비교할 수 있는 <b>공통 기준</b>으로 활용함</li>
+  </ul>
+
+  <h2 class="sec"><span class="n">2</span>분석 데이터</h2>
+  <ul class="plain">
+    <li><b>데이터</b>: 국토교통부·서울시 아파트 실거래가, 서울시 수도권 생활이동 데이터(6~7월, 연령대별 출퇴근 이동량·소요시간), 행정안전부 KIKmix 행정동·법정동 코드, 자치구별 가격 흔들림(안정성) 순위표</li>
+    <li><b>실거래가 원본</b>: 88,286건 (2025.03~2026.08 계약분)
+      <ul class="plain nested">
+        <li>취소 거래 2,960건, 건축년도 오류(0으로 기록) 656건, 완전 중복행 1,149건을 제외함</li>
+        <li>최종 정제 표본: <b>83,178건</b></li>
+      </ul>
+    </li>
+    <li><b>분석 단위</b>: 법정동(272개) × 면적구간(전용 59㎡·84㎡ 2종) = <b>506개 조합</b></li>
+    <li>법정동(실거래가)·행정동(생활이동) 코드 불일치를 KIKmix 크로스워크로 보정해, 통근 데이터를 매칭할 수 있는 동 수를 <b>199개 → 418개</b>로 확대함</li>
+  </ul>
+  <div class="tbl-wrap">
+    <table class="data">
+      <tr><th>최종 표본 구분</th><th>조합 수</th><th>비고</th></tr>
+      <tr><td>최종추천가능</td><td class="n">240</td><td>예산·통근·방어력 점수를 모두 산출함</td></tr>
+      <tr><td>참고용</td><td class="n">44</td><td>가격 표본 5~9건, 참고 자료로만 활용함</td></tr>
+      <tr><td>제외</td><td class="n">222</td><td>핵심 자료 미검증·결측 (사유는 3장 참조)</td></tr>
+      <tr><td class="n" colspan="1" style="font-family:'IBM Plex Mono',monospace;color:var(--ink-faint);">합계</td><td class="n">506</td><td></td></tr>
+    </table>
+  </div>
+
+  <h2 class="sec"><span class="n">3</span>데이터 정제 및 EDA</h2>
+  <ul class="plain">
+    <li>예산구간은 가격 중앙값 기준 10개 구간(7억 이하 ~ 50억 초과)으로 분류함</li>
+    <li>업무지구 접근시간이 애초에 <b>자치구 전체 평균</b>(예: 강남구+서초구 전역 40개 동 단순평균)으로 계산되어 있어, 통근시간이 구조적으로 부풀려지는 문제를 확인함
+      <ul class="plain nested">
+        <li>예: 당산2동의 "여의도 통근시간"이 29.8분으로 산출되었으나, 실제 여의도까지는 도보·환승 포함 5~10분 수준임을 확인함</li>
+      </ul>
+    </li>
+    <li>핵심 업무동 — <span class="tag gbd">GBD 역삼1·2동·삼성1·2동·논현1·2동</span> <span class="tag ybd">YBD 여의동</span> <span class="tag cbd">CBD 종로1·2·3·4가동·명동·을지로동</span> — 기준으로 이동량 가중평균 통근시간을 재계산함</li>
+    <li>가격 결정요인 회귀분석에서 학습 데이터로 그대로 채점(train=test)해 R²=0.954로 산출되었던 것을 확인하고, 5-fold 교차검증으로 재검증함</li>
+  </ul>
+  <p class="note">원자료에서 확인할 수 없는 부분 — 판교(분당) 목적지는 시군구 단위까지만 세분화되어 있어, 다른 업무지구처럼 특정 업무동 단위로 좁힐 수 없음. 따라서 본 분석의 '판교 접근성'은 성남시 분당구 전체 기준 값을 의미함.</p>
+
+  <h2 class="sec"><span class="n">4</span>현재까지의 주요 결과</h2>
+
+  <h3 class="sub">4.1 통근시간 재계산 전·후 비교</h3>
+  <div class="tbl-wrap">
+    <table class="data">
+      <tr><th>구분</th><th>단위</th><th>최소</th><th>중앙값</th><th>최대</th></tr>
+      <tr><td>재계산 전(자치구 평균, 미가중)</td><td>행정동 418개</td><td class="n">41.3분</td><td class="n">59.8분</td><td class="n">87.8분</td></tr>
+      <tr><td>재계산 후(핵심동·이동량 가중)</td><td>행정동 418개</td><td class="n">36.3분</td><td class="n">54.6분</td><td class="n">80.9분</td></tr>
+      <tr class="hl"><td>재계산 후 · 본 마트(v3) 기준</td><td>법정동×면적구간 506개</td><td class="n">38.2분</td><td class="n">50.3분</td><td class="n">79.0분</td></tr>
+    </table>
+  </div>
+  <p class="note">본 마트(v3)는 행정동 단위로 보정한 통근시간을 KIKmix 가중치로 법정동 단위로 재환산해 사용함. 그 결과 분포가 행정동 기준과는 소폭 다르게 나타남(506개 조합 중 7개 조합은 통근 자료가 매칭되지 않아 통계에서 제외함).</p>
+
+  <h3 class="sub">4.2 가격 결정요인 분석 <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-faint);font-weight:400;">— 행정동(418개) 단위 별도 분석</span></h3>
+  <p class="note" style="margin-top:-2px;">아래 회귀분석은 v3(법정동×면적구간)가 아니라, 통근시간을 보정하는 과정에서 사용한 행정동 단위(418개) 마트로 수행한 결과임. v3는 이 보정된 통근시간 값만 물려받았고, 회귀모델 자체를 법정동 단위로 다시 학습하지는 않았음.</p>
+  <div class="tbl-wrap">
+    <table class="data">
+      <tr><th>모델·검증 방식</th><th>R²</th></tr>
+      <tr><td>Random Forest, 인샘플(기존 방식)</td><td class="n">0.954</td></tr>
+      <tr class="hl"><td>Random Forest, 5-fold 교차검증(재검증)</td><td class="n">0.528 (±0.151)</td></tr>
+      <tr><td>Ridge, 5-fold 교차검증</td><td class="n">0.409 (±0.064)</td></tr>
+    </table>
+  </div>
+  <p>변수 중요도 1위는 <b>강남(GBD) 접근성</b>으로 나타남 — 기존 50.6%(공선 변수 포함 상태)에서 공선 변수를 제거한 뒤 <b>39.5%</b>로 하향 조정되었으나 1위 순위 자체는 유지됨. 2위는 판교 접근성(16.2%), 3위는 여의도 접근성(8.3%)으로 나타남.</p>
+
+  <h3 class="sub">4.3 동네 유형(K-Means 군집) 분석</h3>
+  <div class="tbl-wrap">
+    <table class="data">
+      <tr><th>군집명</th><th>동 수</th><th>평균 평당단가</th><th>GBD 통근</th><th>직주유입비율</th></tr>
+      <tr><td>핵심 프리미엄 상급지</td><td class="n">43</td><td class="n">11,110만원</td><td class="n">33.1분</td><td class="n">1.2</td></tr>
+      <tr><td>가성비 스마트 주거타운</td><td class="n">166</td><td class="n">5,408만원</td><td class="n">50.8분</td><td class="n">0.6</td></tr>
+      <tr><td>준상급 교통/주거요충지</td><td class="n">5</td><td class="n">5,386만원</td><td class="n">57.3분</td><td class="n">12.5</td></tr>
+      <tr><td>외곽 실속 주거타운</td><td class="n">204</td><td class="n">3,828만원</td><td class="n">68.3분</td><td class="n">0.3</td></tr>
+    </table>
+  </div>
+  <p class="note">준상급 교통/주거요충지(명동·을지로동 등)는 직주유입비율이 12.5로 다른 군집 대비 압도적으로 높아, 거주지보다 업무 밀집지 성격이 강한 지역으로 해석함.</p>
+
+  <h3 class="sub">4.4 예산구간별 최종 추천 현황</h3>
+  <div class="tbl-wrap">
+    <table class="data">
+      <tr><th>제외·참고 사유</th><th>건수</th></tr>
+      <tr><td>가격 안정성 판단 근거 부족(현재고점 미검증)</td><td class="n">116</td></tr>
+      <tr><td>가격 표본 5건 미만</td><td class="n">23</td></tr>
+      <tr><td>가격 방어력 자료 부족</td><td class="n">5</td></tr>
+      <tr><td>그 외 복합 사유(3040 비중 자료 없음 등)</td><td class="n">78</td></tr>
+    </table>
+  </div>
+  <p>최종 종합점수는 <b>통근 35% + 가격 방어력 30% + 3040세대 비중 25% + 거래 유동성 10%</b>로 산출함.</p>
+
+  <h2 class="sec"><span class="n">5</span>강사님께 피드백을 요청드릴 부분</h2>
+
+  <h3 class="sub">5.1 다중 기준 통합 방식</h3>
+  <div class="ask">
+    <div class="q">통근·가격안정성·3040비중·거래유동성 4개 기준을 가중치(35/30/25/10%)로 합쳤는데, 이 방식이 타당한지, 다른 팀처럼 파레토 방식(어느 기준도 밀리지 않는 동네만 추천)이 더 적합한지?</div>
+    <div class="ex"><span class="lbl">예)</span><span>가중치의 임의성 vs 파레토 방식의 해석 용이성 중 어느 쪽을 우선할지</span></div>
+  </div>
+
+  <h3 class="sub">5.2 3대 업무지구 평균 접근성의 편향</h3>
+  <div class="ask">
+    <div class="q">통근 점수를 강남·여의도·광화문 3곳 평균으로 계산하면 한 곳에만 매우 가까운 동네가 유리해질 수 있는데, 사용자가 부부 각자의 근무지를 직접 선택하게 하는 방식이 더 적합할지?</div>
+    <div class="ex"><span class="lbl">예)</span><span>조합별 점수(강남×여의도 등)는 이미 개별 산출해둔 상태 — 이를 UI적으로 어떻게 노출하는 게 좋을지</span></div>
+  </div>
+
+  <h3 class="sub">5.3 회귀분석 검증 방식</h3>
+  <div class="ask">
+    <div class="q">학습 데이터로 그대로 채점 시 R²=0.95, 5-fold 교차검증 시 R²=0.53으로 크게 벌어졌는데, 이 표본 규모(240~506개)에서 어떤 검증 방식과 k값이 적절한지?</div>
+    <div class="ex"><span class="lbl">예)</span><span>표본이 작을 때 신뢰구간을 함께 보고하는 방법</span></div>
+  </div>
+
+  <h3 class="sub">5.4 거래표본이 적은 동네 처리</h3>
+  <div class="ask">
+    <div class="q">506개 조합 중 143개가 가격표본 10건 미만으로 나타났는데, 추천에서 제외하는 대신 신뢰구간을 함께 보여주는 방법이 있을지?</div>
+    <div class="ex"><span class="lbl">예)</span><span>최소표본 기준 설정, 베이지안 축소추정(shrinkage) 등</span></div>
+  </div>
+
+  <h2 class="sec"><span class="n">6</span>기타 질문</h2>
+  <div class="ask">
+    <div class="q">법정동(가격)과 행정동(통근) 두 행정구역 단위를 KIKmix로 병합할 때, 한 법정동이 여러 행정동에 걸치는 21개 동은 거래건수 가중평균으로 처리했는데, 이 방식이 타당한지 더 나은 대안이 있을지?</div>
+  </div>
+  <div class="ask">
+    <div class="q">예산×통근×방어력 3개 축을 한 화면에서 비교하는 대시보드 시각화는 어떤 방식이 적합할지?</div>
+    <div class="ex"><span class="lbl">예)</span><span>산점도+색상 인코딩, 3축 레이더 차트, 필터형 테이블 등</span></div>
+  </div>
+
+  <footer>
+    <span>final_recommendation_mart_v3.csv · 법정동×면적구간 506행</span>
+    <span>1조 빅데이터 프로젝트 · 중간보고</span>
+  </footer>
+
+</div>

@@ -1,0 +1,7204 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3040 맞벌이를 위한 서울 아파트 주거지 최적 분석 대시보드</title>
+  
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  
+  <style>
+    :root {
+      --bg-dark: #0f172a;
+      --panel-bg: rgba(30, 41, 59, 0.95);
+      --panel-card: #1e293b;
+      --panel-hover: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border-color: #334155;
+      
+      --c-cluster1: #10b981;
+      --c-cluster2: #f59e0b;
+      --c-cluster3: #6366f1;
+      --c-cluster0: #ec4899;
+      
+      --accent: #3b82f6;
+      --accent-light: #60a5fa;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      display: flex;
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+    }
+
+    #sidebar {
+      width: 450px;
+      height: 100%;
+      background: var(--panel-bg);
+      backdrop-filter: blur(12px);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      z-index: 1000;
+      box-shadow: 4px 0 24px rgba(0, 0, 0, 0.4);
+    }
+
+    .sidebar-header {
+      padding: 18px 22px;
+      border-bottom: 1px solid var(--border-color);
+      background: rgba(15, 23, 42, 0.6);
+    }
+
+    .header-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      background: rgba(59, 130, 246, 0.15);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      color: var(--accent-light);
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .sidebar-title { font-size: 17.5px; font-weight: 800; line-height: 1.35; color: #ffffff; letter-spacing: -0.3px; }
+    .sidebar-subtitle { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+
+    .filter-section {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background: rgba(30, 41, 59, 0.5);
+    }
+
+    .search-box { position: relative; }
+    .search-box input {
+      width: 100%;
+      padding: 8px 12px 8px 34px;
+      background: #0f172a;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      color: #fff;
+      font-size: 12.5px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .search-box input:focus { border-color: var(--accent); }
+    .search-box i { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 12px; }
+
+    .filter-group { display: flex; flex-direction: column; gap: 5px; }
+    .filter-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; display: flex; justify-space-between; align-items: center; }
+    .btn-group { display: flex; gap: 5px; flex-wrap: wrap; }
+
+    .filter-btn {
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 11.5px;
+      font-weight: 600;
+      background: #0f172a;
+      color: var(--text-muted);
+      border: 1px solid var(--border-color);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .filter-btn:hover { background: var(--panel-hover); color: #fff; }
+    .filter-btn.active { background: var(--accent); color: #ffffff; border-color: var(--accent-light); box-shadow: 0 0 8px rgba(59, 130, 246, 0.4); }
+    .size-btn.active { background: #8b5cf6; border-color: #a78bfa; box-shadow: 0 0 8px rgba(139, 92, 246, 0.4); }
+
+    .stat-banner {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      padding: 10px 20px;
+      background: rgba(15, 23, 42, 0.8);
+      border-bottom: 1px solid var(--border-color);
+    }
+    .stat-item { text-align: center; }
+    .stat-value { font-size: 14.5px; font-weight: 800; color: #38bdf8; }
+    .stat-title { font-size: 10.5px; color: var(--text-muted); margin-top: 1px; }
+
+    .nav-tabs { display: flex; border-bottom: 1px solid var(--border-color); }
+    .nav-tab {
+      flex: 1; text-align: center; padding: 10px 0; font-size: 12.5px; font-weight: 700; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s;
+    }
+    .nav-tab.active { color: #fff; border-bottom-color: var(--accent); background: rgba(59, 130, 246, 0.08); }
+
+    .content-area { flex: 1; overflow-y: auto; padding: 14px 18px; }
+
+    .dong-card {
+      background: var(--panel-card);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin-bottom: 9px;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+    .dong-card:hover { transform: translateY(-2px); border-color: var(--accent); box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3); }
+    .dong-card.selected { border-color: #38bdf8; background: rgba(56, 189, 248, 0.1); }
+
+    .card-cluster-bar { position: absolute; left: 0; top: 0; bottom: 0; width: 4px; }
+    .card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+    .card-title { font-size: 14.5px; font-weight: 800; color: #fff; }
+    .card-rank { font-size: 10.5px; font-weight: 800; padding: 2px 6px; border-radius: 10px; background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+    .card-price { font-size: 15.5px; font-weight: 900; color: #facc15; }
+    .card-cluster-tag { display: inline-block; font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 4px; margin-bottom: 6px; }
+
+    .card-metrics {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 5px;
+      font-size: 11px;
+      background: rgba(15, 23, 42, 0.5);
+      padding: 7px;
+      border-radius: 6px;
+    }
+    .metric-col span:first-child { color: var(--text-muted); display: block; font-size: 10px; }
+    .metric-col span:last-child { color: #e2e8f0; font-weight: 700; }
+
+    .detail-view { display: none; }
+    .back-btn { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: var(--text-muted); cursor: pointer; margin-bottom: 12px; transition: color 0.2s; }
+    .back-btn:hover { color: #fff; }
+
+    .detail-header { background: #0f172a; border-radius: 10px; padding: 14px; border: 1px solid var(--border-color); margin-bottom: 14px; }
+    .detail-dong-title { font-size: 19px; font-weight: 900; color: #fff; }
+    .detail-price-main { font-size: 22px; font-weight: 900; color: #facc15; margin-top: 3px; }
+
+    .section-title { font-size: 12px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin: 14px 0 7px 0; display: flex; align-items: center; gap: 6px; }
+
+    .size-price-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 8px; }
+    .size-price-card { background: var(--panel-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 8px 6px; text-align: center; }
+    .size-price-card.active-size { border-color: #a78bfa; background: rgba(139, 92, 246, 0.15); }
+    .size-label { font-size: 10.5px; color: var(--text-muted); font-weight: 700; }
+    .size-val { font-size: 13.5px; font-weight: 800; color: #facc15; margin-top: 2px; }
+    .size-sub { font-size: 9.5px; color: #94a3b8; margin-top: 2px; }
+
+    .move-stat-box { background: var(--panel-card); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 9px; }
+    .move-bar-row { display: flex; flex-direction: column; gap: 3px; }
+    .move-bar-label { display: flex; justify-content: space-between; font-size: 11.5px; font-weight: 600; }
+    .progress-track { height: 7px; background: #0f172a; border-radius: 4px; overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
+    .fill-morning { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+    .fill-evening { background: linear-gradient(90deg, #ec4899, #f472b6); }
+    .fill-weekend { background: linear-gradient(90deg, #10b981, #34d399); }
+
+    .commute-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .commute-card { background: #0f172a; border: 1px solid var(--border-color); border-radius: 8px; padding: 9px; text-align: center; }
+    .commute-name { font-size: 10.5px; color: var(--text-muted); font-weight: 700; }
+    .commute-time { font-size: 15px; font-weight: 900; color: #38bdf8; margin-top: 2px; }
+
+    #map { flex: 1; height: 100%; background: #0b1120; }
+
+    .custom-dong-marker { display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+    .marker-badge {
+      padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 800; color: #ffffff; white-space: nowrap; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5); border: 1.5px solid rgba(255, 255, 255, 0.8); transition: all 0.2s ease;
+    }
+    .marker-badge:hover { transform: scale(1.15); z-index: 999; }
+
+    .bg-c1 { background: #059669; }
+    .bg-c2 { background: #d97706; }
+    .bg-c3 { background: #4f46e5; }
+    .bg-c0 { background: #db2777; }
+
+    .map-legend {
+      position: absolute; bottom: 24px; right: 24px; background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(8px); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px 14px; z-index: 1000; font-size: 11px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    }
+    .legend-title { font-weight: 800; color: #fff; margin-bottom: 6px; }
+    .legend-item { display: flex; align-items: center; gap: 7px; margin-bottom: 4px; color: #cbd5e1; }
+    .legend-dot { width: 9px; height: 9px; border-radius: 50%; }
+
+    .leaflet-popup-content-wrapper { background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px); color: #fff; border: 1px solid var(--border-color); border-radius: 12px; padding: 4px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+    .leaflet-popup-tip { background: #0f172a; }
+    .leaflet-popup-content { margin: 9px 12px; line-height: 1.4; }
+  </style>
+</head>
+<body>
+
+  <aside id="sidebar">
+    <div class="sidebar-header">
+      <div class="header-badge">
+        <i class="fa-solid fa-house-circle-check"></i> 3040 맞벌이 최적 주거지 지도
+      </div>
+      <h1 class="sidebar-title">서울 아파트 주거지 지도 대시보드</h1>
+      <p class="sidebar-subtitle">평형대 선택 · 예산 5~12억 · 3대 도심 통근 빅데이터</p>
+    </div>
+
+    <div class="stat-banner">
+      <div class="stat-item">
+        <div class="stat-value" id="stat-count">137개</div>
+        <div class="stat-title">분석 동네</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value" id="stat-price">8.8억</div>
+        <div class="stat-title" id="stat-price-label">선택평형 평균시세</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value" id="stat-commute">43.8분</div>
+        <div class="stat-title">평균 통근소요</div>
+      </div>
+    </div>
+
+    <div class="filter-section">
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="searchInput" placeholder="동네명 또는 자치구 검색 (예: 당산, 염창, 사당)" />
+      </div>
+
+      <div class="filter-group">
+        <div class="filter-label">
+          <span>📐 평형대 선택</span>
+          <span id="selectedSizeText" style="color: #a78bfa; font-weight: 700;">전체 평형</span>
+        </div>
+        <div class="btn-group" id="sizeFilter">
+          <button class="filter-btn size-btn active" data-size="all">전체 평형</button>
+          <button class="filter-btn size-btn" data-size="small">소형 (~25평형/59㎡)</button>
+          <button class="filter-btn size-btn" data-size="medium">국민평형 (25~34평형/84㎡)</button>
+          <button class="filter-btn size-btn" data-size="large">중대형 (35평형+/84㎡超)</button>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <div class="filter-label">💰 예산 구간 선택</div>
+        <div class="btn-group" id="budgetFilter">
+          <button class="filter-btn active" data-budget="all">전체 (5~15억)</button>
+          <button class="filter-btn" data-budget="5~7억">5억~7억</button>
+          <button class="filter-btn" data-budget="7~9억">7억~9억</button>
+          <button class="filter-btn" data-budget="9~12억">9억~12억</button>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <div class="filter-label">주거지 군집 세그먼트</div>
+        <div class="btn-group" id="clusterFilter">
+          <button class="filter-btn active" data-cluster="all">전체 유형</button>
+          <button class="filter-btn" data-cluster="1">🌟 그룹 1: 가성비 실속형</button>
+          <button class="filter-btn" data-cluster="2">💰 그룹 2: 광역 허브 & 방어 1위</button>
+          <button class="filter-btn" data-cluster="3">💎 그룹 3: 쿼드러플 도심 거점</button>
+          <button class="filter-btn" data-cluster="0">🛡️ 그룹 4: 학군 배후지</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-tabs">
+      <div class="nav-tab active" id="tabListBtn"><i class="fa-solid fa-list-ol"></i> 추천 순위 리스트</div>
+      <div class="nav-tab" id="tabDetailBtn"><i class="fa-solid fa-chart-pie"></i> 상세 분석 패널</div>
+    </div>
+
+    <div class="content-area">
+      <div id="listView">
+        <div id="dongListContainer"></div>
+      </div>
+
+      <div id="detailView" class="detail-view">
+        <div class="back-btn" id="backToListBtn">
+          <i class="fa-solid fa-arrow-left"></i> 목록으로 돌아가기
+        </div>
+
+        <div class="detail-header">
+          <span class="card-cluster-tag" id="d-cluster-tag">군집 1</span>
+          <div class="detail-dong-title" id="d-title">영등포구 당산동</div>
+          <div class="detail-price-main" id="d-price">11.50억</div>
+          <div style="font-size: 11.5px; color: #94a3b8; margin-top: 2px;">
+            평당 단가: <span id="d-unit-price" style="color: #fff; font-weight: 700;">1,535만원</span> · 종합점수: <span id="d-score" style="color: #38bdf8; font-weight: 800;">58.8점</span>
+          </div>
+        </div>
+
+        <div class="section-title">
+          <i class="fa-solid fa-ruler-combined"></i> 평형대별 실거래 시세 비교
+        </div>
+        <div class="size-price-grid">
+          <div class="size-price-card" id="card-size-small">
+            <div class="size-label">소형 (~59㎡)</div>
+            <div class="size-val" id="d-size-small-price">-</div>
+            <div class="size-sub" id="d-size-small-trades">-</div>
+          </div>
+          <div class="size-price-card" id="card-size-medium">
+            <div class="size-label">국민평형 (59~84㎡)</div>
+            <div class="size-val" id="d-size-medium-price">-</div>
+            <div class="size-sub" id="d-size-medium-trades">-</div>
+          </div>
+          <div class="size-price-card" id="card-size-large">
+            <div class="size-label">중대형 (84㎡+)</div>
+            <div class="size-val" id="d-size-large-price">-</div>
+            <div class="size-sub" id="d-size-large-trades">-</div>
+          </div>
+        </div>
+
+        <div class="section-title">
+          <i class="fa-solid fa-clock-rotate-left"></i> 시간대 및 요일별 이동 비중
+        </div>
+        <div class="move-stat-box">
+          <div class="move-bar-row">
+            <div class="move-bar-label">
+              <span style="color: #60a5fa;"><i class="fa-solid fa-sun"></i> 출근 시간대 (07~09시)</span>
+              <span id="d-move-morning" style="color: #60a5fa;">35.0%</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill fill-morning" id="d-bar-morning" style="width: 35.0%;"></div>
+            </div>
+          </div>
+
+          <div class="move-bar-row">
+            <div class="move-bar-label">
+              <span style="color: #f472b6;"><i class="fa-solid fa-moon"></i> 퇴근 시간대 (18~20시)</span>
+              <span id="d-move-evening" style="color: #f472b6;">28.0%</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill fill-evening" id="d-bar-evening" style="width: 28.0%;"></div>
+            </div>
+          </div>
+
+          <div class="move-bar-row">
+            <div class="move-bar-label">
+              <span style="color: #34d399;"><i class="fa-solid fa-mug-hot"></i> 낮시간 및 주말 활동</span>
+              <span id="d-move-weekend" style="color: #34d399;">37.0%</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill fill-weekend" id="d-bar-weekend" style="width: 37.0%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-title">
+          <i class="fa-solid fa-train-subway"></i> 3대 업무지구 통근 소요시간
+        </div>
+        <div class="commute-grid">
+          <div class="commute-card">
+            <div class="commute-name">GBD (강남)</div>
+            <div class="commute-time" id="d-gbd-time">15.0분</div>
+          </div>
+          <div class="commute-card">
+            <div class="commute-name">YBD (여의도)</div>
+            <div class="commute-time" id="d-ybd-time" style="color: #10b981;">5.0분</div>
+          </div>
+          <div class="commute-card">
+            <div class="commute-name">CBD (도심)</div>
+            <div class="commute-time" id="d-cbd-time">20.0분</div>
+          </div>
+        </div>
+
+        <div class="section-title">
+          <i class="fa-solid fa-shield-halved"></i> 3040 맞벌이 및 자산 안정성
+        </div>
+        <div class="move-stat-box">
+          <div style="display: flex; justify-content: space-between; font-size: 12px;">
+            <span style="color: #94a3b8;">3040 인구 비중:</span>
+            <span id="d-p3040" style="font-weight: 700; color: #fff;">38.5%</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 12px;">
+            <span style="color: #94a3b8;">10대 이하 자녀 비중:</span>
+            <span id="d-pchild" style="font-weight: 700; color: #fff;">8.5%</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 12px;">
+            <span style="color: #94a3b8;">금리충격 하락기 낙폭:</span>
+            <span id="d-drop" style="font-weight: 700; color: #38bdf8;">-12.0%</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 12px;">
+            <span style="color: #94a3b8;">저점 대비 회복률:</span>
+            <span id="d-rec" style="font-weight: 700; color: #facc15;">+13.1%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main id="map"></main>
+
+  <div class="map-legend">
+    <div class="legend-title"><i class="fa-solid fa-layer-group"></i> 주거지 클러스터</div>
+    <div class="legend-item"><div class="legend-dot" style="background: var(--c-cluster1);"></div> 그룹 1: 가성비 실속형</div>
+    <div class="legend-item"><div class="legend-dot" style="background: var(--c-cluster2);"></div> 그룹 2: 광역 허브 & 방어 1위</div>
+    <div class="legend-item"><div class="legend-dot" style="background: var(--c-cluster3);"></div> 그룹 3: 쿼드러플 도심 거점</div>
+    <div class="legend-item"><div class="legend-dot" style="background: var(--c-cluster0);"></div> 그룹 4: 자녀 보육 & 학군 배후</div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <script>
+    const map = L.map('map', {
+      center: [37.5400, 126.9780],
+      zoom: 11,
+      zoomControl: false
+    });
+
+    L.control.zoom({ position: 'topright' }).addTo(map);
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; OpenStreetMap &copy; CARTO',
+      subdomains: 'abcd',
+      maxZoom: 19
+    }).addTo(map);
+
+    let allData = [];
+    let markersLayer = L.layerGroup().addTo(map);
+    let markerMap = new Map();
+
+    const clusterColors = {
+      1: { bg: 'bg-c1', hex: '#10b981', tag: '그룹 1: 가성비 실속형', tagBg: 'rgba(16, 185, 129, 0.15)', tagColor: '#34d399' },
+      2: { bg: 'bg-c2', hex: '#f59e0b', tag: '그룹 2: 광역 허브 & 방어 1위 ★', tagBg: 'rgba(245, 158, 11, 0.15)', tagColor: '#fbbf24' },
+      3: { bg: 'bg-c3', hex: '#6366f1', tag: '그룹 3: 쿼드러플 도심 거점', tagBg: 'rgba(99, 102, 241, 0.15)', tagColor: '#818cf8' },
+      0: { bg: 'bg-c0', hex: '#ec4899', tag: '그룹 4: 학군 배후 주거지', tagBg: 'rgba(236, 72, 153, 0.15)', tagColor: '#f472b6' }
+    };
+
+    const embeddedData = [
+  {
+    "id": 1,
+    "gu": "강동구",
+    "dong": "강일동",
+    "lat": 37.5651,
+    "lon": 127.1738,
+    "tier": "9억~12억 (확장/선호)",
+    "price_eok": 10.28,
+    "unit_price": 1397.3,
+    "score": 30.1,
+    "commute_avg": 80.0,
+    "commute_gbd": 74.1,
+    "commute_ybd": 87.4,
+    "commute_cbd": 78.3,
+    "p3040": 45.5,
+    "p_child": 6.6,
+    "drop_rate": -33.9,
+    "rec_rate": 67.5,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 279,
+    "size_stats": {
+      "all": {
+        "price_eok": 10.28,
+        "unit_price": 1397.3,
+        "trades": 279
+      },
+      "small": {
+        "price_eok": 8.74,
+        "unit_price": 1537.0,
+        "trades": 111
+      },
+      "medium": {
+        "price_eok": 10.28,
+        "unit_price": 1397.3,
+        "trades": 139
+      },
+      "large": {
+        "price_eok": 13.36,
+        "unit_price": 1257.6,
+        "trades": 27
+      }
+    }
+  },
+  {
+    "id": 2,
+    "gu": "강동구",
+    "dong": "길동",
+    "lat": 37.5359,
+    "lon": 127.1434,
+    "tier": "7억~9억 (표준/안정)",
+    "price_eok": 8.22,
+    "unit_price": 1177.0,
+    "score": 36.8,
+    "commute_avg": 65.4,
+    "commute_gbd": 57.7,
+    "commute_ybd": 76.5,
+    "commute_cbd": 62.0,
+    "p3040": 30.6,
+    "p_child": 9.6,
+    "drop_rate": -6.7,
+    "rec_rate": 22.0,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 599,
+    "size_stats": {
+      "all": {
+        "price_eok": 8.22,
+        "unit_price": 1177.0,
+        "trades": 599
+      },
+      "small": {
+        "price_eok": 6.99,
+        "unit_price": 1294.7,
+        "trades": 239
+      },
+      "medium": {
+        "price_eok": 8.22,
+        "unit_price": 1177.0,
+        "trades": 299
+      },
+      "large": {
+        "price_eok": 10.69,
+        "unit_price": 1059.3,
+        "trades": 59
+      }
+    }
+  },
+  {
+    "id": 3,
+    "gu": "강동구",
+    "dong": "성내동",
+    "lat": 37.5302,
+    "lon": 127.1291,
+    "tier": "7억~9억 (표준/안정)",
+    "price_eok": 8.9,
+    "unit_price": 1266.8,
+    "score": 40.0,
+    "commute_avg": 62.6,
+    "commute_gbd": 53.7,
+    "commute_ybd": 73.5,
+    "commute_cbd": 60.7,
+    "p3040": 31.2,
+    "p_child": 10.0,
+    "drop_rate": -16.1,
+    "rec_rate": 39.4,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 467,
+    "size_stats": {
+      "all": {
+        "price_eok": 8.9,
+        "unit_price": 1266.8,
+        "trades": 467
+      },
+      "small": {
+        "price_eok": 7.57,
+        "unit_price": 1393.5,
+        "trades": 186
+      },
+      "medium": {
+        "price_eok": 8.9,
+        "unit_price": 1266.8,
+        "trades": 233
+      },
+      "large": {
+        "price_eok": 11.57,
+        "unit_price": 1140.1,
+        "trades": 46
+      }
+    }
+  },
+  {
+    "id": 4,
+    "gu": "강동구",
+    "dong": "천호동",
+    "lat": 37.5431,
+    "lon": 127.1324,
+    "tier": "7억~9억 (표준/안정)",
+    "price_eok": 8.41,
+    "unit_price": 1239.7,
+    "score": 36.7,
+    "commute_avg": 64.2,
+    "commute_gbd": 55.8,
+    "commute_ybd": 77.2,
+    "commute_cbd": 59.5,
+    "p3040": 31.8,
+    "p_child": 9.1,
+    "drop_rate": -19.4,
+    "rec_rate": 16.5,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 694,
+    "size_stats": {
+      "all": {
+        "price_eok": 8.41,
+        "unit_price": 1239.7,
+        "trades": 694
+      },
+      "small": {
+        "price_eok": 7.15,
+        "unit_price": 1363.7,
+        "trades": 277
+      },
+      "medium": {
+        "price_eok": 8.41,
+        "unit_price": 1239.7,
+        "trades": 347
+      },
+      "large": {
+        "price_eok": 10.93,
+        "unit_price": 1115.7,
+        "trades": 69
+      }
+    }
+  },
+  {
+    "id": 5,
+    "gu": "강북구",
+    "dong": "미아동",
+    "lat": 37.6203,
+    "lon": 127.0237,
+    "tier": "7억~9억 (표준/안정)",
+    "price_eok": 7.32,
+    "unit_price": 1000.3,
+    "score": 33.6,
+    "commute_avg": 63.3,
+    "commute_gbd": 71.4,
+    "commute_ybd": 69.7,
+    "commute_cbd": 48.9,
+    "p3040": 24.4,
+    "p_child": 7.3,
+    "drop_rate": -20.0,
+    "rec_rate": 13.4,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 1159,
+    "size_stats": {
+      "all": {
+        "price_eok": 7.32,
+        "unit_price": 1000.3,
+        "trades": 1159
+      },
+      "small": {
+        "price_eok": 6.22,
+        "unit_price": 1100.3,
+        "trades": 463
+      },
+      "medium": {
+        "price_eok": 7.32,
+        "unit_price": 1000.3,
+        "trades": 579
+      },
+      "large": {
+        "price_eok": 9.52,
+        "unit_price": 900.3,
+        "trades": 115
+      }
+    }
+  },
+  {
+    "id": 6,
+    "gu": "강북구",
+    "dong": "번동",
+    "lat": 37.6319,
+    "lon": 127.0365,
+    "tier": "5억~7억 (실속/입문)",
+    "price_eok": 5.17,
+    "unit_price": 799.4,
+    "score": 29.7,
+    "commute_avg": 67.3,
+    "commute_gbd": 75.4,
+    "commute_ybd": 73.2,
+    "commute_cbd": 53.3,
+    "p3040": 27.6,
+    "p_child": 7.7,
+    "drop_rate": -22.0,
+    "rec_rate": 21.6,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 248,
+    "size_stats": {
+      "all": {
+        "price_eok": 5.17,
+        "unit_price": 799.4,
+        "trades": 248
+      },
+      "small": {
+        "price_eok": 4.39,
+        "unit_price": 879.3,
+        "trades": 99
+      },
+      "medium": {
+        "price_eok": 5.17,
+        "unit_price": 799.4,
+        "trades": 124
+      },
+      "large": {
+        "price_eok": 6.72,
+        "unit_price": 719.5,
+        "trades": 24
+      }
+    }
+  },
+  {
+    "id": 7,
+    "gu": "강서구",
+    "dong": "가양동",
+    "lat": 37.5584,
+    "lon": 126.8579,
+    "tier": "7억~9억 (표준/안정)",
+    "price_eok": 7.6,
+    "unit_price": 1532.0,
+    "score": 52.1,
+    "commute_avg": 54.2,
+    "commute_gbd": 65.5,
+    "commute_ybd": 37.1,
+    "commute_cbd": 60.1,
+    "p3040": 47.6,
+    "p_child": 6.4,
+    "drop_rate": -33.9,
+    "rec_rate": 37.4,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 822,
+    "size_stats": {
+      "all": {
+        "price_eok": 7.6,
+        "unit_price": 1532.0,
+        "trades": 822
+      },
+      "small": {
+        "price_eok": 6.46,
+        "unit_price": 1685.2,
+        "trades": 328
+      },
+      "medium": {
+        "price_eok": 7.6,
+        "unit_price": 1532.0,
+        "trades": 411
+      },
+      "large": {
+        "price_eok": 9.88,
+        "unit_price": 1378.8,
+        "trades": 82
+      }
+    }
+  },
+  {
+    "id": 8,
+    "gu": "강서구",
+    "dong": "공항동",
+    "lat": 37.5656,
+    "lon": 126.8134,
+    "tier": "5억~7억 (실속/입문)",
+    "price_eok": 6.62,
+    "unit_price": 1259.2,
+    "score": 41.6,
+    "commute_avg": 63.3,
+    "commute_gbd": 75.1,
+    "commute_ybd": 47.7,
+    "commute_cbd": 67.0,
+    "p3040": 31.6,
+    "p_child": 8.4,
+    "drop_rate": 11.1,
+    "rec_rate": 80.0,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 60,
+    "size_stats": {
+      "all": {
+        "price_eok": 6.62,
+        "unit_price": 1259.2,
+        "trades": 60
+      },
+      "small": {
+        "price_eok": 5.63,
+        "unit_price": 1385.1,
+        "trades": 24
+      },
+      "medium": {
+        "price_eok": 6.62,
+        "unit_price": 1259.2,
+        "trades": 30
+      },
+      "large": {
+        "price_eok": 8.61,
+        "unit_price": 1133.3,
+        "trades": 6
+      }
+    }
+  },
+  {
+    "id": 9,
+    "gu": "강서구",
+    "dong": "내발산동",
+    "lat": 37.5515,
+    "lon": 126.8344,
+    "tier": "9억~12억 (확장/선호)",
+    "price_eok": 9.3,
+    "unit_price": 1384.1,
+    "score": 42.9,
+    "commute_avg": 62.3,
+    "commute_gbd": 76.3,
+    "commute_ybd": 46.4,
+    "commute_cbd": 64.2,
+    "p3040": 29.8,
+    "p_child": 18.0,
+    "drop_rate": -10.2,
+    "rec_rate": 21.8,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 523,
+    "size_stats": {
+      "all": {
+        "price_eok": 9.3,
+        "unit_price": 1384.1,
+        "trades": 523
+      },
+      "small": {
+        "price_eok": 7.91,
+        "unit_price": 1522.5,
+        "trades": 209
+      },
+      "medium": {
+        "price_eok": 9.3,
+        "unit_price": 1384.1,
+        "trades": 261
+      },
+      "large": {
+        "price_eok": 12.09,
+        "unit_price": 1245.7,
+        "trades": 52
+      }
+    }
+  },
+  {
+    "id": 10,
+    "gu": "강서구",
+    "dong": "등촌동",
+    "lat": 37.557,
+    "lon": 126.8517,
+    "tier": "7억~9억 (표준/안정)",
+    "price_eok": 8.1,
+    "unit_price": 1203.1,
+    "score": 46.9,
+    "commute_avg": 56.2,
+    "commute_gbd": 68.0,
+    "commute_ybd": 38.4,
+    "commute_cbd": 62.4,
+    "p3040": 37.8,
+    "p_child": 9.1,
+    "drop_rate": -24.4,
+    "rec_rate": 22.6,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 937,
+    "size_stats": {
+      "all": {
+        "price_eok": 8.1,
+        "unit_price": 1203.1,
+        "trades": 937
+      },
+      "small": {
+        "price_eok": 6.88,
+        "unit_price": 1323.4,
+        "trades": 374
+      },
+      "medium": {
+        "price_eok": 8.1,
+        "unit_price": 1203.1,
+        "trades": 468
+      },
+      "large": {
+        "price_eok": 10.53,
+        "unit_price": 1082.8,
+        "trades": 93
+      }
+    }
+  },
+  {
+    "id": 11,
+    "gu": "강서구",
+    "dong": "방화동",
+    "lat": 37.5691,
+    "lon": 126.813,
+    "tier": "5억~7억 (실속/입문)",
+    "price_eok": 5.7,
+    "unit_price": 1010.1,
+    "score": 36.3,
+    "commute_avg": 65.0,
+    "commute_gbd": 76.8,
+    "commute_ybd": 49.0,
+    "commute_cbd": 69.1,
+    "p3040": 30.8,
+    "p_child": 10.2,
+    "drop_rate": -15.8,
+    "rec_rate": 15.2,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 710,
+    "size_stats": {
+      "all": {
+        "price_eok": 5.7,
+        "unit_price": 1010.1,
+        "trades": 710
+      },
+      "small": {
+        "price_eok": 4.84,
+        "unit_price": 1111.1,
+        "trades": 284
+      },
+      "medium": {
+        "price_eok": 5.7,
+        "unit_price": 1010.1,
+        "trades": 355
+      },
+      "large": {
+        "price_eok": 7.41,
+        "unit_price": 909.1,
+        "trades": 71
+      }
+    }
+  },
+  {
+    "id": 12,
+    "gu": "강서구",
+    "dong": "염창동",
+    "lat": 37.5551,
+    "lon": 126.8684,
+    "tier": "9억~12억 (확장/선호)",
+    "price_eok": 9.0,
+    "unit_price": 1236.7,
+    "score": 55.4,
+    "commute_avg": 49.4,
+    "commute_gbd": 61.4,
+    "commute_ybd": 31.3,
+    "commute_cbd": 55.4,
+    "p3040": 44.6,
+    "p_child": 8.2,
+    "drop_rate": -25.2,
+    "rec_rate": 24.5,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 855,
+    "size_stats": {
+      "all": {
+        "price_eok": 9.0,
+        "unit_price": 1236.7,
+        "trades": 855
+      },
+      "small": {
+        "price_eok": 7.65,
+        "unit_price": 1360.4,
+        "trades": 342
+      },
+      "medium": {
+        "price_eok": 9.0,
+        "unit_price": 1236.7,
+        "trades": 427
+      },
+      "large": {
+        "price_eok": 11.7,
+        "unit_price": 1113.0,
+        "trades": 85
+      }
+    }
+  },
+  {
+    "id": 13,
+    "gu": "강서구",
+    "dong": "화곡동",
+    "lat": 37.5406,
+    "lon": 126.8468,
+    "tier": "9억~12억 (확장/선호)",
+    "price_eok": 10.65,
+    "unit_price": 1094.1,
+    "score": 43.0,
+    "commute_avg": 59.6,
+    "commute_gbd": 73.7,
+    "commute_ybd": 42.0,
+    "commute_cbd": 63.1,
+    "p3040": 33.5,
+    "p_child": 9.7,
+    "drop_rate": 0.1,
+    "rec_rate": 5.6,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 944,
+    "size_stats": {
+      "all": {
+        "price_eok": 10.65,
+        "unit_price": 1094.1,
+        "trades": 944
+      },
+      "small": {
+        "price_eok": 9.05,
+        "unit_price": 1203.5,
+        "trades": 377
+      },
+      "medium": {
+        "price_eok": 10.65,
+        "unit_price": 1094.1,
+        "trades": 472
+      },
+      "large": {
+        "price_eok": 13.85,
+        "unit_price": 984.7,
+        "trades": 94
+      }
+    }
+  },
+  {
+    "id": 14,
+    "gu": "관악구",
+    "dong": "남현동",
+    "lat": 37.4742,
+    "lon": 126.9774,
+    "tier": "7억~9억 (표준/안정)",
+    "price_eok": 7.22,
+    "unit_price": 1011.4,
+    "score": 48.8,
+    "commute_avg": 45.0,
+    "commute_gbd": 34.2,
+    "commute_ybd": 48.5,
+    "commute_cbd": 52.2,
+    "p3040": 32.9,
+    "p_child": 6.7,
+    "drop_rate": -6.3,
+    "rec_rate": 7.4,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 75,
+    "size_stats": {
+      "all": {
+        "price_eok": 7.22,
+        "unit_price": 1011.4,
+        "trades": 75
+      },
+      "small": {
+        "price_eok": 6.14,
+        "unit_price": 1112.5,
+        "trades": 30
+      },
+      "medium": {
+        "price_eok": 7.22,
+        "unit_price": 1011.4,
+        "trades": 37
+      },
+      "large": {
+        "price_eok": 9.39,
+        "unit_price": 910.3,
+        "trades": 7
+      }
+    }
+  },
+  {
+    "id": 15,
+    "gu": "관악구",
+    "dong": "봉천동",
+    "lat": 37.4833,
+    "lon": 126.9516,
+    "tier": "9억~12억 (확장/선호)",
+    "price_eok": 9.0,
+    "unit_price": 1211.4,
+    "score": 50.4,
+    "commute_avg": 49.2,
+    "commute_gbd": 42.9,
+    "commute_ybd": 43.6,
+    "commute_cbd": 61.1,
+    "p3040": 31.7,
+    "p_child": 6.3,
+    "drop_rate": -19.5,
+    "rec_rate": 22.1,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 1930,
+    "size_stats": {
+      "all": {
+        "price_eok": 9.0,
+        "unit_price": 1211.4,
+        "trades": 1930
+      },
+      "small": {
+        "price_eok": 7.65,
+        "unit_price": 1332.5,
+        "trades": 772
+      },
+      "medium": {
+        "price_eok": 9.0,
+        "unit_price": 1211.4,
+        "trades": 965
+      },
+      "large": {
+        "price_eok": 11.7,
+        "unit_price": 1090.3,
+        "trades": 193
+      }
+    }
+  },
+  {
+    "id": 16,
+    "gu": "관악구",
+    "dong": "신림동",
+    "lat": 37.4764,
+    "lon": 126.925,
+    "tier": "5억~7억 (실속/입문)",
+    "price_eok": 6.35,
+    "unit_price": 900.2,
+    "score": 45.7,
+    "commute_avg": 53.9,
+    "commute_gbd": 52.5,
+    "commute_ybd": 43.0,
+    "commute_cbd": 66.3,
+    "p3040": 32.4,
+    "p_child": 6.2,
+    "drop_rate": -9.9,
+    "rec_rate": 18.6,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 894,
+    "size_stats": {
+      "all": {
+        "price_eok": 6.35,
+        "unit_price": 900.2,
+        "trades": 894
+      },
+      "small": {
+        "price_eok": 5.4,
+        "unit_price": 990.2,
+        "trades": 357
+      },
+      "medium": {
+        "price_eok": 6.35,
+        "unit_price": 900.2,
+        "trades": 447
+      },
+      "large": {
+        "price_eok": 8.25,
+        "unit_price": 810.2,
+        "trades": 89
+      }
+    }
+  },
+  {
+    "id": 17,
+    "gu": "광진구",
+    "dong": "군자동",
+    "lat": 37.5525,
+    "lon": 127.0749,
+    "tier": "7억~9억 (표준/안정)",
+    "price_eok": 7.68,
+    "unit_price": 1132.3,
+    "score": 45.1,
+    "commute_avg": 51.4,
+    "commute_gbd": 44.4,
+    "commute_ybd": 63.3,
+    "commute_cbd": 46.6,
+    "p3040": 31.6,
+    "p_child": 7.0,
+    "drop_rate": -11.8,
+    "rec_rate": 47.9,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 42,
+    "size_stats": {
+      "all": {
+        "price_eok": 7.68,
+        "unit_price": 1132.3,
+        "trades": 42
+      },
+      "small": {
+        "price_eok": 6.53,
+        "unit_price": 1245.5,
+        "trades": 16
+      },
+      "medium": {
+        "price_eok": 7.68,
+        "unit_price": 1132.3,
+        "trades": 21
+      },
+      "large": {
+        "price_eok": 9.98,
+        "unit_price": 1019.1,
+        "trades": 4
+      }
+    }
+  },
+  {
+    "id": 18,
+    "gu": "구로구",
+    "dong": "개봉동",
+    "lat": 37.4931,
+    "lon": 126.8529,
+    "tier": "5억~7억 (실속/입문)",
+    "price_eok": 6.85,
+    "unit_price": 958.7,
+    "score": 37.5,
+    "commute_avg": 62.0,
+    "commute_gbd": 73.6,
+    "commute_ybd": 46.3,
+    "commute_cbd": 66.1,
+    "p3040": 26.7,
+    "p_child": 9.6,
+    "drop_rate": -9.9,
+    "rec_rate": 10.1,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 1073,
+    "size_stats": {
+      "all": {
+        "price_eok": 6.85,
+        "unit_price": 958.7,
+        "trades": 1073
+      },
+      "small": {
+        "price_eok": 5.82,
+        "unit_price": 1054.6,
+        "trades": 429
+      },
+      "medium": {
+        "price_eok": 6.85,
+        "unit_price": 958.7,
+        "trades": 536
+      },
+      "large": {
+        "price_eok": 8.9,
+        "unit_price": 862.8,
+        "trades": 107
+      }
+    }
+  },
+  {
+    "id": 19,
+    "gu": "구로구",
+    "dong": "고척동",
+    "lat": 37.5026,
+    "lon": 126.8578,
+    "tier": "5억~7억 (실속/입문)",
+    "price_eok": 6.45,
+    "unit_price": 878.9,
+    "score": 35.3,
+    "commute_avg": 61.6,
+    "commute_gbd": 75.8,
+    "commute_ybd": 40.4,
+    "commute_cbd": 68.6,
+    "p3040": 25.9,
+    "p_child": 9.7,
+    "drop_rate": -17.6,
+    "rec_rate": 8.0,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 521,
+    "size_stats": {
+      "all": {
+        "price_eok": 6.45,
+        "unit_price": 878.9,
+        "trades": 521
+      },
+      "small": {
+        "price_eok": 5.48,
+        "unit_price": 966.8,
+        "trades": 208
+      },
+      "medium": {
+        "price_eok": 6.45,
+        "unit_price": 878.9,
+        "trades": 260
+      },
+      "large": {
+        "price_eok": 8.38,
+        "unit_price": 791.0,
+        "trades": 52
+      }
+    }
+  },
+  {
+    "id": 20,
+    "gu": "구로구",
+    "dong": "구로동",
+    "lat": 37.4927,
+    "lon": 126.8893,
+    "tier": "5억~7억 (실속/입문)",
+    "price_eok": 6.23,
+    "unit_price": 955.4,
+    "score": 48.9,
+    "commute_avg": 51.0,
+    "commute_gbd": 60.1,
+    "commute_ybd": 34.1,
+    "commute_cbd": 58.9,
+    "p3040": 29.8,
+    "p_child": 7.0,
+    "drop_rate": -2.4,
+    "rec_rate": 16.8,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 1493,
+    "size_stats": {
+      "all": {
+        "price_eok": 6.23,
+        "unit_price": 955.4,
+        "trades": 1493
+      },
+      "small": {
+        "price_eok": 5.3,
+        "unit_price": 1050.9,
+        "trades": 597
+      },
+      "medium": {
+        "price_eok": 6.23,
+        "unit_price": 955.4,
+        "trades": 746
+      },
+      "large": {
+        "price_eok": 8.1,
+        "unit_price": 859.9,
+        "trades": 149
+      }
+    }
+  },
+  {
+    "id": 21,
+    "gu": "구로구",
+    "dong": "신도림동",
+    "lat": 37.5098,
+    "lon": 126.8795,
+    "tier": "9억~12억 (확장/선호)",
+    "price_eok": 10.3,
+    "unit_price": 1457.1,
+    "score": 55.4,
+    "commute_avg": 46.3,
+    "commute_gbd": 60.7,
+    "commute_ybd": 25.7,
+    "commute_cbd": 52.6,
+    "p3040": 32.2,
+    "p_child": 9.9,
+    "drop_rate": -11.2,
+    "rec_rate": 38.0,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 701,
+    "size_stats": {
+      "all": {
+        "price_eok": 10.3,
+        "unit_price": 1457.1,
+        "trades": 701
+      },
+      "small": {
+        "price_eok": 8.76,
+        "unit_price": 1602.8,
+        "trades": 280
+      },
+      "medium": {
+        "price_eok": 10.3,
+        "unit_price": 1457.1,
+        "trades": 350
+      },
+      "large": {
+        "price_eok": 13.39,
+        "unit_price": 1311.4,
+        "trades": 70
+      }
+    }
+  },
+  {
+    "id": 22,
+    "gu": "구로구",
+    "dong": "오류동",
+    "lat": 37.4932,
+    "lon": 126.8405,
+    "tier": "5억~7억 (실속/입문)",
+    "price_eok": 5.52,
+    "unit_price": 780.8,
+    "score": 38.9,
+    "commute_avg": 63.1,
+    "commute_gbd": 74.0,
+    "commute_ybd": 47.9,
+    "commute_cbd": 67.4,
+    "p3040": 34.3,
+    "p_child": 8.2,
+    "drop_rate": 2.0,
+    "rec_rate": 18.6,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 284,
+    "size_stats": {
+      "all": {
+        "price_eok": 5.52,
+        "unit_price": 780.8,
+        "trades": 284
+      },
+      "small": {
+        "price_eok": 4.69,
+        "unit_price": 858.9,
+        "trades": 113
+      },
+      "medium": {
+        "price_eok": 5.52,
+        "unit_price": 780.8,
+        "trades": 142
+      },
+      "large": {
+        "price_eok": 7.18,
+        "unit_price": 702.7,
+        "trades": 28
+      }
+    }
+  },
+  {
+    "id": 23,
+    "gu": "구로구",
+    "dong": "온수동",
+    "lat": 37.4959,
+    "lon": 126.8349,
+    "tier": "7억~9억 (표준/안정)",
+    "price_eok": 7.78,
+    "unit_price": 941.5,
+    "score": 33.7,
+    "commute_avg": 64.7,
+    "commute_gbd": 73.9,
+    "commute_ybd": 49.9,
+    "commute_cbd": 70.2,
+    "p3040": 29.9,
+    "p_child": 9.6,
+    "drop_rate": NaN,
+    "rec_rate": 37.9,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 69,
+    "size_stats": {
+      "all": {
+        "price_eok": 7.78,
+        "unit_price": 941.5,
+        "trades": 69
+      },
+      "small": {
+        "price_eok": 6.61,
+        "unit_price": 1035.7,
+        "trades": 27
+      },
+      "medium": {
+        "price_eok": 7.78,
+        "unit_price": 941.5,
+        "trades": 34
+      },
+      "large": {
+        "price_eok": 10.11,
+        "unit_price": 847.4,
+        "trades": 6
+      }
+    }
+  },
+  {
+    "id": 24,
+    "gu": "구로구",
+    "dong": "천왕동",
+    "lat": 37.4902,
+    "lon": 126.8378,
+    "tier": "7억~9억 (표준/안정)",
+    "price_eok": 7.45,
+    "unit_price": 941.5,
+    "score": 28.5,
+    "commute_avg": 64.7,
+    "commute_gbd": 73.0,
+    "commute_ybd": 51.5,
+    "commute_cbd": 69.5,
+    "p3040": 25.1,
+    "p_child": 9.7,
+    "drop_rate": -27.8,
+    "rec_rate": 17.2,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 65,
+    "size_stats": {
+      "all": {
+        "price_eok": 7.45,
+        "unit_price": 941.5,
+        "trades": 65
+      },
+      "small": {
+        "price_eok": 6.33,
+        "unit_price": 1035.7,
+        "trades": 26
+      },
+      "medium": {
+        "price_eok": 7.45,
+        "unit_price": 941.5,
+        "trades": 32
+      },
+      "large": {
+        "price_eok": 9.69,
+        "unit_price": 847.4,
+        "trades": 6
+      }
+    }
+  },
+  {
+    "id": 25,
+    "gu": "금천구",
+    "dong": "가산동",
+    "lat": 37.4778,
+    "lon": 126.8882,
+    "tier": "5억~7억 (실속/입문)",
+    "price_eok": 6.18,
+    "unit_price": 818.6,
+    "score": 39.3,
+    "commute_avg": 59.1,
+    "commute_gbd": 64.3,
+    "commute_ybd": 45.6,
+    "commute_cbd": 67.5,
+    "p3040": 41.2,
+    "p_child": 2.5,
+    "drop_rate": 3.8,
+    "rec_rate": -0.2,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 118,
+    "size_stats": {
+      "all": {
+        "price_eok": 6.18,
+        "unit_price": 818.6,
+        "trades": 118
+      },
+      "small": {
+        "price_eok": 5.25,
+        "unit_price": 900.5,
+        "trades": 47
+      },
+      "medium": {
+        "price_eok": 6.18,
+        "unit_price": 818.6,
+        "trades": 59
+      },
+      "large": {
+        "price_eok": 8.03,
+        "unit_price": 736.7,
+        "trades": 11
+      }
+    }
+  },
+  {
+    "id": 26,
+    "gu": "금천구",
+    "dong": "독산동",
+    "lat": 37.469,
+    "lon": 126.9,
+    "tier": "5억~7억 (실속/입문)",
+    "price_eok": 6.78,
+    "unit_price": 878.8,
+    "score": 37.9,
+    "commute_avg": 58.9,
+    "commute_gbd": 62.6,
+    "commute_ybd": 44.9,
+    "commute_cbd": 69.3,
+    "p3040": 31.6,
+    "p_child": 7.9,
+    "drop_rate": -7.9,
+    "rec_rate": -16.8,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 556,
+    "size_stats": {
+      "all": {
+        "price_eok": 6.78,
+        "unit_price": 878.8,
+        "trades": 556
+      },
+      "small": {
+        "price_eok": 5.76,
+        "unit_price": 966.7,
+        "trades": 222
+      },
+      "medium": {
+        "price_eok": 6.78,
+        "unit_price": 878.8,
+        "trades": 278
+      },
+      "large": {
+        "price_eok": 8.81,
+        "unit_price": 790.9,
+        "trades": 55
+      }
+    }
+  },
+  {
+    "id": 27,
+    "gu": "금천구",
+    "dong": "시흥동",
+    "lat": 37.451,
+    "lon": 126.9069,
+    "tier": "5억~7억 (실속/입문)",
+    "price_eok": 5.2,
+    "unit_price": 720.1,
+    "score": 33.0,
+    "commute_avg": 64.3,
+    "commute_gbd": 66.9,
+    "commute_ybd": 50.6,
+    "commute_cbd": 75.4,
+    "p3040": 25.5,
+    "p_child": 9.1,
+    "drop_rate": -10.8,
+    "rec_rate": 7.6,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 503,
+    "size_stats": {
+      "all": {
+        "price_eok": 5.2,
+        "unit_price": 720.1,
+        "trades": 503
+      },
+      "small": {
+        "price_eok": 4.42,
+        "unit_price": 792.1,
+        "trades": 201
+      },
+      "medium": {
+        "price_eok": 5.2,
+        "unit_price": 720.1,
+        "trades": 251
+      },
+      "large": {
+        "price_eok": 6.76,
+        "unit_price": 648.1,
+        "trades": 50
+      }
+    }
+  },
+  {
+    "id": 28,
+    "gu": "노원구",
+    "dong": "공릉동",
+    "lat": 37.6244,
+    "lon": 127.0784,
+    "tier": "5억~7억 (실속/입문)",
+    "price_eok": 5.8,
+    "unit_price": 929.2,
+    "score": 31.4,
+    "commute_avg": 66.1,
+    "commute_gbd": 65.6,
+    "commute_ybd": 74.9,
+    "commute_cbd": 57.7,
+    "p3040": 24.7,
+    "p_child": 8.1,
+    "drop_rate": -19.3,
+    "rec_rate": 10.4,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 1058,
+    "size_stats": {
+      "all": {
+        "price_eok": 5.8,
+        "unit_price": 929.2,
+        "trades": 1058
+      },
+      "small": {
+        "price_eok": 4.93,
+        "unit_price": 1022.1,
+        "trades": 423
+      },
+      "medium": {
+        "price_eok": 5.8,
+        "unit_price": 929.2,
+        "trades": 529
+      },
+      "large": {
+        "price_eok": 7.54,
+        "unit_price": 836.3,
+        "trades": 105
+      }
+    }
+  },
+  {
+    "id": 29,
+    "gu": "노원구",
+    "dong": "상계동",
+    "lat": 37.6619,
+    "lon": 127.0662,
+    "tier": "5억~7억 (실속/입문)",
+    "price_eok": 5.3,
+    "unit_price": 967.7,
+    "score": 27.2,
+    "commute_avg": 73.5,
+    "commute_gbd": 74.0,
+    "commute_ybd": 85.1,
+    "commute_cbd": 61.3,
+    "p3040": 25.1,
+    "p_child": 10.0,
+    "drop_rate": -21.8,
+    "rec_rate": 3.8,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 2883,
+    "size_stats": {
+      "all": {
+        "price_eok": 5.3,
+        "unit_price": 967.7,
+        "trades": 2883
+      },
+      "small": {
+        "price_eok": 4.5,
+        "unit_price": 1064.5,
+        "trades": 1153
+      },
+      "medium": {
+        "price_eok": 5.3,
+        "unit_price": 967.7,
+        "trades": 1441
+      },
+      "large": {
+        "price_eok": 6.89,
+        "unit_price": 870.9,
+        "trades": 288
+      }
+    }
+  },
+  {
+    "id": 30,
+    "gu": "노원구",
+    "dong": "월계동",
+    "lat": 37.6259,
+    "lon": 127.0588,
+    "tier": "7억~9억 (표준/안정)",
+    "price_eok": 7.25,
+    "unit_price": 1061.6,
+    "score": 28.5,
+    "commute_avg": 68.1,
+    "commute_gbd": 70.7,
+    "commute_ybd": 77.4,
+    "commute_cbd": 56.4,
+    "p3040": 21.9,
+    "p_child": 9.7,
+    "drop_rate": -21.6,
+    "rec_rate": 1.6,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 1299,
+    "size_stats": {
+      "all": {
+        "price_eok": 7.25,
+        "unit_price": 1061.6,
+        "trades": 1299
+      },
+      "small": {
+        "price_eok": 6.16,
+        "unit_price": 1167.8,
+        "trades": 519
+      },
+      "medium": {
+        "price_eok": 7.25,
+        "unit_price": 1061.6,
+        "trades": 649
+      },
+      "large": {
+        "price_eok": 9.43,
+        "unit_price": 955.4,
+        "trades": 129
+      }
+    }
+  },
+  {
+    "id": 31,
+    "gu": "노원구",
+    "dong": "중계동",
+    "lat": 37.6505,
+    "lon": 127.0734,
+    "tier": "5억~7억 (실속/입문)",
+    "price_eok": 5.82,
+    "unit_price": 1029.4,
+    "score": 29.7,
+    "commute_avg": 74.6,
+    "commute_gbd": 74.8,
+    "commute_ybd": 84.3,
+    "commute_cbd": 64.7,
+    "p3040": 27.2,
+    "p_child": 16.5,
+    "drop_rate": -25.5,
+    "rec_rate": 10.0,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 1509,
+    "size_stats": {
+      "all": {
+        "price_eok": 5.82,
+        "unit_price": 1029.4,
+        "trades": 1509
+      },
+      "small": {
+        "price_eok": 4.95,
+        "unit_price": 1132.3,
+        "trades": 603
+      },
+      "medium": {
+        "price_eok": 5.82,
+        "unit_price": 1029.4,
+        "trades": 754
+      },
+      "large": {
+        "price_eok": 7.57,
+        "unit_price": 926.5,
+        "trades": 150
+      }
+    }
+  },
+  {
+    "id": 32,
+    "gu": "노원구",
+    "dong": "하계동",
+    "lat": 37.6353,
+    "lon": 127.0721,
+    "tier": "5억~7억 (실속/입문)",
+    "price_eok": 6.29,
+    "unit_price": 994.9,
+    "score": 30.2,
+    "commute_avg": 69.1,
+    "commute_gbd": 65.3,
+    "commute_ybd": 79.5,
+    "commute_cbd": 62.5,
+    "p3040": 22.8,
+    "p_child": 12.6,
+    "drop_rate": -13.4,
+    "rec_rate": 8.9,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 794,
+    "size_stats": {
+      "all": {
+        "price_eok": 6.29,
+        "unit_price": 994.9,
+        "trades": 794
+      },
+      "small": {
+        "price_eok": 5.35,
+        "unit_price": 1094.4,
+        "trades": 317
+      },
+      "medium": {
+        "price_eok": 6.29,
+        "unit_price": 994.9,
+        "trades": 397
+      },
+      "large": {
+        "price_eok": 8.18,
+        "unit_price": 895.4,
+        "trades": 79
+      }
+    }
+  },
+  {
+    "id": 33,
+    "gu": "도봉구",
+    "dong": "도봉동",
+    "lat": 37.6787,
+    "lon": 127.0435,
+    "tier": "5억~7억 (실속/입문)",
+    "price_eok": 5.4,
+    "unit_price": 694.6,
+    "score": 18.3,
+    "commute_avg": 78.9,
+    "commute_gbd": 78.6,
+    "commute_ybd": 90.0,
+    "commute_cbd": 68.0,
+    "p3040": 24.4,
+    "p_child": 8.0,
+    "drop_rate": -22.5,
+    "rec_rate": 15.4,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 318,
+    "size_stats": {
+      "all": {
+        "price_eok": 5.4,
+        "unit_price": 694.6,
+        "trades": 318
+      },
+      "small": {
+        "price_eok": 4.59,
+        "unit_price": 764.1,
+        "trades": 127
+      },
+      "medium": {
+        "price_eok": 5.4,
+        "unit_price": 694.6,
+        "trades": 159
+      },
+      "large": {
+        "price_eok": 7.02,
+        "unit_price": 625.1,
+        "trades": 31
+      }
+    }
+  },
+  {
+    "id": 34,
+    "gu": "도봉구",
+    "dong": "창동",
+    "lat": 37.6476,
+    "lon": 127.0411,
+    "tier": "5억~7억 (실속/입문)",
+    "price_eok": 6.2,
+    "unit_price": 976.6,
+    "score": 29.7,
+    "commute_avg": 69.7,
+    "commute_gbd": 76.5,
+    "commute_ybd": 77.5,
+    "commute_cbd": 55.0,
+    "p3040": 27.2,
+    "p_child": 10.3,
+    "drop_rate": -27.2,
+    "rec_rate": 6.9,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 1152,
+    "size_stats": {
+      "all": {
+        "price_eok": 6.2,
+        "unit_price": 976.6,
+        "trades": 1152
+      },
+      "small": {
+        "price_eok": 5.27,
+        "unit_price": 1074.3,
+        "trades": 460
+      },
+      "medium": {
+        "price_eok": 6.2,
+        "unit_price": 976.6,
+        "trades": 576
+      },
+      "large": {
+        "price_eok": 8.06,
+        "unit_price": 878.9,
+        "trades": 115
+      }
+    }
+  },
+  {
+    "id": 35,
+    "gu": "동대문구",
+    "dong": "답십리동",
+    "lat": 37.5701,
+    "lon": 127.057,
+    "tier": "9억~12억 (확장/선호)",
+    "price_eok": 9.5,
+    "unit_price": 1309.7,
+    "score": 42.8,
+    "commute_avg": 54.5,
+    "commute_gbd": 55.6,
+    "commute_ybd": 61.9,
+    "commute_cbd": 46.1,
+    "p3040": 27.1,
+    "p_child": 8.6,
+    "drop_rate": -17.0,
+    "rec_rate": 7.7,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 1191,
+    "size_stats": {
+      "all": {
+        "price_eok": 9.5,
+        "unit_price": 1309.7,
+        "trades": 1191
+      },
+      "small": {
+        "price_eok": 8.07,
+        "unit_price": 1440.7,
+        "trades": 476
+      },
+      "medium": {
+        "price_eok": 9.5,
+        "unit_price": 1309.7,
+        "trades": 595
+      },
+      "large": {
+        "price_eok": 12.35,
+        "unit_price": 1178.7,
+        "trades": 119
+      }
+    }
+  },
+  {
+    "id": 36,
+    "gu": "동대문구",
+    "dong": "신설동",
+    "lat": 37.5762,
+    "lon": 127.0317,
+    "tier": "7억~9억 (표준/안정)",
+    "price_eok": 7.3,
+    "unit_price": 1566.1,
+    "score": 47.3,
+    "commute_avg": 51.6,
+    "commute_gbd": 58.7,
+    "commute_ybd": 62.6,
+    "commute_cbd": 33.5,
+    "p3040": 34.6,
+    "p_child": 4.2,
+    "drop_rate": NaN,
+    "rec_rate": 80.4,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 39,
+    "size_stats": {
+      "all": {
+        "price_eok": 7.3,
+        "unit_price": 1566.1,
+        "trades": 39
+      },
+      "small": {
+        "price_eok": 6.21,
+        "unit_price": 1722.7,
+        "trades": 15
+      },
+      "medium": {
+        "price_eok": 7.3,
+        "unit_price": 1566.1,
+        "trades": 19
+      },
+      "large": {
+        "price_eok": 9.49,
+        "unit_price": 1409.5,
+        "trades": 3
+      }
+    }
+  },
+  {
+    "id": 37,
+    "gu": "동대문구",
+    "dong": "이문동",
+    "lat": 37.6,
+    "lon": 127.0603,
+    "tier": "7억~9억 (표준/안정)",
+    "price_eok": 8.57,
+    "unit_price": 1200.2,
+    "score": 32.1,
+    "commute_avg": 62.0,
+    "commute_gbd": 66.6,
+    "commute_ybd": 70.3,
+    "commute_cbd": 49.0,
+    "p3040": 20.6,
+    "p_child": 6.8,
+    "drop_rate": -24.0,
+    "rec_rate": 23.1,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 591,
+    "size_stats": {
+      "all": {
+        "price_eok": 8.57,
+        "unit_price": 1200.2,
+        "trades": 591
+      },
+      "small": {
+        "price_eok": 7.28,
+        "unit_price": 1320.2,
+        "trades": 236
+      },
+      "medium": {
+        "price_eok": 8.57,
+        "unit_price": 1200.2,
+        "trades": 295
+      },
+      "large": {
+        "price_eok": 11.14,
+        "unit_price": 1080.2,
+        "trades": 59
+      }
+    }
+  },
+  {
+    "id": 38,
+    "gu": "동대문구",
+    "dong": "장안동",
+    "lat": 37.5702,
+    "lon": 127.0687,
+    "tier": "7억~9억 (표준/안정)",
+    "price_eok": 8.3,
+    "unit_price": 1031.7,
+    "score": 43.5,
+    "commute_avg": 58.3,
+    "commute_gbd": 57.7,
+    "commute_ybd": 66.7,
+    "commute_cbd": 50.6,
+    "p3040": 32.5,
+    "p_child": 11.1,
+    "drop_rate": -7.8,
+    "rec_rate": 7.8,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 780,
+    "size_stats": {
+      "all": {
+        "price_eok": 8.3,
+        "unit_price": 1031.7,
+        "trades": 780
+      },
+      "small": {
+        "price_eok": 7.06,
+        "unit_price": 1134.9,
+        "trades": 312
+      },
+      "medium": {
+        "price_eok": 8.3,
+        "unit_price": 1031.7,
+        "trades": 390
+      },
+      "large": {
+        "price_eok": 10.79,
+        "unit_price": 928.5,
+        "trades": 78
+      }
+    }
+  },
+  {
+    "id": 39,
+    "gu": "동대문구",
+    "dong": "전농동",
+    "lat": 37.5762,
+    "lon": 127.0543,
+    "tier": "9억~12억 (확장/선호)",
+    "price_eok": 11.65,
+    "unit_price": 1474.0,
+    "score": 36.8,
+    "commute_avg": 59.5,
+    "commute_gbd": 60.4,
+    "commute_ybd": 69.4,
+    "commute_cbd": 48.6,
+    "p3040": 25.7,
+    "p_child": 7.7,
+    "drop_rate": -18.2,
+    "rec_rate": 13.8,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 641,
+    "size_stats": {
+      "all": {
+        "price_eok": 11.65,
+        "unit_price": 1474.0,
+        "trades": 641
+      },
+      "small": {
+        "price_eok": 9.9,
+        "unit_price": 1621.4,
+        "trades": 256
+      },
+      "medium": {
+        "price_eok": 11.65,
+        "unit_price": 1474.0,
+        "trades": 320
+      },
+      "large": {
+        "price_eok": 15.15,
+        "unit_price": 1326.6,
+        "trades": 64
+      }
+    }
+  },
+  {
+    "id": 40,
+    "gu": "동대문구",
+    "dong": "제기동",
+    "lat": 37.5825,
+    "lon": 127.0389,
+    "tier": "7억~9억 (표준/안정)",
+    "price_eok": 8.22,
+    "unit_price": 1059.1,
+    "score": 35.5,
+    "commute_avg": 56.3,
+    "commute_gbd": 63.9,
+    "commute_ybd": 64.1,
+    "commute_cbd": 41.1,
+    "p3040": 23.9,
+    "p_child": 6.5,
+    "drop_rate": NaN,
+    "rec_rate": 13.8,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 158,
+    "size_stats": {
+      "all": {
+        "price_eok": 8.22,
+        "unit_price": 1059.1,
+        "trades": 158
+      },
+      "small": {
+        "price_eok": 6.99,
+        "unit_price": 1165.0,
+        "trades": 63
+      },
+      "medium": {
+        "price_eok": 8.22,
+        "unit_price": 1059.1,
+        "trades": 79
+      },
+      "large": {
+        "price_eok": 10.69,
+        "unit_price": 953.2,
+        "trades": 15
+      }
+    }
+  },
+  {
+    "id": 41,
+    "gu": "동대문구",
+    "dong": "청량리동",
+    "lat": 37.5871,
+    "lon": 127.0438,
+    "tier": "9억~12억 (확장/선호)",
+    "price_eok": 9.43,
+    "unit_price": 1036.3,
+    "score": 37.3,
+    "commute_avg": 58.2,
+    "commute_gbd": 60.7,
+    "commute_ybd": 69.0,
+    "commute_cbd": 44.9,
+    "p3040": 23.2,
+    "p_child": 5.7,
+    "drop_rate": 1.6,
+    "rec_rate": 33.6,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 188,
+    "size_stats": {
+      "all": {
+        "price_eok": 9.43,
+        "unit_price": 1036.3,
+        "trades": 188
+      },
+      "small": {
+        "price_eok": 8.02,
+        "unit_price": 1139.9,
+        "trades": 75
+      },
+      "medium": {
+        "price_eok": 9.43,
+        "unit_price": 1036.3,
+        "trades": 94
+      },
+      "large": {
+        "price_eok": 12.26,
+        "unit_price": 932.7,
+        "trades": 18
+      }
+    }
+  },
+  {
+    "id": 42,
+    "gu": "동대문구",
+    "dong": "회기동",
+    "lat": 37.5907,
+    "lon": 127.053,
+    "tier": "7억~9억 (표준/안정)",
+    "price_eok": 8.05,
+    "unit_price": 1065.0,
+    "score": 31.7,
+    "commute_avg": 60.7,
+    "commute_gbd": 63.3,
+    "commute_ybd": 72.4,
+    "commute_cbd": 46.5,
+    "p3040": 24.3,
+    "p_child": 7.2,
+    "drop_rate": -10.3,
+    "rec_rate": 8.0,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 99,
+    "size_stats": {
+      "all": {
+        "price_eok": 8.05,
+        "unit_price": 1065.0,
+        "trades": 99
+      },
+      "small": {
+        "price_eok": 6.84,
+        "unit_price": 1171.5,
+        "trades": 39
+      },
+      "medium": {
+        "price_eok": 8.05,
+        "unit_price": 1065.0,
+        "trades": 49
+      },
+      "large": {
+        "price_eok": 10.47,
+        "unit_price": 958.5,
+        "trades": 9
+      }
+    }
+  },
+  {
+    "id": 43,
+    "gu": "동대문구",
+    "dong": "휘경동",
+    "lat": 37.5899,
+    "lon": 127.0608,
+    "tier": "7억~9억 (표준/안정)",
+    "price_eok": 7.95,
+    "unit_price": 1134.5,
+    "score": 37.2,
+    "commute_avg": 58.8,
+    "commute_gbd": 59.4,
+    "commute_ybd": 70.0,
+    "commute_cbd": 47.2,
+    "p3040": 24.4,
+    "p_child": 6.3,
+    "drop_rate": -6.6,
+    "rec_rate": 22.0,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 437,
+    "size_stats": {
+      "all": {
+        "price_eok": 7.95,
+        "unit_price": 1134.5,
+        "trades": 437
+      },
+      "small": {
+        "price_eok": 6.76,
+        "unit_price": 1248.0,
+        "trades": 174
+      },
+      "medium": {
+        "price_eok": 7.95,
+        "unit_price": 1134.5,
+        "trades": 218
+      },
+      "large": {
+        "price_eok": 10.34,
+        "unit_price": 1021.1,
+        "trades": 43
+      }
+    }
+  },
+  {
+    "id": 44,
+    "gu": "동작구",
+    "dong": "대방동",
+    "lat": 37.5034,
+    "lon": 126.9251,
+    "tier": "9억~12억 (확장/선호)",
+    "price_eok": 12.0,
+    "unit_price": 1626.0,
+    "score": 54.0,
+    "commute_avg": 41.6,
+    "commute_gbd": 49.4,
+    "commute_ybd": 26.2,
+    "commute_cbd": 49.2,
+    "p3040": 31.6,
+    "p_child": 10.7,
+    "drop_rate": -45.3,
+    "rec_rate": 25.5,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 364,
+    "size_stats": {
+      "all": {
+        "price_eok": 12.0,
+        "unit_price": 1626.0,
+        "trades": 364
+      },
+      "small": {
+        "price_eok": 10.2,
+        "unit_price": 1788.6,
+        "trades": 145
+      },
+      "medium": {
+        "price_eok": 12.0,
+        "unit_price": 1626.0,
+        "trades": 182
+      },
+      "large": {
+        "price_eok": 15.6,
+        "unit_price": 1463.4,
+        "trades": 36
+      }
+    }
+  },
+  {
+    "id": 45,
+    "gu": "동작구",
+    "dong": "본동",
+    "lat": 37.5115,
+    "lon": 126.9447,
+    "tier": "9억~12억 (확장/선호)",
+    "price_eok": 11.48,
+    "unit_price": 1579.1,
+    "score": 53.7,
+    "commute_avg": 40.1,
+    "commute_gbd": 45.7,
+    "commute_ybd": 30.4,
+    "commute_cbd": 44.1,
+    "p3040": 29.4,
+    "p_child": 3.5,
+    "drop_rate": 2.4,
+    "rec_rate": 22.9,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 198,
+    "size_stats": {
+      "all": {
+        "price_eok": 11.48,
+        "unit_price": 1579.1,
+        "trades": 198
+      },
+      "small": {
+        "price_eok": 9.76,
+        "unit_price": 1737.0,
+        "trades": 79
+      },
+      "medium": {
+        "price_eok": 11.48,
+        "unit_price": 1579.1,
+        "trades": 99
+      },
+      "large": {
+        "price_eok": 14.92,
+        "unit_price": 1421.2,
+        "trades": 19
+      }
+    }
+  },
+  {
+    "id": 46,
+    "gu": "동작구",
+    "dong": "신대방동",
+    "lat": 37.4915,
+    "lon": 126.9175,
+    "tier": "9억~12억 (확장/선호)",
+    "price_eok": 10.75,
+    "unit_price": 1287.5,
+    "score": 52.0,
+    "commute_avg": 46.1,
+    "commute_gbd": 50.7,
+    "commute_ybd": 29.7,
+    "commute_cbd": 58.0,
+    "p3040": 30.0,
+    "p_child": 8.7,
+    "drop_rate": -21.8,
+    "rec_rate": 33.0,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 529,
+    "size_stats": {
+      "all": {
+        "price_eok": 10.75,
+        "unit_price": 1287.5,
+        "trades": 529
+      },
+      "small": {
+        "price_eok": 9.14,
+        "unit_price": 1416.3,
+        "trades": 211
+      },
+      "medium": {
+        "price_eok": 10.75,
+        "unit_price": 1287.5,
+        "trades": 264
+      },
+      "large": {
+        "price_eok": 13.97,
+        "unit_price": 1158.8,
+        "trades": 52
+      }
+    }
+  },
+  {
+    "id": 47,
+    "gu": "마포구",
+    "dong": "마포동",
+    "lat": 37.5408,
+    "lon": 126.9468,
+    "tier": "9억~12억 (확장/선호)",
+    "price_eok": 11.2,
+    "unit_price": 1541.3,
+    "score": 63.4,
+    "commute_avg": 41.1,
+    "commute_gbd": 56.8,
+    "commute_ybd": 26.8,
+    "commute_cbd": 39.6,
+    "p3040": 43.2,
+    "p_child": 9.9,
+    "drop_rate": NaN,
+    "rec_rate": 77.8,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 47,
+    "size_stats": {
+      "all": {
+        "price_eok": 11.2,
+        "unit_price": 1541.3,
+        "trades": 47
+      },
+      "small": {
+        "price_eok": 9.52,
+        "unit_price": 1695.4,
+        "trades": 18
+      },
+      "medium": {
+        "price_eok": 11.2,
+        "unit_price": 1541.3,
+        "trades": 23
+      },
+      "large": {
+        "price_eok": 14.56,
+        "unit_price": 1387.2,
+        "trades": 4
+      }
+    }
+  },
+  {
+    "id": 48,
+    "gu": "마포구",
+    "dong": "망원동",
+    "lat": 37.5543,
+    "lon": 126.91,
+    "tier": "7억~9억 (표준/안정)",
+    "price_eok": 8.43,
+    "unit_price": 1205.6,
+    "score": 47.3,
+    "commute_avg": 51.2,
+    "commute_gbd": 66.3,
+    "commute_ybd": 37.4,
+    "commute_cbd": 49.8,
+    "p3040": 33.0,
+    "p_child": 10.1,
+    "drop_rate": -6.8,
+    "rec_rate": 10.1,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 210,
+    "size_stats": {
+      "all": {
+        "price_eok": 8.43,
+        "unit_price": 1205.6,
+        "trades": 210
+      },
+      "small": {
+        "price_eok": 7.17,
+        "unit_price": 1326.2,
+        "trades": 84
+      },
+      "medium": {
+        "price_eok": 8.43,
+        "unit_price": 1205.6,
+        "trades": 105
+      },
+      "large": {
+        "price_eok": 10.96,
+        "unit_price": 1085.0,
+        "trades": 21
+      }
+    }
+  },
+  {
+    "id": 49,
+    "gu": "마포구",
+    "dong": "상암동",
+    "lat": 37.5784,
+    "lon": 126.8927,
+    "tier": "9억~12억 (확장/선호)",
+    "price_eok": 11.26,
+    "unit_price": 1514.6,
+    "score": 42.8,
+    "commute_avg": 59.6,
+    "commute_gbd": 75.4,
+    "commute_ybd": 44.3,
+    "commute_cbd": 59.1,
+    "p3040": 37.0,
+    "p_child": 8.3,
+    "drop_rate": -13.5,
+    "rec_rate": 28.2,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 307,
+    "size_stats": {
+      "all": {
+        "price_eok": 11.26,
+        "unit_price": 1514.6,
+        "trades": 307
+      },
+      "small": {
+        "price_eok": 9.57,
+        "unit_price": 1666.1,
+        "trades": 122
+      },
+      "medium": {
+        "price_eok": 11.26,
+        "unit_price": 1514.6,
+        "trades": 153
+      },
+      "large": {
+        "price_eok": 14.64,
+        "unit_price": 1363.1,
+        "trades": 30
+      }
+    }
+  },
+  {
+    "id": 50,
+    "gu": "마포구",
+    "dong": "서교동",
+    "lat": 37.5546,
+    "lon": 126.9188,
+    "tier": "7억~9억 (표준/안정)",
+    "price_eok": 8.82,
+    "unit_price": 1020.4,
+    "score": 52.1,
+    "commute_avg": 47.2,
+    "commute_gbd": 65.1,
+    "commute_ybd": 33.8,
+    "commute_cbd": 42.8,
+    "p3040": 36.3,
+    "p_child": 7.2,
+    "drop_rate": 37.8,
+    "rec_rate": 1.9,
+    "cluster_id": 2,
+    "cluster_name": "그룹 2: 광역 통근 허브 & 하락장 철통 방어선",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 67,
+    "size_stats": {
+      "all": {
+        "price_eok": 8.82,
+        "unit_price": 1020.4,
+        "trades": 67
+      },
+      "small": {
+        "price_eok": 7.5,
+        "unit_price": 1122.4,
+        "trades": 26
+      },
+      "medium": {
+        "price_eok": 8.82,
+        "unit_price": 1020.4,
+        "trades": 33
+      },
+      "large": {
+        "price_eok": 11.47,
+        "unit_price": 918.4,
+        "trades": 6
+      }
+    }
+  },
+  {
+    "id": 51,
+    "gu": "마포구",
+    "dong": "성산동",
+    "lat": 37.5651,
+    "lon": 126.907,
+    "tier": "9억~12억 (확장/선호)",
+    "price_eok": 10.2,
+    "unit_price": 2012.8,
+    "score": 43.8,
+    "commute_avg": 52.4,
+    "commute_gbd": 68.8,
+    "commute_ybd": 40.4,
+    "commute_cbd": 48.1,
+    "p3040": 35.5,
+    "p_child": 9.2,
+    "drop_rate": -23.3,
+    "rec_rate": -17.8,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 393,
+    "size_stats": {
+      "all": {
+        "price_eok": 10.2,
+        "unit_price": 2012.8,
+        "trades": 393
+      },
+      "small": {
+        "price_eok": 8.67,
+        "unit_price": 2214.1,
+        "trades": 157
+      },
+      "medium": {
+        "price_eok": 10.2,
+        "unit_price": 2012.8,
+        "trades": 196
+      },
+      "large": {
+        "price_eok": 13.26,
+        "unit_price": 1811.5,
+        "trades": 39
+      }
+    }
+  },
+  {
+    "id": 52,
+    "gu": "마포구",
+    "dong": "연남동",
+    "lat": 37.5616,
+    "lon": 126.9228,
+    "tier": "9억~12억 (확장/선호)",
+    "price_eok": 10.22,
+    "unit_price": 1330.4,
+    "score": 48.2,
+    "commute_avg": 49.8,
+    "commute_gbd": 66.1,
+    "commute_ybd": 38.5,
+    "commute_cbd": 44.8,
+    "p3040": 35.8,
+    "p_child": 8.0,
+    "drop_rate": -3.4,
+    "rec_rate": 31.7,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 40,
+    "size_stats": {
+      "all": {
+        "price_eok": 10.22,
+        "unit_price": 1330.4,
+        "trades": 40
+      },
+      "small": {
+        "price_eok": 8.69,
+        "unit_price": 1463.4,
+        "trades": 16
+      },
+      "medium": {
+        "price_eok": 10.22,
+        "unit_price": 1330.4,
+        "trades": 20
+      },
+      "large": {
+        "price_eok": 13.29,
+        "unit_price": 1197.4,
+        "trades": 4
+      }
+    }
+  },
+  {
+    "id": 53,
+    "gu": "마포구",
+    "dong": "중동",
+    "lat": 37.5676,
+    "lon": 126.9035,
+    "tier": "9억~12억 (확장/선호)",
+    "price_eok": 9.38,
+    "unit_price": 1191.6,
+    "score": 49.8,
+    "commute_avg": 53.1,
+    "commute_gbd": 69.4,
+    "commute_ybd": 40.9,
+    "commute_cbd": 49.1,
+    "p3040": 32.0,
+    "p_child": 10.9,
+    "drop_rate": 21.3,
+    "rec_rate": 32.5,
+    "cluster_id": 2,
+    "cluster_name": "그룹 2: 광역 통근 허브 & 하락장 철통 방어선",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 151,
+    "size_stats": {
+      "all": {
+        "price_eok": 9.38,
+        "unit_price": 1191.6,
+        "trades": 151
+      },
+      "small": {
+        "price_eok": 7.97,
+        "unit_price": 1310.8,
+        "trades": 60
+      },
+      "medium": {
+        "price_eok": 9.38,
+        "unit_price": 1191.6,
+        "trades": 75
+      },
+      "large": {
+        "price_eok": 12.19,
+        "unit_price": 1072.4,
+        "trades": 15
+      }
+    }
+  },
+  {
+    "id": 54,
+    "gu": "서대문구",
+    "dong": "냉천동",
+    "lat": 37.5701,
+    "lon": 126.9608,
+    "tier": "9억~12억 (확장/선호)",
+    "price_eok": 11.7,
+    "unit_price": 1647.2,
+    "score": 45.3,
+    "commute_avg": 43.7,
+    "commute_gbd": 59.3,
+    "commute_ybd": 42.8,
+    "commute_cbd": 29.1,
+    "p3040": 28.5,
+    "p_child": 5.2,
+    "drop_rate": NaN,
+    "rec_rate": 5.3,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 60,
+    "size_stats": {
+      "all": {
+        "price_eok": 11.7,
+        "unit_price": 1647.2,
+        "trades": 60
+      },
+      "small": {
+        "price_eok": 9.94,
+        "unit_price": 1811.9,
+        "trades": 24
+      },
+      "medium": {
+        "price_eok": 11.7,
+        "unit_price": 1647.2,
+        "trades": 30
+      },
+      "large": {
+        "price_eok": 15.21,
+        "unit_price": 1482.5,
+        "trades": 6
+      }
+    }
+  },
+  {
+    "id": 55,
+    "gu": "서대문구",
+    "dong": "대현동",
+    "lat": 37.5593,
+    "lon": 126.9488,
+    "tier": "9억~12억 (확장/선호)",
+    "price_eok": 9.99,
+    "unit_price": 1340.5,
+    "score": 45.8,
+    "commute_avg": 46.0,
+    "commute_gbd": 64.4,
+    "commute_ybd": 39.8,
+    "commute_cbd": 33.8,
+    "p3040": 21.9,
+    "p_child": 3.2,
+    "drop_rate": 24.9,
+    "rec_rate": 24.3,
+    "cluster_id": 2,
+    "cluster_name": "그룹 2: 광역 통근 허브 & 하락장 철통 방어선",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 91,
+    "size_stats": {
+      "all": {
+        "price_eok": 9.99,
+        "unit_price": 1340.5,
+        "trades": 91
+      },
+      "small": {
+        "price_eok": 8.49,
+        "unit_price": 1474.6,
+        "trades": 36
+      },
+      "medium": {
+        "price_eok": 9.99,
+        "unit_price": 1340.5,
+        "trades": 45
+      },
+      "large": {
+        "price_eok": 12.99,
+        "unit_price": 1206.5,
+        "trades": 9
+      }
+    }
+  },
+  {
+    "id": 56,
+    "gu": "서대문구",
+    "dong": "북가좌동",
+    "lat": 37.5798,
+    "lon": 126.9097,
+    "tier": "9억~12억 (확장/선호)",
+    "price_eok": 10.55,
+    "unit_price": 1324.9,
+    "score": 36.9,
+    "commute_avg": 61.0,
+    "commute_gbd": 79.9,
+    "commute_ybd": 48.6,
+    "commute_cbd": 54.5,
+    "p3040": 27.8,
+    "p_child": 10.3,
+    "drop_rate": -5.2,
+    "rec_rate": -0.2,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 399,
+    "size_stats": {
+      "all": {
+        "price_eok": 10.55,
+        "unit_price": 1324.9,
+        "trades": 399
+      },
+      "small": {
+        "price_eok": 8.97,
+        "unit_price": 1457.4,
+        "trades": 159
+      },
+      "medium": {
+        "price_eok": 10.55,
+        "unit_price": 1324.9,
+        "trades": 199
+      },
+      "large": {
+        "price_eok": 13.72,
+        "unit_price": 1192.4,
+        "trades": 39
+      }
+    }
+  },
+  {
+    "id": 57,
+    "gu": "서대문구",
+    "dong": "연희동",
+    "lat": 37.571,
+    "lon": 126.9303,
+    "tier": "7억~9억 (표준/안정)",
+    "price_eok": 8.2,
+    "unit_price": 1149.1,
+    "score": 41.6,
+    "commute_avg": 53.6,
+    "commute_gbd": 70.8,
+    "commute_ybd": 43.7,
+    "commute_cbd": 46.4,
+    "p3040": 28.9,
+    "p_child": 8.3,
+    "drop_rate": -16.4,
+    "rec_rate": 15.5,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 176,
+    "size_stats": {
+      "all": {
+        "price_eok": 8.2,
+        "unit_price": 1149.1,
+        "trades": 176
+      },
+      "small": {
+        "price_eok": 6.97,
+        "unit_price": 1264.0,
+        "trades": 70
+      },
+      "medium": {
+        "price_eok": 8.2,
+        "unit_price": 1149.1,
+        "trades": 88
+      },
+      "large": {
+        "price_eok": 10.66,
+        "unit_price": 1034.2,
+        "trades": 17
+      }
+    }
+  },
+  {
+    "id": 58,
+    "gu": "서대문구",
+    "dong": "영천동",
+    "lat": 37.5701,
+    "lon": 126.9608,
+    "tier": "9억~12억 (확장/선호)",
+    "price_eok": 10.85,
+    "unit_price": 1250.3,
+    "score": 48.1,
+    "commute_avg": 43.7,
+    "commute_gbd": 59.3,
+    "commute_ybd": 42.8,
+    "commute_cbd": 29.1,
+    "p3040": 24.7,
+    "p_child": 6.1,
+    "drop_rate": NaN,
+    "rec_rate": 45.3,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 70,
+    "size_stats": {
+      "all": {
+        "price_eok": 10.85,
+        "unit_price": 1250.3,
+        "trades": 70
+      },
+      "small": {
+        "price_eok": 9.22,
+        "unit_price": 1375.3,
+        "trades": 28
+      },
+      "medium": {
+        "price_eok": 10.85,
+        "unit_price": 1250.3,
+        "trades": 35
+      },
+      "large": {
+        "price_eok": 14.11,
+        "unit_price": 1125.3,
+        "trades": 7
+      }
+    }
+  },
+  {
+    "id": 59,
+    "gu": "서대문구",
+    "dong": "창천동",
+    "lat": 37.5599,
+    "lon": 126.9399,
+    "tier": "5억~7억 (실속/입문)",
+    "price_eok": 5.98,
+    "unit_price": 808.2,
+    "score": 38.8,
+    "commute_avg": 47.9,
+    "commute_gbd": 67.2,
+    "commute_ybd": 39.7,
+    "commute_cbd": 36.8,
+    "p3040": 30.7,
+    "p_child": 5.3,
+    "drop_rate": -10.4,
+    "rec_rate": -11.9,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 10,
+    "size_stats": {
+      "all": {
+        "price_eok": 5.98,
+        "unit_price": 808.2,
+        "trades": 10
+      },
+      "small": {
+        "price_eok": 5.08,
+        "unit_price": 889.0,
+        "trades": 4
+      },
+      "medium": {
+        "price_eok": 5.98,
+        "unit_price": 808.2,
+        "trades": 5
+      },
+      "large": {
+        "price_eok": 7.77,
+        "unit_price": 727.4,
+        "trades": 1
+      }
+    }
+  },
+  {
+    "id": 60,
+    "gu": "서대문구",
+    "dong": "천연동",
+    "lat": 37.5701,
+    "lon": 126.9608,
+    "tier": "7억~9억 (표준/안정)",
+    "price_eok": 8.9,
+    "unit_price": 1558.6,
+    "score": 49.1,
+    "commute_avg": 43.7,
+    "commute_gbd": 59.3,
+    "commute_ybd": 42.8,
+    "commute_cbd": 29.1,
+    "p3040": 25.1,
+    "p_child": 7.3,
+    "drop_rate": NaN,
+    "rec_rate": 40.5,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 99,
+    "size_stats": {
+      "all": {
+        "price_eok": 8.9,
+        "unit_price": 1558.6,
+        "trades": 99
+      },
+      "small": {
+        "price_eok": 7.57,
+        "unit_price": 1714.5,
+        "trades": 39
+      },
+      "medium": {
+        "price_eok": 8.9,
+        "unit_price": 1558.6,
+        "trades": 49
+      },
+      "large": {
+        "price_eok": 11.57,
+        "unit_price": 1402.7,
+        "trades": 9
+      }
+    }
+  },
+  {
+    "id": 61,
+    "gu": "서대문구",
+    "dong": "충정로3가",
+    "lat": 37.563,
+    "lon": 126.9637,
+    "tier": "7억~9억 (표준/안정)",
+    "price_eok": 7.08,
+    "unit_price": 1158.6,
+    "score": 49.3,
+    "commute_avg": 41.5,
+    "commute_gbd": 61.2,
+    "commute_ybd": 39.1,
+    "commute_cbd": 24.1,
+    "p3040": 38.1,
+    "p_child": 6.1,
+    "drop_rate": NaN,
+    "rec_rate": -12.0,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 31,
+    "size_stats": {
+      "all": {
+        "price_eok": 7.08,
+        "unit_price": 1158.6,
+        "trades": 31
+      },
+      "small": {
+        "price_eok": 6.02,
+        "unit_price": 1274.5,
+        "trades": 12
+      },
+      "medium": {
+        "price_eok": 7.08,
+        "unit_price": 1158.6,
+        "trades": 15
+      },
+      "large": {
+        "price_eok": 9.2,
+        "unit_price": 1042.7,
+        "trades": 3
+      }
+    }
+  },
+  {
+    "id": 62,
+    "gu": "서대문구",
+    "dong": "현저동",
+    "lat": 37.5701,
+    "lon": 126.9608,
+    "tier": "9억~12억 (확장/선호)",
+    "price_eok": 10.6,
+    "unit_price": 1423.9,
+    "score": 50.0,
+    "commute_avg": 43.7,
+    "commute_gbd": 59.3,
+    "commute_ybd": 42.8,
+    "commute_cbd": 29.1,
+    "p3040": 24.6,
+    "p_child": 6.0,
+    "drop_rate": -33.1,
+    "rec_rate": 69.2,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 131,
+    "size_stats": {
+      "all": {
+        "price_eok": 10.6,
+        "unit_price": 1423.9,
+        "trades": 131
+      },
+      "small": {
+        "price_eok": 9.01,
+        "unit_price": 1566.3,
+        "trades": 52
+      },
+      "medium": {
+        "price_eok": 10.6,
+        "unit_price": 1423.9,
+        "trades": 65
+      },
+      "large": {
+        "price_eok": 13.78,
+        "unit_price": 1281.5,
+        "trades": 13
+      }
+    }
+  },
+  {
+    "id": 63,
+    "gu": "서대문구",
+    "dong": "홍은동",
+    "lat": 37.5904,
+    "lon": 126.9379,
+    "tier": "7억~9억 (표준/안정)",
+    "price_eok": 7.45,
+    "unit_price": 1025.6,
+    "score": 42.0,
+    "commute_avg": 55.8,
+    "commute_gbd": 70.2,
+    "commute_ybd": 52.9,
+    "commute_cbd": 44.2,
+    "p3040": 26.8,
+    "p_child": 11.7,
+    "drop_rate": -19.8,
+    "rec_rate": 11.5,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 556,
+    "size_stats": {
+      "all": {
+        "price_eok": 7.45,
+        "unit_price": 1025.6,
+        "trades": 556
+      },
+      "small": {
+        "price_eok": 6.33,
+        "unit_price": 1128.2,
+        "trades": 222
+      },
+      "medium": {
+        "price_eok": 7.45,
+        "unit_price": 1025.6,
+        "trades": 278
+      },
+      "large": {
+        "price_eok": 9.69,
+        "unit_price": 923.0,
+        "trades": 55
+      }
+    }
+  },
+  {
+    "id": 64,
+    "gu": "서대문구",
+    "dong": "홍제동",
+    "lat": 37.5893,
+    "lon": 126.9445,
+    "tier": "9억~12억 (확장/선호)",
+    "price_eok": 9.0,
+    "unit_price": 1113.0,
+    "score": 49.3,
+    "commute_avg": 50.6,
+    "commute_gbd": 62.9,
+    "commute_ybd": 52.4,
+    "commute_cbd": 36.5,
+    "p3040": 27.2,
+    "p_child": 11.2,
+    "drop_rate": -22.6,
+    "rec_rate": 36.0,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 897,
+    "size_stats": {
+      "all": {
+        "price_eok": 9.0,
+        "unit_price": 1113.0,
+        "trades": 897
+      },
+      "small": {
+        "price_eok": 7.65,
+        "unit_price": 1224.3,
+        "trades": 358
+      },
+      "medium": {
+        "price_eok": 9.0,
+        "unit_price": 1113.0,
+        "trades": 448
+      },
+      "large": {
+        "price_eok": 11.7,
+        "unit_price": 1001.7,
+        "trades": 89
+      }
+    }
+  },
+  {
+    "id": 65,
+    "gu": "성동구",
+    "dong": "도선동",
+    "lat": 37.5657,
+    "lon": 127.0325,
+    "tier": "9억~12억 (확장/선호)",
+    "price_eok": 10.5,
+    "unit_price": 1239.1,
+    "score": 45.3,
+    "commute_avg": 44.2,
+    "commute_gbd": 46.1,
+    "commute_ybd": 55.6,
+    "commute_cbd": 31.0,
+    "p3040": 29.2,
+    "p_child": 7.0,
+    "drop_rate": NaN,
+    "rec_rate": NaN,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 18,
+    "size_stats": {
+      "all": {
+        "price_eok": 10.5,
+        "unit_price": 1239.1,
+        "trades": 18
+      },
+      "small": {
+        "price_eok": 8.92,
+        "unit_price": 1363.0,
+        "trades": 7
+      },
+      "medium": {
+        "price_eok": 10.5,
+        "unit_price": 1239.1,
+        "trades": 9
+      },
+      "large": {
+        "price_eok": 13.65,
+        "unit_price": 1115.2,
+        "trades": 1
+      }
+    }
+  },
+  {
+    "id": 66,
+    "gu": "성동구",
+    "dong": "마장동",
+    "lat": 37.5682,
+    "lon": 127.0394,
+    "tier": "9억~12억 (확장/선호)",
+    "price_eok": 9.49,
+    "unit_price": 1502.2,
+    "score": 47.5,
+    "commute_avg": 49.8,
+    "commute_gbd": 48.2,
+    "commute_ybd": 59.3,
+    "commute_cbd": 41.8,
+    "p3040": 25.1,
+    "p_child": 8.9,
+    "drop_rate": -20.1,
+    "rec_rate": 49.4,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 326,
+    "size_stats": {
+      "all": {
+        "price_eok": 9.49,
+        "unit_price": 1502.2,
+        "trades": 326
+      },
+      "small": {
+        "price_eok": 8.07,
+        "unit_price": 1652.4,
+        "trades": 130
+      },
+      "medium": {
+        "price_eok": 9.49,
+        "unit_price": 1502.2,
+        "trades": 163
+      },
+      "large": {
+        "price_eok": 12.34,
+        "unit_price": 1352.0,
+        "trades": 32
+      }
+    }
+  },
+  {
+    "id": 67,
+    "gu": "성동구",
+    "dong": "사근동",
+    "lat": 37.5591,
+    "lon": 127.043,
+    "tier": "7억~9억 (표준/안정)",
+    "price_eok": 7.55,
+    "unit_price": 1050.8,
+    "score": 39.5,
+    "commute_avg": 48.0,
+    "commute_gbd": 44.6,
+    "commute_ybd": 60.5,
+    "commute_cbd": 38.9,
+    "p3040": 20.1,
+    "p_child": 7.3,
+    "drop_rate": -8.6,
+    "rec_rate": NaN,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 26,
+    "size_stats": {
+      "all": {
+        "price_eok": 7.55,
+        "unit_price": 1050.8,
+        "trades": 26
+      },
+      "small": {
+        "price_eok": 6.42,
+        "unit_price": 1155.9,
+        "trades": 10
+      },
+      "medium": {
+        "price_eok": 7.55,
+        "unit_price": 1050.8,
+        "trades": 13
+      },
+      "large": {
+        "price_eok": 9.81,
+        "unit_price": 945.7,
+        "trades": 2
+      }
+    }
+  },
+  {
+    "id": 68,
+    "gu": "성동구",
+    "dong": "송정동",
+    "lat": 37.5571,
+    "lon": 127.0587,
+    "tier": "9억~12억 (확장/선호)",
+    "price_eok": 9.5,
+    "unit_price": 1229.6,
+    "score": 39.8,
+    "commute_avg": 53.2,
+    "commute_gbd": 49.0,
+    "commute_ybd": 62.9,
+    "commute_cbd": 47.7,
+    "p3040": 28.6,
+    "p_child": 7.2,
+    "drop_rate": NaN,
+    "rec_rate": NaN,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 68,
+    "size_stats": {
+      "all": {
+        "price_eok": 9.5,
+        "unit_price": 1229.6,
+        "trades": 68
+      },
+      "small": {
+        "price_eok": 8.07,
+        "unit_price": 1352.6,
+        "trades": 27
+      },
+      "medium": {
+        "price_eok": 9.5,
+        "unit_price": 1229.6,
+        "trades": 34
+      },
+      "large": {
+        "price_eok": 12.35,
+        "unit_price": 1106.6,
+        "trades": 6
+      }
+    }
+  },
+  {
+    "id": 69,
+    "gu": "성동구",
+    "dong": "용답동",
+    "lat": 37.5641,
+    "lon": 127.0541,
+    "tier": "9억~12억 (확장/선호)",
+    "price_eok": 11.27,
+    "unit_price": 1727.8,
+    "score": 44.9,
+    "commute_avg": 52.7,
+    "commute_gbd": 50.5,
+    "commute_ybd": 61.8,
+    "commute_cbd": 45.7,
+    "p3040": 28.4,
+    "p_child": 8.0,
+    "drop_rate": NaN,
+    "rec_rate": 57.5,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 98,
+    "size_stats": {
+      "all": {
+        "price_eok": 11.27,
+        "unit_price": 1727.8,
+        "trades": 98
+      },
+      "small": {
+        "price_eok": 9.58,
+        "unit_price": 1900.6,
+        "trades": 39
+      },
+      "medium": {
+        "price_eok": 11.27,
+        "unit_price": 1727.8,
+        "trades": 49
+      },
+      "large": {
+        "price_eok": 14.65,
+        "unit_price": 1555.0,
+        "trades": 9
+      }
+    }
+  },
+  {
+    "id": 70,
+    "gu": "성북구",
+    "dong": "길음동",
+    "lat": 37.6049,
+    "lon": 127.022,
+    "tier": "9억~12억 (확장/선호)",
+    "price_eok": 10.43,
+    "unit_price": 1414.1,
+    "score": 42.4,
+    "commute_avg": 59.2,
+    "commute_gbd": 68.5,
+    "commute_ybd": 65.9,
+    "commute_cbd": 43.3,
+    "p3040": 27.7,
+    "p_child": 12.1,
+    "drop_rate": -27.7,
+    "rec_rate": 32.4,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 1274,
+    "size_stats": {
+      "all": {
+        "price_eok": 10.43,
+        "unit_price": 1414.1,
+        "trades": 1274
+      },
+      "small": {
+        "price_eok": 8.87,
+        "unit_price": 1555.5,
+        "trades": 509
+      },
+      "medium": {
+        "price_eok": 10.43,
+        "unit_price": 1414.1,
+        "trades": 637
+      },
+      "large": {
+        "price_eok": 13.56,
+        "unit_price": 1272.7,
+        "trades": 127
+      }
+    }
+  },
+  {
+    "id": 71,
+    "gu": "성북구",
+    "dong": "돈암동",
+    "lat": 37.5977,
+    "lon": 127.0149,
+    "tier": "7억~9억 (표준/안정)",
+    "price_eok": 8.0,
+    "unit_price": 1005.4,
+    "score": 42.2,
+    "commute_avg": 54.9,
+    "commute_gbd": 64.5,
+    "commute_ybd": 62.1,
+    "commute_cbd": 38.2,
+    "p3040": 27.5,
+    "p_child": 7.4,
+    "drop_rate": -24.1,
+    "rec_rate": 26.3,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 694,
+    "size_stats": {
+      "all": {
+        "price_eok": 8.0,
+        "unit_price": 1005.4,
+        "trades": 694
+      },
+      "small": {
+        "price_eok": 6.8,
+        "unit_price": 1105.9,
+        "trades": 277
+      },
+      "medium": {
+        "price_eok": 8.0,
+        "unit_price": 1005.4,
+        "trades": 347
+      },
+      "large": {
+        "price_eok": 10.4,
+        "unit_price": 904.9,
+        "trades": 69
+      }
+    }
+  },
+  {
+    "id": 72,
+    "gu": "성북구",
+    "dong": "동소문동4가",
+    "lat": 37.5928,
+    "lon": 127.0005,
+    "tier": "5억~7억 (실속/입문)",
+    "price_eok": 6.68,
+    "unit_price": 985.7,
+    "score": 39.8,
+    "commute_avg": 52.1,
+    "commute_gbd": 60.7,
+    "commute_ybd": 63.5,
+    "commute_cbd": 32.0,
+    "p3040": 28.6,
+    "p_child": 9.3,
+    "drop_rate": NaN,
+    "rec_rate": NaN,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 22,
+    "size_stats": {
+      "all": {
+        "price_eok": 6.68,
+        "unit_price": 985.7,
+        "trades": 22
+      },
+      "small": {
+        "price_eok": 5.68,
+        "unit_price": 1084.3,
+        "trades": 8
+      },
+      "medium": {
+        "price_eok": 6.68,
+        "unit_price": 985.7,
+        "trades": 11
+      },
+      "large": {
+        "price_eok": 8.68,
+        "unit_price": 887.1,
+        "trades": 2
+      }
+    }
+  },
+  {
+    "id": 73,
+    "gu": "성북구",
+    "dong": "동소문동5가",
+    "lat": 37.5889,
+    "lon": 127.0128,
+    "tier": "9억~12억 (확장/선호)",
+    "price_eok": 9.2,
+    "unit_price": 1118.2,
+    "score": 31.6,
+    "commute_avg": 50.9,
+    "commute_gbd": 58.1,
+    "commute_ybd": 61.2,
+    "commute_cbd": 33.4,
+    "p3040": 23.6,
+    "p_child": 7.1,
+    "drop_rate": -23.2,
+    "rec_rate": -25.8,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 12,
+    "size_stats": {
+      "all": {
+        "price_eok": 9.2,
+        "unit_price": 1118.2,
+        "trades": 12
+      },
+      "small": {
+        "price_eok": 7.82,
+        "unit_price": 1230.0,
+        "trades": 4
+      },
+      "medium": {
+        "price_eok": 9.2,
+        "unit_price": 1118.2,
+        "trades": 6
+      },
+      "large": {
+        "price_eok": 11.96,
+        "unit_price": 1006.4,
+        "trades": 1
+      }
+    }
+  },
+  {
+    "id": 74,
+    "gu": "성북구",
+    "dong": "동소문동7가",
+    "lat": 37.594,
+    "lon": 127.018,
+    "tier": "7억~9억 (표준/안정)",
+    "price_eok": 8.3,
+    "unit_price": 1222.7,
+    "score": 40.7,
+    "commute_avg": 52.9,
+    "commute_gbd": 62.0,
+    "commute_ybd": 61.7,
+    "commute_cbd": 34.9,
+    "p3040": 27.7,
+    "p_child": 10.1,
+    "drop_rate": NaN,
+    "rec_rate": NaN,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 55,
+    "size_stats": {
+      "all": {
+        "price_eok": 8.3,
+        "unit_price": 1222.7,
+        "trades": 55
+      },
+      "small": {
+        "price_eok": 7.06,
+        "unit_price": 1345.0,
+        "trades": 22
+      },
+      "medium": {
+        "price_eok": 8.3,
+        "unit_price": 1222.7,
+        "trades": 27
+      },
+      "large": {
+        "price_eok": 10.79,
+        "unit_price": 1100.4,
+        "trades": 5
+      }
+    }
+  },
+  {
+    "id": 75,
+    "gu": "성북구",
+    "dong": "보문동1가",
+    "lat": 37.5836,
+    "lon": 127.0192,
+    "tier": "9억~12억 (확장/선호)",
+    "price_eok": 10.8,
+    "unit_price": 1789.6,
+    "score": 44.3,
+    "commute_avg": 49.4,
+    "commute_gbd": 55.8,
+    "commute_ybd": 59.0,
+    "commute_cbd": 33.5,
+    "p3040": 28.2,
+    "p_child": 11.8,
+    "drop_rate": NaN,
+    "rec_rate": NaN,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 41,
+    "size_stats": {
+      "all": {
+        "price_eok": 10.8,
+        "unit_price": 1789.6,
+        "trades": 41
+      },
+      "small": {
+        "price_eok": 9.18,
+        "unit_price": 1968.6,
+        "trades": 16
+      },
+      "medium": {
+        "price_eok": 10.8,
+        "unit_price": 1789.6,
+        "trades": 20
+      },
+      "large": {
+        "price_eok": 14.04,
+        "unit_price": 1610.6,
+        "trades": 4
+      }
+    }
+  },
+  {
+    "id": 76,
+    "gu": "성북구",
+    "dong": "보문동3가",
+    "lat": 37.5836,
+    "lon": 127.0192,
+    "tier": "9억~12억 (확장/선호)",
+    "price_eok": 9.37,
+    "unit_price": 1187.8,
+    "score": 41.4,
+    "commute_avg": 49.4,
+    "commute_gbd": 55.8,
+    "commute_ybd": 59.0,
+    "commute_cbd": 33.5,
+    "p3040": 29.2,
+    "p_child": 8.0,
+    "drop_rate": NaN,
+    "rec_rate": -1.7,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 55,
+    "size_stats": {
+      "all": {
+        "price_eok": 9.37,
+        "unit_price": 1187.8,
+        "trades": 55
+      },
+      "small": {
+        "price_eok": 7.96,
+        "unit_price": 1306.6,
+        "trades": 22
+      },
+      "medium": {
+        "price_eok": 9.37,
+        "unit_price": 1187.8,
+        "trades": 27
+      },
+      "large": {
+        "price_eok": 12.18,
+        "unit_price": 1069.0,
+        "trades": 5
+      }
+    }
+  },
+  {
+    "id": 77,
+    "gu": "성북구",
+    "dong": "보문동6가",
+    "lat": 37.5836,
+    "lon": 127.0192,
+    "tier": "9억~12억 (확장/선호)",
+    "price_eok": 10.3,
+    "unit_price": 1624.3,
+    "score": 56.1,
+    "commute_avg": 49.4,
+    "commute_gbd": 55.8,
+    "commute_ybd": 59.0,
+    "commute_cbd": 33.5,
+    "p3040": 28.0,
+    "p_child": 7.3,
+    "drop_rate": 114.8,
+    "rec_rate": 14.9,
+    "cluster_id": 2,
+    "cluster_name": "그룹 2: 광역 통근 허브 & 하락장 철통 방어선",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 136,
+    "size_stats": {
+      "all": {
+        "price_eok": 10.3,
+        "unit_price": 1624.3,
+        "trades": 136
+      },
+      "small": {
+        "price_eok": 8.76,
+        "unit_price": 1786.7,
+        "trades": 54
+      },
+      "medium": {
+        "price_eok": 10.3,
+        "unit_price": 1624.3,
+        "trades": 68
+      },
+      "large": {
+        "price_eok": 13.39,
+        "unit_price": 1461.9,
+        "trades": 13
+      }
+    }
+  },
+  {
+    "id": 78,
+    "gu": "성북구",
+    "dong": "삼선동2가",
+    "lat": 37.5889,
+    "lon": 127.0128,
+    "tier": "7억~9억 (표준/안정)",
+    "price_eok": 8.5,
+    "unit_price": 1114.0,
+    "score": 43.7,
+    "commute_avg": 50.9,
+    "commute_gbd": 58.1,
+    "commute_ybd": 61.2,
+    "commute_cbd": 33.4,
+    "p3040": 26.9,
+    "p_child": 8.2,
+    "drop_rate": -18.7,
+    "rec_rate": 28.8,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 139,
+    "size_stats": {
+      "all": {
+        "price_eok": 8.5,
+        "unit_price": 1114.0,
+        "trades": 139
+      },
+      "small": {
+        "price_eok": 7.22,
+        "unit_price": 1225.4,
+        "trades": 55
+      },
+      "medium": {
+        "price_eok": 8.5,
+        "unit_price": 1114.0,
+        "trades": 69
+      },
+      "large": {
+        "price_eok": 11.05,
+        "unit_price": 1002.6,
+        "trades": 13
+      }
+    }
+  },
+  {
+    "id": 79,
+    "gu": "성북구",
+    "dong": "삼선동3가",
+    "lat": 37.5889,
+    "lon": 127.0128,
+    "tier": "9억~12억 (확장/선호)",
+    "price_eok": 11.55,
+    "unit_price": 1483.4,
+    "score": 41.0,
+    "commute_avg": 50.9,
+    "commute_gbd": 58.1,
+    "commute_ybd": 61.2,
+    "commute_cbd": 33.4,
+    "p3040": 28.2,
+    "p_child": 8.9,
+    "drop_rate": NaN,
+    "rec_rate": NaN,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 31,
+    "size_stats": {
+      "all": {
+        "price_eok": 11.55,
+        "unit_price": 1483.4,
+        "trades": 31
+      },
+      "small": {
+        "price_eok": 9.82,
+        "unit_price": 1631.7,
+        "trades": 12
+      },
+      "medium": {
+        "price_eok": 11.55,
+        "unit_price": 1483.4,
+        "trades": 15
+      },
+      "large": {
+        "price_eok": 15.02,
+        "unit_price": 1335.1,
+        "trades": 3
+      }
+    }
+  },
+  {
+    "id": 80,
+    "gu": "성북구",
+    "dong": "삼선동4가",
+    "lat": 37.5889,
+    "lon": 127.0128,
+    "tier": "7억~9억 (표준/안정)",
+    "price_eok": 8.25,
+    "unit_price": 1055.7,
+    "score": 43.1,
+    "commute_avg": 50.9,
+    "commute_gbd": 58.1,
+    "commute_ybd": 61.2,
+    "commute_cbd": 33.4,
+    "p3040": 28.1,
+    "p_child": 7.8,
+    "drop_rate": -17.8,
+    "rec_rate": 58.2,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 16,
+    "size_stats": {
+      "all": {
+        "price_eok": 8.25,
+        "unit_price": 1055.7,
+        "trades": 16
+      },
+      "small": {
+        "price_eok": 7.01,
+        "unit_price": 1161.3,
+        "trades": 6
+      },
+      "medium": {
+        "price_eok": 8.25,
+        "unit_price": 1055.7,
+        "trades": 8
+      },
+      "large": {
+        "price_eok": 10.72,
+        "unit_price": 950.1,
+        "trades": 1
+      }
+    }
+  },
+  {
+    "id": 81,
+    "gu": "성북구",
+    "dong": "상월곡동",
+    "lat": 37.6048,
+    "lon": 127.0446,
+    "tier": "5억~7억 (실속/입문)",
+    "price_eok": 6.76,
+    "unit_price": 959.1,
+    "score": 32.4,
+    "commute_avg": 58.1,
+    "commute_gbd": 64.2,
+    "commute_ybd": 63.6,
+    "commute_cbd": 46.6,
+    "p3040": 25.7,
+    "p_child": 7.5,
+    "drop_rate": -29.0,
+    "rec_rate": 1.0,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 103,
+    "size_stats": {
+      "all": {
+        "price_eok": 6.76,
+        "unit_price": 959.1,
+        "trades": 103
+      },
+      "small": {
+        "price_eok": 5.75,
+        "unit_price": 1055.0,
+        "trades": 41
+      },
+      "medium": {
+        "price_eok": 6.76,
+        "unit_price": 959.1,
+        "trades": 51
+      },
+      "large": {
+        "price_eok": 8.79,
+        "unit_price": 863.2,
+        "trades": 10
+      }
+    }
+  },
+  {
+    "id": 82,
+    "gu": "성북구",
+    "dong": "석관동",
+    "lat": 37.6086,
+    "lon": 127.0595,
+    "tier": "7억~9억 (표준/안정)",
+    "price_eok": 8.5,
+    "unit_price": 1181.4,
+    "score": 32.6,
+    "commute_avg": 61.8,
+    "commute_gbd": 66.0,
+    "commute_ybd": 69.5,
+    "commute_cbd": 50.0,
+    "p3040": 25.3,
+    "p_child": 7.8,
+    "drop_rate": -19.0,
+    "rec_rate": 4.9,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 331,
+    "size_stats": {
+      "all": {
+        "price_eok": 8.5,
+        "unit_price": 1181.4,
+        "trades": 331
+      },
+      "small": {
+        "price_eok": 7.22,
+        "unit_price": 1299.5,
+        "trades": 132
+      },
+      "medium": {
+        "price_eok": 8.5,
+        "unit_price": 1181.4,
+        "trades": 165
+      },
+      "large": {
+        "price_eok": 11.05,
+        "unit_price": 1063.3,
+        "trades": 33
+      }
+    }
+  },
+  {
+    "id": 83,
+    "gu": "성북구",
+    "dong": "안암동1가",
+    "lat": 37.5857,
+    "lon": 127.0251,
+    "tier": "7억~9억 (표준/안정)",
+    "price_eok": 8.0,
+    "unit_price": 1201.0,
+    "score": 36.5,
+    "commute_avg": 53.2,
+    "commute_gbd": 62.5,
+    "commute_ybd": 62.0,
+    "commute_cbd": 35.2,
+    "p3040": 24.7,
+    "p_child": 6.1,
+    "drop_rate": NaN,
+    "rec_rate": NaN,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 41,
+    "size_stats": {
+      "all": {
+        "price_eok": 8.0,
+        "unit_price": 1201.0,
+        "trades": 41
+      },
+      "small": {
+        "price_eok": 6.8,
+        "unit_price": 1321.1,
+        "trades": 16
+      },
+      "medium": {
+        "price_eok": 8.0,
+        "unit_price": 1201.0,
+        "trades": 20
+      },
+      "large": {
+        "price_eok": 10.4,
+        "unit_price": 1080.9,
+        "trades": 4
+      }
+    }
+  },
+  {
+    "id": 84,
+    "gu": "성북구",
+    "dong": "장위동",
+    "lat": 37.6163,
+    "lon": 127.049,
+    "tier": "9억~12억 (확장/선호)",
+    "price_eok": 10.65,
+    "unit_price": 1445.7,
+    "score": 38.0,
+    "commute_avg": 65.9,
+    "commute_gbd": 70.8,
+    "commute_ybd": 72.3,
+    "commute_cbd": 54.6,
+    "p3040": 25.8,
+    "p_child": 10.4,
+    "drop_rate": 26.3,
+    "rec_rate": 28.4,
+    "cluster_id": 2,
+    "cluster_name": "그룹 2: 광역 통근 허브 & 하락장 철통 방어선",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 539,
+    "size_stats": {
+      "all": {
+        "price_eok": 10.65,
+        "unit_price": 1445.7,
+        "trades": 539
+      },
+      "small": {
+        "price_eok": 9.05,
+        "unit_price": 1590.3,
+        "trades": 215
+      },
+      "medium": {
+        "price_eok": 10.65,
+        "unit_price": 1445.7,
+        "trades": 269
+      },
+      "large": {
+        "price_eok": 13.85,
+        "unit_price": 1301.1,
+        "trades": 53
+      }
+    }
+  },
+  {
+    "id": 85,
+    "gu": "성북구",
+    "dong": "정릉동",
+    "lat": 37.6076,
+    "lon": 127.0102,
+    "tier": "5억~7억 (실속/입문)",
+    "price_eok": 6.42,
+    "unit_price": 902.6,
+    "score": 43.7,
+    "commute_avg": 59.8,
+    "commute_gbd": 69.8,
+    "commute_ybd": 66.6,
+    "commute_cbd": 43.0,
+    "p3040": 24.6,
+    "p_child": 10.7,
+    "drop_rate": 49.9,
+    "rec_rate": 6.9,
+    "cluster_id": 2,
+    "cluster_name": "그룹 2: 광역 통근 허브 & 하락장 철통 방어선",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 776,
+    "size_stats": {
+      "all": {
+        "price_eok": 6.42,
+        "unit_price": 902.6,
+        "trades": 776
+      },
+      "small": {
+        "price_eok": 5.46,
+        "unit_price": 992.9,
+        "trades": 310
+      },
+      "medium": {
+        "price_eok": 6.42,
+        "unit_price": 902.6,
+        "trades": 388
+      },
+      "large": {
+        "price_eok": 8.35,
+        "unit_price": 812.3,
+        "trades": 77
+      }
+    }
+  },
+  {
+    "id": 86,
+    "gu": "성북구",
+    "dong": "종암동",
+    "lat": 37.5974,
+    "lon": 127.0336,
+    "tier": "7억~9억 (표준/안정)",
+    "price_eok": 8.4,
+    "unit_price": 1212.5,
+    "score": 37.1,
+    "commute_avg": 58.3,
+    "commute_gbd": 66.2,
+    "commute_ybd": 63.9,
+    "commute_cbd": 44.9,
+    "p3040": 25.3,
+    "p_child": 9.2,
+    "drop_rate": -33.7,
+    "rec_rate": 21.2,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 477,
+    "size_stats": {
+      "all": {
+        "price_eok": 8.4,
+        "unit_price": 1212.5,
+        "trades": 477
+      },
+      "small": {
+        "price_eok": 7.14,
+        "unit_price": 1333.8,
+        "trades": 190
+      },
+      "medium": {
+        "price_eok": 8.4,
+        "unit_price": 1212.5,
+        "trades": 238
+      },
+      "large": {
+        "price_eok": 10.92,
+        "unit_price": 1091.2,
+        "trades": 47
+      }
+    }
+  },
+  {
+    "id": 87,
+    "gu": "성북구",
+    "dong": "하월곡동",
+    "lat": 37.6061,
+    "lon": 127.0359,
+    "tier": "7억~9억 (표준/안정)",
+    "price_eok": 8.1,
+    "unit_price": 1081.7,
+    "score": 35.6,
+    "commute_avg": 60.4,
+    "commute_gbd": 67.9,
+    "commute_ybd": 66.7,
+    "commute_cbd": 46.5,
+    "p3040": 25.9,
+    "p_child": 9.0,
+    "drop_rate": -31.3,
+    "rec_rate": 18.1,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 511,
+    "size_stats": {
+      "all": {
+        "price_eok": 8.1,
+        "unit_price": 1081.7,
+        "trades": 511
+      },
+      "small": {
+        "price_eok": 6.88,
+        "unit_price": 1189.9,
+        "trades": 204
+      },
+      "medium": {
+        "price_eok": 8.1,
+        "unit_price": 1081.7,
+        "trades": 255
+      },
+      "large": {
+        "price_eok": 10.53,
+        "unit_price": 973.5,
+        "trades": 51
+      }
+    }
+  },
+  {
+    "id": 88,
+    "gu": "송파구",
+    "dong": "거여동",
+    "lat": 37.4939,
+    "lon": 127.1449,
+    "tier": "9억~12억 (확장/선호)",
+    "price_eok": 11.1,
+    "unit_price": 1646.6,
+    "score": 31.4,
+    "commute_avg": 69.3,
+    "commute_gbd": 53.6,
+    "commute_ybd": 81.6,
+    "commute_cbd": 72.8,
+    "p3040": 27.0,
+    "p_child": 9.9,
+    "drop_rate": -23.5,
+    "rec_rate": 36.2,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 506,
+    "size_stats": {
+      "all": {
+        "price_eok": 11.1,
+        "unit_price": 1646.6,
+        "trades": 506
+      },
+      "small": {
+        "price_eok": 9.43,
+        "unit_price": 1811.3,
+        "trades": 202
+      },
+      "medium": {
+        "price_eok": 11.1,
+        "unit_price": 1646.6,
+        "trades": 253
+      },
+      "large": {
+        "price_eok": 14.43,
+        "unit_price": 1481.9,
+        "trades": 50
+      }
+    }
+  },
+  {
+    "id": 89,
+    "gu": "송파구",
+    "dong": "마천동",
+    "lat": 37.4977,
+    "lon": 127.1518,
+    "tier": "7억~9억 (표준/안정)",
+    "price_eok": 8.82,
+    "unit_price": 1176.2,
+    "score": 22.7,
+    "commute_avg": 73.0,
+    "commute_gbd": 60.3,
+    "commute_ybd": 82.1,
+    "commute_cbd": 76.5,
+    "p3040": 24.8,
+    "p_child": 9.0,
+    "drop_rate": NaN,
+    "rec_rate": 17.4,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 107,
+    "size_stats": {
+      "all": {
+        "price_eok": 8.82,
+        "unit_price": 1176.2,
+        "trades": 107
+      },
+      "small": {
+        "price_eok": 7.5,
+        "unit_price": 1293.8,
+        "trades": 42
+      },
+      "medium": {
+        "price_eok": 8.82,
+        "unit_price": 1176.2,
+        "trades": 53
+      },
+      "large": {
+        "price_eok": 11.47,
+        "unit_price": 1058.6,
+        "trades": 10
+      }
+    }
+  },
+  {
+    "id": 90,
+    "gu": "송파구",
+    "dong": "삼전동",
+    "lat": 37.5019,
+    "lon": 127.0977,
+    "tier": "7억~9억 (표준/안정)",
+    "price_eok": 8.6,
+    "unit_price": 1095.9,
+    "score": 51.8,
+    "commute_avg": 55.3,
+    "commute_gbd": 37.0,
+    "commute_ybd": 62.1,
+    "commute_cbd": 66.6,
+    "p3040": 37.5,
+    "p_child": 10.0,
+    "drop_rate": -26.3,
+    "rec_rate": 130.4,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 25,
+    "size_stats": {
+      "all": {
+        "price_eok": 8.6,
+        "unit_price": 1095.9,
+        "trades": 25
+      },
+      "small": {
+        "price_eok": 7.31,
+        "unit_price": 1205.5,
+        "trades": 10
+      },
+      "medium": {
+        "price_eok": 8.6,
+        "unit_price": 1095.9,
+        "trades": 12
+      },
+      "large": {
+        "price_eok": 11.18,
+        "unit_price": 986.3,
+        "trades": 2
+      }
+    }
+  },
+  {
+    "id": 91,
+    "gu": "송파구",
+    "dong": "석촌동",
+    "lat": 37.5016,
+    "lon": 127.1033,
+    "tier": "9억~12억 (확장/선호)",
+    "price_eok": 10.95,
+    "unit_price": 1642.4,
+    "score": 41.6,
+    "commute_avg": 55.0,
+    "commute_gbd": 39.7,
+    "commute_ybd": 61.5,
+    "commute_cbd": 63.9,
+    "p3040": 37.5,
+    "p_child": 9.1,
+    "drop_rate": -18.6,
+    "rec_rate": 3.4,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 60,
+    "size_stats": {
+      "all": {
+        "price_eok": 10.95,
+        "unit_price": 1642.4,
+        "trades": 60
+      },
+      "small": {
+        "price_eok": 9.31,
+        "unit_price": 1806.6,
+        "trades": 24
+      },
+      "medium": {
+        "price_eok": 10.95,
+        "unit_price": 1642.4,
+        "trades": 30
+      },
+      "large": {
+        "price_eok": 14.23,
+        "unit_price": 1478.2,
+        "trades": 6
+      }
+    }
+  },
+  {
+    "id": 92,
+    "gu": "송파구",
+    "dong": "풍납동",
+    "lat": 37.5371,
+    "lon": 127.1183,
+    "tier": "9억~12억 (확장/선호)",
+    "price_eok": 11.39,
+    "unit_price": 1435.7,
+    "score": 34.6,
+    "commute_avg": 62.7,
+    "commute_gbd": 52.3,
+    "commute_ybd": 75.3,
+    "commute_cbd": 60.6,
+    "p3040": 25.9,
+    "p_child": 9.0,
+    "drop_rate": -35.9,
+    "rec_rate": 36.6,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 423,
+    "size_stats": {
+      "all": {
+        "price_eok": 11.39,
+        "unit_price": 1435.7,
+        "trades": 423
+      },
+      "small": {
+        "price_eok": 9.68,
+        "unit_price": 1579.3,
+        "trades": 169
+      },
+      "medium": {
+        "price_eok": 11.39,
+        "unit_price": 1435.7,
+        "trades": 211
+      },
+      "large": {
+        "price_eok": 14.81,
+        "unit_price": 1292.1,
+        "trades": 42
+      }
+    }
+  },
+  {
+    "id": 93,
+    "gu": "양천구",
+    "dong": "신월동",
+    "lat": 37.5268,
+    "lon": 126.8361,
+    "tier": "7억~9억 (표준/안정)",
+    "price_eok": 7.0,
+    "unit_price": 1006.9,
+    "score": 35.7,
+    "commute_avg": 63.0,
+    "commute_gbd": 76.3,
+    "commute_ybd": 45.5,
+    "commute_cbd": 67.0,
+    "p3040": 26.4,
+    "p_child": 10.9,
+    "drop_rate": 1.8,
+    "rec_rate": -14.7,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 934,
+    "size_stats": {
+      "all": {
+        "price_eok": 7.0,
+        "unit_price": 1006.9,
+        "trades": 934
+      },
+      "small": {
+        "price_eok": 5.95,
+        "unit_price": 1107.6,
+        "trades": 373
+      },
+      "medium": {
+        "price_eok": 7.0,
+        "unit_price": 1006.9,
+        "trades": 467
+      },
+      "large": {
+        "price_eok": 9.1,
+        "unit_price": 906.2,
+        "trades": 93
+      }
+    }
+  },
+  {
+    "id": 94,
+    "gu": "영등포구",
+    "dong": "당산동1가",
+    "lat": 37.523,
+    "lon": 126.8962,
+    "tier": "9억~12억 (확장/선호)",
+    "price_eok": 10.18,
+    "unit_price": 1561.4,
+    "score": 51.9,
+    "commute_avg": 41.4,
+    "commute_gbd": 58.4,
+    "commute_ybd": 21.6,
+    "commute_cbd": 44.2,
+    "p3040": 35.6,
+    "p_child": 5.1,
+    "drop_rate": NaN,
+    "rec_rate": NaN,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 65,
+    "size_stats": {
+      "all": {
+        "price_eok": 10.18,
+        "unit_price": 1561.4,
+        "trades": 65
+      },
+      "small": {
+        "price_eok": 8.65,
+        "unit_price": 1717.5,
+        "trades": 26
+      },
+      "medium": {
+        "price_eok": 10.18,
+        "unit_price": 1561.4,
+        "trades": 32
+      },
+      "large": {
+        "price_eok": 13.23,
+        "unit_price": 1405.3,
+        "trades": 6
+      }
+    }
+  },
+  {
+    "id": 95,
+    "gu": "영등포구",
+    "dong": "당산동2가",
+    "lat": 37.523,
+    "lon": 126.8962,
+    "tier": "9억~12억 (확장/선호)",
+    "price_eok": 11.0,
+    "unit_price": 1365.2,
+    "score": 58.8,
+    "commute_avg": 41.4,
+    "commute_gbd": 58.4,
+    "commute_ybd": 21.6,
+    "commute_cbd": 44.2,
+    "p3040": 51.5,
+    "p_child": 3.4,
+    "drop_rate": -8.2,
+    "rec_rate": 9.5,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 77,
+    "size_stats": {
+      "all": {
+        "price_eok": 11.0,
+        "unit_price": 1365.2,
+        "trades": 77
+      },
+      "small": {
+        "price_eok": 9.35,
+        "unit_price": 1501.7,
+        "trades": 30
+      },
+      "medium": {
+        "price_eok": 11.0,
+        "unit_price": 1365.2,
+        "trades": 38
+      },
+      "large": {
+        "price_eok": 14.3,
+        "unit_price": 1228.7,
+        "trades": 7
+      }
+    }
+  },
+  {
+    "id": 96,
+    "gu": "영등포구",
+    "dong": "당산동3가",
+    "lat": 37.523,
+    "lon": 126.8962,
+    "tier": "9억~12억 (확장/선호)",
+    "price_eok": 10.0,
+    "unit_price": 1562.7,
+    "score": 55.4,
+    "commute_avg": 41.4,
+    "commute_gbd": 58.4,
+    "commute_ybd": 21.6,
+    "commute_cbd": 44.2,
+    "p3040": 37.5,
+    "p_child": 6.5,
+    "drop_rate": -10.1,
+    "rec_rate": 14.5,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 148,
+    "size_stats": {
+      "all": {
+        "price_eok": 10.0,
+        "unit_price": 1562.7,
+        "trades": 148
+      },
+      "small": {
+        "price_eok": 8.5,
+        "unit_price": 1719.0,
+        "trades": 59
+      },
+      "medium": {
+        "price_eok": 10.0,
+        "unit_price": 1562.7,
+        "trades": 74
+      },
+      "large": {
+        "price_eok": 13.0,
+        "unit_price": 1406.4,
+        "trades": 14
+      }
+    }
+  },
+  {
+    "id": 97,
+    "gu": "영등포구",
+    "dong": "대림동",
+    "lat": 37.4957,
+    "lon": 126.9022,
+    "tier": "7억~9억 (표준/안정)",
+    "price_eok": 8.1,
+    "unit_price": 1131.0,
+    "score": 51.0,
+    "commute_avg": 46.5,
+    "commute_gbd": 54.6,
+    "commute_ybd": 25.6,
+    "commute_cbd": 59.3,
+    "p3040": 23.9,
+    "p_child": 7.7,
+    "drop_rate": 16.4,
+    "rec_rate": 23.3,
+    "cluster_id": 2,
+    "cluster_name": "그룹 2: 광역 통근 허브 & 하락장 철통 방어선",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 549,
+    "size_stats": {
+      "all": {
+        "price_eok": 8.1,
+        "unit_price": 1131.0,
+        "trades": 549
+      },
+      "small": {
+        "price_eok": 6.88,
+        "unit_price": 1244.1,
+        "trades": 219
+      },
+      "medium": {
+        "price_eok": 8.1,
+        "unit_price": 1131.0,
+        "trades": 274
+      },
+      "large": {
+        "price_eok": 10.53,
+        "unit_price": 1017.9,
+        "trades": 54
+      }
+    }
+  },
+  {
+    "id": 98,
+    "gu": "영등포구",
+    "dong": "문래동2가",
+    "lat": 37.5154,
+    "lon": 126.8952,
+    "tier": "7억~9억 (표준/안정)",
+    "price_eok": 7.47,
+    "unit_price": 1307.2,
+    "score": 53.0,
+    "commute_avg": 43.6,
+    "commute_gbd": 60.2,
+    "commute_ybd": 21.5,
+    "commute_cbd": 49.3,
+    "p3040": 36.7,
+    "p_child": 11.6,
+    "drop_rate": NaN,
+    "rec_rate": NaN,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 39,
+    "size_stats": {
+      "all": {
+        "price_eok": 7.47,
+        "unit_price": 1307.2,
+        "trades": 39
+      },
+      "small": {
+        "price_eok": 6.35,
+        "unit_price": 1437.9,
+        "trades": 15
+      },
+      "medium": {
+        "price_eok": 7.47,
+        "unit_price": 1307.2,
+        "trades": 19
+      },
+      "large": {
+        "price_eok": 9.71,
+        "unit_price": 1176.5,
+        "trades": 3
+      }
+    }
+  },
+  {
+    "id": 99,
+    "gu": "영등포구",
+    "dong": "문래동4가",
+    "lat": 37.5154,
+    "lon": 126.8952,
+    "tier": "9억~12억 (확장/선호)",
+    "price_eok": 9.0,
+    "unit_price": 1203.0,
+    "score": 53.3,
+    "commute_avg": 43.6,
+    "commute_gbd": 60.2,
+    "commute_ybd": 21.5,
+    "commute_cbd": 49.3,
+    "p3040": 37.8,
+    "p_child": 11.9,
+    "drop_rate": NaN,
+    "rec_rate": NaN,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 30,
+    "size_stats": {
+      "all": {
+        "price_eok": 9.0,
+        "unit_price": 1203.0,
+        "trades": 30
+      },
+      "small": {
+        "price_eok": 7.65,
+        "unit_price": 1323.3,
+        "trades": 12
+      },
+      "medium": {
+        "price_eok": 9.0,
+        "unit_price": 1203.0,
+        "trades": 15
+      },
+      "large": {
+        "price_eok": 11.7,
+        "unit_price": 1082.7,
+        "trades": 3
+      }
+    }
+  },
+  {
+    "id": 100,
+    "gu": "영등포구",
+    "dong": "문래동5가",
+    "lat": 37.5154,
+    "lon": 126.8952,
+    "tier": "7억~9억 (표준/안정)",
+    "price_eok": 8.22,
+    "unit_price": 1006.8,
+    "score": 54.9,
+    "commute_avg": 43.6,
+    "commute_gbd": 60.2,
+    "commute_ybd": 21.5,
+    "commute_cbd": 49.3,
+    "p3040": 37.8,
+    "p_child": 11.9,
+    "drop_rate": -18.2,
+    "rec_rate": NaN,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 77,
+    "size_stats": {
+      "all": {
+        "price_eok": 8.22,
+        "unit_price": 1006.8,
+        "trades": 77
+      },
+      "small": {
+        "price_eok": 6.99,
+        "unit_price": 1107.5,
+        "trades": 30
+      },
+      "medium": {
+        "price_eok": 8.22,
+        "unit_price": 1006.8,
+        "trades": 38
+      },
+      "large": {
+        "price_eok": 10.69,
+        "unit_price": 906.1,
+        "trades": 7
+      }
+    }
+  },
+  {
+    "id": 101,
+    "gu": "영등포구",
+    "dong": "문래동6가",
+    "lat": 37.5154,
+    "lon": 126.8952,
+    "tier": "7억~9억 (표준/안정)",
+    "price_eok": 8.3,
+    "unit_price": 1242.8,
+    "score": 62.5,
+    "commute_avg": 43.6,
+    "commute_gbd": 60.2,
+    "commute_ybd": 21.5,
+    "commute_cbd": 49.3,
+    "p3040": 48.7,
+    "p_child": 15.3,
+    "drop_rate": NaN,
+    "rec_rate": 10.7,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 180,
+    "size_stats": {
+      "all": {
+        "price_eok": 8.3,
+        "unit_price": 1242.8,
+        "trades": 180
+      },
+      "small": {
+        "price_eok": 7.06,
+        "unit_price": 1367.1,
+        "trades": 72
+      },
+      "medium": {
+        "price_eok": 8.3,
+        "unit_price": 1242.8,
+        "trades": 90
+      },
+      "large": {
+        "price_eok": 10.79,
+        "unit_price": 1118.5,
+        "trades": 18
+      }
+    }
+  },
+  {
+    "id": 102,
+    "gu": "영등포구",
+    "dong": "신길동",
+    "lat": 37.5069,
+    "lon": 126.9134,
+    "tier": "9억~12억 (확장/선호)",
+    "price_eok": 12.0,
+    "unit_price": 1706.3,
+    "score": 53.0,
+    "commute_avg": 44.6,
+    "commute_gbd": 55.5,
+    "commute_ybd": 25.2,
+    "commute_cbd": 53.2,
+    "p3040": 28.8,
+    "p_child": 7.4,
+    "drop_rate": -11.0,
+    "rec_rate": 15.1,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 1357,
+    "size_stats": {
+      "all": {
+        "price_eok": 12.0,
+        "unit_price": 1706.3,
+        "trades": 1357
+      },
+      "small": {
+        "price_eok": 10.2,
+        "unit_price": 1876.9,
+        "trades": 542
+      },
+      "medium": {
+        "price_eok": 12.0,
+        "unit_price": 1706.3,
+        "trades": 678
+      },
+      "large": {
+        "price_eok": 15.6,
+        "unit_price": 1535.7,
+        "trades": 135
+      }
+    }
+  },
+  {
+    "id": 103,
+    "gu": "영등포구",
+    "dong": "양평동1가",
+    "lat": 37.524,
+    "lon": 126.8869,
+    "tier": "9억~12억 (확장/선호)",
+    "price_eok": 9.19,
+    "unit_price": 1663.3,
+    "score": 57.6,
+    "commute_avg": 44.9,
+    "commute_gbd": 63.7,
+    "commute_ybd": 23.3,
+    "commute_cbd": 47.8,
+    "p3040": 38.0,
+    "p_child": 8.9,
+    "drop_rate": -19.8,
+    "rec_rate": 70.5,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 99,
+    "size_stats": {
+      "all": {
+        "price_eok": 9.19,
+        "unit_price": 1663.3,
+        "trades": 99
+      },
+      "small": {
+        "price_eok": 7.81,
+        "unit_price": 1829.6,
+        "trades": 39
+      },
+      "medium": {
+        "price_eok": 9.19,
+        "unit_price": 1663.3,
+        "trades": 49
+      },
+      "large": {
+        "price_eok": 11.95,
+        "unit_price": 1497.0,
+        "trades": 9
+      }
+    }
+  },
+  {
+    "id": 104,
+    "gu": "영등포구",
+    "dong": "양평동2가",
+    "lat": 37.524,
+    "lon": 126.8869,
+    "tier": "7억~9억 (표준/안정)",
+    "price_eok": 7.88,
+    "unit_price": 1239.8,
+    "score": 58.5,
+    "commute_avg": 44.9,
+    "commute_gbd": 63.7,
+    "commute_ybd": 23.3,
+    "commute_cbd": 47.8,
+    "p3040": 49.4,
+    "p_child": 9.3,
+    "drop_rate": NaN,
+    "rec_rate": 18.2,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 113,
+    "size_stats": {
+      "all": {
+        "price_eok": 7.88,
+        "unit_price": 1239.8,
+        "trades": 113
+      },
+      "small": {
+        "price_eok": 6.7,
+        "unit_price": 1363.8,
+        "trades": 45
+      },
+      "medium": {
+        "price_eok": 7.88,
+        "unit_price": 1239.8,
+        "trades": 56
+      },
+      "large": {
+        "price_eok": 10.24,
+        "unit_price": 1115.8,
+        "trades": 11
+      }
+    }
+  },
+  {
+    "id": 105,
+    "gu": "영등포구",
+    "dong": "양평동3가",
+    "lat": 37.5306,
+    "lon": 126.891,
+    "tier": "9억~12억 (확장/선호)",
+    "price_eok": 10.42,
+    "unit_price": 1350.4,
+    "score": 54.6,
+    "commute_avg": 43.8,
+    "commute_gbd": 60.3,
+    "commute_ybd": 23.1,
+    "commute_cbd": 47.9,
+    "p3040": 39.2,
+    "p_child": 6.3,
+    "drop_rate": -23.8,
+    "rec_rate": 26.6,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 220,
+    "size_stats": {
+      "all": {
+        "price_eok": 10.42,
+        "unit_price": 1350.4,
+        "trades": 220
+      },
+      "small": {
+        "price_eok": 8.86,
+        "unit_price": 1485.4,
+        "trades": 88
+      },
+      "medium": {
+        "price_eok": 10.42,
+        "unit_price": 1350.4,
+        "trades": 110
+      },
+      "large": {
+        "price_eok": 13.55,
+        "unit_price": 1215.4,
+        "trades": 22
+      }
+    }
+  },
+  {
+    "id": 106,
+    "gu": "영등포구",
+    "dong": "양평동4가",
+    "lat": 37.5371,
+    "lon": 126.895,
+    "tier": "7억~9억 (표준/안정)",
+    "price_eok": 8.9,
+    "unit_price": 1204.8,
+    "score": 61.4,
+    "commute_avg": 42.6,
+    "commute_gbd": 57.0,
+    "commute_ybd": 22.9,
+    "commute_cbd": 48.0,
+    "p3040": 42.3,
+    "p_child": 9.6,
+    "drop_rate": -21.6,
+    "rec_rate": 75.3,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 62,
+    "size_stats": {
+      "all": {
+        "price_eok": 8.9,
+        "unit_price": 1204.8,
+        "trades": 62
+      },
+      "small": {
+        "price_eok": 7.57,
+        "unit_price": 1325.3,
+        "trades": 24
+      },
+      "medium": {
+        "price_eok": 8.9,
+        "unit_price": 1204.8,
+        "trades": 31
+      },
+      "large": {
+        "price_eok": 11.57,
+        "unit_price": 1084.3,
+        "trades": 6
+      }
+    }
+  },
+  {
+    "id": 107,
+    "gu": "영등포구",
+    "dong": "양평동5가",
+    "lat": 37.5371,
+    "lon": 126.895,
+    "tier": "9억~12억 (확장/선호)",
+    "price_eok": 11.0,
+    "unit_price": 1559.9,
+    "score": 60.1,
+    "commute_avg": 42.6,
+    "commute_gbd": 57.0,
+    "commute_ybd": 22.9,
+    "commute_cbd": 48.0,
+    "p3040": 41.7,
+    "p_child": 9.5,
+    "drop_rate": -22.8,
+    "rec_rate": 56.3,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 106,
+    "size_stats": {
+      "all": {
+        "price_eok": 11.0,
+        "unit_price": 1559.9,
+        "trades": 106
+      },
+      "small": {
+        "price_eok": 9.35,
+        "unit_price": 1715.9,
+        "trades": 42
+      },
+      "medium": {
+        "price_eok": 11.0,
+        "unit_price": 1559.9,
+        "trades": 53
+      },
+      "large": {
+        "price_eok": 14.3,
+        "unit_price": 1403.9,
+        "trades": 10
+      }
+    }
+  },
+  {
+    "id": 108,
+    "gu": "영등포구",
+    "dong": "양평동6가",
+    "lat": 37.5371,
+    "lon": 126.895,
+    "tier": "7억~9억 (표준/안정)",
+    "price_eok": 8.25,
+    "unit_price": 1163.8,
+    "score": 56.5,
+    "commute_avg": 42.6,
+    "commute_gbd": 57.0,
+    "commute_ybd": 22.9,
+    "commute_cbd": 48.0,
+    "p3040": 41.6,
+    "p_child": 9.8,
+    "drop_rate": NaN,
+    "rec_rate": 30.2,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 42,
+    "size_stats": {
+      "all": {
+        "price_eok": 8.25,
+        "unit_price": 1163.8,
+        "trades": 42
+      },
+      "small": {
+        "price_eok": 7.01,
+        "unit_price": 1280.2,
+        "trades": 16
+      },
+      "medium": {
+        "price_eok": 8.25,
+        "unit_price": 1163.8,
+        "trades": 21
+      },
+      "large": {
+        "price_eok": 10.72,
+        "unit_price": 1047.4,
+        "trades": 4
+      }
+    }
+  },
+  {
+    "id": 109,
+    "gu": "영등포구",
+    "dong": "영등포동",
+    "lat": 37.5177,
+    "lon": 126.9096,
+    "tier": "9억~12억 (확장/선호)",
+    "price_eok": 11.84,
+    "unit_price": 1598.2,
+    "score": 53.1,
+    "commute_avg": 42.0,
+    "commute_gbd": 58.4,
+    "commute_ybd": 22.4,
+    "commute_cbd": 45.2,
+    "p3040": 27.7,
+    "p_child": 6.4,
+    "drop_rate": -26.4,
+    "rec_rate": 55.2,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 193,
+    "size_stats": {
+      "all": {
+        "price_eok": 11.84,
+        "unit_price": 1598.2,
+        "trades": 193
+      },
+      "small": {
+        "price_eok": 10.06,
+        "unit_price": 1758.0,
+        "trades": 77
+      },
+      "medium": {
+        "price_eok": 11.84,
+        "unit_price": 1598.2,
+        "trades": 96
+      },
+      "large": {
+        "price_eok": 15.39,
+        "unit_price": 1438.4,
+        "trades": 19
+      }
+    }
+  },
+  {
+    "id": 110,
+    "gu": "영등포구",
+    "dong": "영등포동2가",
+    "lat": 37.5214,
+    "lon": 126.9078,
+    "tier": "7억~9억 (표준/안정)",
+    "price_eok": 7.35,
+    "unit_price": 1650.3,
+    "score": 55.7,
+    "commute_avg": 41.2,
+    "commute_gbd": 58.9,
+    "commute_ybd": 20.7,
+    "commute_cbd": 44.2,
+    "p3040": 45.3,
+    "p_child": 1.9,
+    "drop_rate": 1.5,
+    "rec_rate": 39.6,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 11,
+    "size_stats": {
+      "all": {
+        "price_eok": 7.35,
+        "unit_price": 1650.3,
+        "trades": 11
+      },
+      "small": {
+        "price_eok": 6.25,
+        "unit_price": 1815.3,
+        "trades": 4
+      },
+      "medium": {
+        "price_eok": 7.35,
+        "unit_price": 1650.3,
+        "trades": 5
+      },
+      "large": {
+        "price_eok": 9.55,
+        "unit_price": 1485.3,
+        "trades": 1
+      }
+    }
+  },
+  {
+    "id": 111,
+    "gu": "영등포구",
+    "dong": "영등포동5가",
+    "lat": 37.5214,
+    "lon": 126.9078,
+    "tier": "5억~7억 (실속/입문)",
+    "price_eok": 6.05,
+    "unit_price": 1007.9,
+    "score": 45.9,
+    "commute_avg": 41.2,
+    "commute_gbd": 58.9,
+    "commute_ybd": 20.7,
+    "commute_cbd": 44.2,
+    "p3040": 29.8,
+    "p_child": 4.3,
+    "drop_rate": NaN,
+    "rec_rate": NaN,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 11,
+    "size_stats": {
+      "all": {
+        "price_eok": 6.05,
+        "unit_price": 1007.9,
+        "trades": 11
+      },
+      "small": {
+        "price_eok": 5.14,
+        "unit_price": 1108.7,
+        "trades": 4
+      },
+      "medium": {
+        "price_eok": 6.05,
+        "unit_price": 1007.9,
+        "trades": 5
+      },
+      "large": {
+        "price_eok": 7.87,
+        "unit_price": 907.1,
+        "trades": 1
+      }
+    }
+  },
+  {
+    "id": 112,
+    "gu": "용산구",
+    "dong": "후암동",
+    "lat": 37.549,
+    "lon": 126.9788,
+    "tier": "9억~12억 (확장/선호)",
+    "price_eok": 11.0,
+    "unit_price": 1228.3,
+    "score": 60.0,
+    "commute_avg": 39.1,
+    "commute_gbd": 48.2,
+    "commute_ybd": 41.2,
+    "commute_cbd": 27.9,
+    "p3040": 31.9,
+    "p_child": 11.0,
+    "drop_rate": 86.0,
+    "rec_rate": -13.8,
+    "cluster_id": 2,
+    "cluster_name": "그룹 2: 광역 통근 허브 & 하락장 철통 방어선",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 21,
+    "size_stats": {
+      "all": {
+        "price_eok": 11.0,
+        "unit_price": 1228.3,
+        "trades": 21
+      },
+      "small": {
+        "price_eok": 9.35,
+        "unit_price": 1351.1,
+        "trades": 8
+      },
+      "medium": {
+        "price_eok": 11.0,
+        "unit_price": 1228.3,
+        "trades": 10
+      },
+      "large": {
+        "price_eok": 14.3,
+        "unit_price": 1105.5,
+        "trades": 2
+      }
+    }
+  },
+  {
+    "id": 113,
+    "gu": "은평구",
+    "dong": "갈현동",
+    "lat": 37.6162,
+    "lon": 126.9146,
+    "tier": "5억~7억 (실속/입문)",
+    "price_eok": 5.58,
+    "unit_price": 861.6,
+    "score": 39.2,
+    "commute_avg": 59.0,
+    "commute_gbd": 71.8,
+    "commute_ybd": 57.4,
+    "commute_cbd": 47.7,
+    "p3040": 28.4,
+    "p_child": 10.4,
+    "drop_rate": -23.9,
+    "rec_rate": 42.9,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 121,
+    "size_stats": {
+      "all": {
+        "price_eok": 5.58,
+        "unit_price": 861.6,
+        "trades": 121
+      },
+      "small": {
+        "price_eok": 4.74,
+        "unit_price": 947.8,
+        "trades": 48
+      },
+      "medium": {
+        "price_eok": 5.58,
+        "unit_price": 861.6,
+        "trades": 60
+      },
+      "large": {
+        "price_eok": 7.25,
+        "unit_price": 775.4,
+        "trades": 12
+      }
+    }
+  },
+  {
+    "id": 114,
+    "gu": "은평구",
+    "dong": "구산동",
+    "lat": 37.7925,
+    "lon": 127.204,
+    "tier": "5억~7억 (실속/입문)",
+    "price_eok": 5.53,
+    "unit_price": 716.6,
+    "score": 35.0,
+    "commute_avg": 63.2,
+    "commute_gbd": 77.6,
+    "commute_ybd": 57.3,
+    "commute_cbd": 54.6,
+    "p3040": 27.6,
+    "p_child": 11.3,
+    "drop_rate": -16.1,
+    "rec_rate": 27.0,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 127,
+    "size_stats": {
+      "all": {
+        "price_eok": 5.53,
+        "unit_price": 716.6,
+        "trades": 127
+      },
+      "small": {
+        "price_eok": 4.7,
+        "unit_price": 788.3,
+        "trades": 50
+      },
+      "medium": {
+        "price_eok": 5.53,
+        "unit_price": 716.6,
+        "trades": 63
+      },
+      "large": {
+        "price_eok": 7.19,
+        "unit_price": 644.9,
+        "trades": 12
+      }
+    }
+  },
+  {
+    "id": 115,
+    "gu": "은평구",
+    "dong": "녹번동",
+    "lat": 37.6048,
+    "lon": 126.9285,
+    "tier": "9억~12억 (확장/선호)",
+    "price_eok": 10.34,
+    "unit_price": 1389.0,
+    "score": 42.4,
+    "commute_avg": 54.5,
+    "commute_gbd": 65.1,
+    "commute_ybd": 57.0,
+    "commute_cbd": 41.4,
+    "p3040": 29.3,
+    "p_child": 9.3,
+    "drop_rate": -30.1,
+    "rec_rate": 22.3,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 381,
+    "size_stats": {
+      "all": {
+        "price_eok": 10.34,
+        "unit_price": 1389.0,
+        "trades": 381
+      },
+      "small": {
+        "price_eok": 8.79,
+        "unit_price": 1527.9,
+        "trades": 152
+      },
+      "medium": {
+        "price_eok": 10.34,
+        "unit_price": 1389.0,
+        "trades": 190
+      },
+      "large": {
+        "price_eok": 13.44,
+        "unit_price": 1250.1,
+        "trades": 38
+      }
+    }
+  },
+  {
+    "id": 116,
+    "gu": "은평구",
+    "dong": "불광동",
+    "lat": 37.6195,
+    "lon": 126.9269,
+    "tier": "7억~9억 (표준/안정)",
+    "price_eok": 7.95,
+    "unit_price": 1229.4,
+    "score": 37.9,
+    "commute_avg": 58.2,
+    "commute_gbd": 70.2,
+    "commute_ybd": 58.3,
+    "commute_cbd": 46.1,
+    "p3040": 28.1,
+    "p_child": 7.4,
+    "drop_rate": -31.4,
+    "rec_rate": 21.5,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 485,
+    "size_stats": {
+      "all": {
+        "price_eok": 7.95,
+        "unit_price": 1229.4,
+        "trades": 485
+      },
+      "small": {
+        "price_eok": 6.76,
+        "unit_price": 1352.3,
+        "trades": 194
+      },
+      "medium": {
+        "price_eok": 7.95,
+        "unit_price": 1229.4,
+        "trades": 242
+      },
+      "large": {
+        "price_eok": 10.34,
+        "unit_price": 1106.5,
+        "trades": 48
+      }
+    }
+  },
+  {
+    "id": 117,
+    "gu": "은평구",
+    "dong": "수색동",
+    "lat": 37.7985,
+    "lon": 127.21,
+    "tier": "9억~12억 (확장/선호)",
+    "price_eok": 10.2,
+    "unit_price": 1506.1,
+    "score": 46.1,
+    "commute_avg": 62.6,
+    "commute_gbd": 78.6,
+    "commute_ybd": 49.6,
+    "commute_cbd": 59.5,
+    "p3040": 33.3,
+    "p_child": 21.0,
+    "drop_rate": -25.2,
+    "rec_rate": 49.0,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 317,
+    "size_stats": {
+      "all": {
+        "price_eok": 10.2,
+        "unit_price": 1506.1,
+        "trades": 317
+      },
+      "small": {
+        "price_eok": 8.67,
+        "unit_price": 1656.7,
+        "trades": 126
+      },
+      "medium": {
+        "price_eok": 10.2,
+        "unit_price": 1506.1,
+        "trades": 158
+      },
+      "large": {
+        "price_eok": 13.26,
+        "unit_price": 1355.5,
+        "trades": 31
+      }
+    }
+  },
+  {
+    "id": 118,
+    "gu": "은평구",
+    "dong": "신사동",
+    "lat": 37.5917,
+    "lon": 126.9093,
+    "tier": "5억~7억 (실속/입문)",
+    "price_eok": 5.85,
+    "unit_price": 754.0,
+    "score": 35.4,
+    "commute_avg": 61.9,
+    "commute_gbd": 78.1,
+    "commute_ybd": 51.4,
+    "commute_cbd": 56.3,
+    "p3040": 28.8,
+    "p_child": 9.9,
+    "drop_rate": -16.9,
+    "rec_rate": 7.7,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 284,
+    "size_stats": {
+      "all": {
+        "price_eok": 5.85,
+        "unit_price": 754.0,
+        "trades": 284
+      },
+      "small": {
+        "price_eok": 4.97,
+        "unit_price": 829.4,
+        "trades": 113
+      },
+      "medium": {
+        "price_eok": 5.85,
+        "unit_price": 754.0,
+        "trades": 142
+      },
+      "large": {
+        "price_eok": 7.6,
+        "unit_price": 678.6,
+        "trades": 28
+      }
+    }
+  },
+  {
+    "id": 119,
+    "gu": "은평구",
+    "dong": "역촌동",
+    "lat": 37.802499999999995,
+    "lon": 127.214,
+    "tier": "5억~7억 (실속/입문)",
+    "price_eok": 6.68,
+    "unit_price": 837.3,
+    "score": 37.7,
+    "commute_avg": 60.9,
+    "commute_gbd": 75.8,
+    "commute_ybd": 53.3,
+    "commute_cbd": 53.5,
+    "p3040": 28.5,
+    "p_child": 11.2,
+    "drop_rate": -36.8,
+    "rec_rate": 56.3,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 93,
+    "size_stats": {
+      "all": {
+        "price_eok": 6.68,
+        "unit_price": 837.3,
+        "trades": 93
+      },
+      "small": {
+        "price_eok": 5.68,
+        "unit_price": 921.0,
+        "trades": 37
+      },
+      "medium": {
+        "price_eok": 6.68,
+        "unit_price": 837.3,
+        "trades": 46
+      },
+      "large": {
+        "price_eok": 8.68,
+        "unit_price": 753.6,
+        "trades": 9
+      }
+    }
+  },
+  {
+    "id": 120,
+    "gu": "은평구",
+    "dong": "응암동",
+    "lat": 37.5936,
+    "lon": 126.9193,
+    "tier": "7억~9억 (표준/안정)",
+    "price_eok": 8.74,
+    "unit_price": 1271.4,
+    "score": 39.7,
+    "commute_avg": 60.0,
+    "commute_gbd": 75.5,
+    "commute_ybd": 53.1,
+    "commute_cbd": 51.5,
+    "p3040": 28.3,
+    "p_child": 9.8,
+    "drop_rate": -9.1,
+    "rec_rate": 5.4,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 1083,
+    "size_stats": {
+      "all": {
+        "price_eok": 8.74,
+        "unit_price": 1271.4,
+        "trades": 1083
+      },
+      "small": {
+        "price_eok": 7.43,
+        "unit_price": 1398.5,
+        "trades": 433
+      },
+      "medium": {
+        "price_eok": 8.74,
+        "unit_price": 1271.4,
+        "trades": 541
+      },
+      "large": {
+        "price_eok": 11.36,
+        "unit_price": 1144.3,
+        "trades": 108
+      }
+    }
+  },
+  {
+    "id": 121,
+    "gu": "은평구",
+    "dong": "진관동",
+    "lat": 37.6388,
+    "lon": 126.9285,
+    "tier": "7억~9억 (표준/안정)",
+    "price_eok": 8.8,
+    "unit_price": 1064.6,
+    "score": 41.5,
+    "commute_avg": 65.9,
+    "commute_gbd": 77.9,
+    "commute_ybd": 68.0,
+    "commute_cbd": 51.7,
+    "p3040": 40.5,
+    "p_child": 16.3,
+    "drop_rate": -29.6,
+    "rec_rate": 18.2,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 454,
+    "size_stats": {
+      "all": {
+        "price_eok": 8.8,
+        "unit_price": 1064.6,
+        "trades": 454
+      },
+      "small": {
+        "price_eok": 7.48,
+        "unit_price": 1171.1,
+        "trades": 181
+      },
+      "medium": {
+        "price_eok": 8.8,
+        "unit_price": 1064.6,
+        "trades": 227
+      },
+      "large": {
+        "price_eok": 11.44,
+        "unit_price": 958.1,
+        "trades": 45
+      }
+    }
+  },
+  {
+    "id": 122,
+    "gu": "종로구",
+    "dong": "교북동",
+    "lat": 37.5699,
+    "lon": 126.9633,
+    "tier": "9억~12억 (확장/선호)",
+    "price_eok": 9.89,
+    "unit_price": 2428.7,
+    "score": 48.1,
+    "commute_avg": 41.2,
+    "commute_gbd": 57.7,
+    "commute_ybd": 40.0,
+    "commute_cbd": 25.8,
+    "p3040": 23.4,
+    "p_child": 10.0,
+    "drop_rate": NaN,
+    "rec_rate": NaN,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 39,
+    "size_stats": {
+      "all": {
+        "price_eok": 9.89,
+        "unit_price": 2428.7,
+        "trades": 39
+      },
+      "small": {
+        "price_eok": 8.41,
+        "unit_price": 2671.6,
+        "trades": 15
+      },
+      "medium": {
+        "price_eok": 9.89,
+        "unit_price": 2428.7,
+        "trades": 19
+      },
+      "large": {
+        "price_eok": 12.86,
+        "unit_price": 2185.8,
+        "trades": 3
+      }
+    }
+  },
+  {
+    "id": 123,
+    "gu": "종로구",
+    "dong": "명륜2가",
+    "lat": 37.5858,
+    "lon": 126.9989,
+    "tier": "9억~12억 (확장/선호)",
+    "price_eok": 10.75,
+    "unit_price": 1394.9,
+    "score": 40.5,
+    "commute_avg": 47.6,
+    "commute_gbd": 60.3,
+    "commute_ybd": 58.1,
+    "commute_cbd": 24.5,
+    "p3040": 23.4,
+    "p_child": 7.6,
+    "drop_rate": -20.7,
+    "rec_rate": NaN,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 28,
+    "size_stats": {
+      "all": {
+        "price_eok": 10.75,
+        "unit_price": 1394.9,
+        "trades": 28
+      },
+      "small": {
+        "price_eok": 9.14,
+        "unit_price": 1534.4,
+        "trades": 11
+      },
+      "medium": {
+        "price_eok": 10.75,
+        "unit_price": 1394.9,
+        "trades": 14
+      },
+      "large": {
+        "price_eok": 13.97,
+        "unit_price": 1255.4,
+        "trades": 2
+      }
+    }
+  },
+  {
+    "id": 124,
+    "gu": "종로구",
+    "dong": "숭인동",
+    "lat": 37.5759,
+    "lon": 127.0182,
+    "tier": "5억~7억 (실속/입문)",
+    "price_eok": 5.2,
+    "unit_price": 868.5,
+    "score": 43.4,
+    "commute_avg": 46.5,
+    "commute_gbd": 55.0,
+    "commute_ybd": 56.6,
+    "commute_cbd": 27.8,
+    "p3040": 27.3,
+    "p_child": 5.3,
+    "drop_rate": 1.3,
+    "rec_rate": -10.1,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 87,
+    "size_stats": {
+      "all": {
+        "price_eok": 5.2,
+        "unit_price": 868.5,
+        "trades": 87
+      },
+      "small": {
+        "price_eok": 4.42,
+        "unit_price": 955.4,
+        "trades": 34
+      },
+      "medium": {
+        "price_eok": 5.2,
+        "unit_price": 868.5,
+        "trades": 43
+      },
+      "large": {
+        "price_eok": 6.76,
+        "unit_price": 781.6,
+        "trades": 8
+      }
+    }
+  },
+  {
+    "id": 125,
+    "gu": "종로구",
+    "dong": "창신동",
+    "lat": 37.575,
+    "lon": 127.013,
+    "tier": "5억~7억 (실속/입문)",
+    "price_eok": 6.95,
+    "unit_price": 1005.3,
+    "score": 40.3,
+    "commute_avg": 47.2,
+    "commute_gbd": 55.6,
+    "commute_ybd": 59.3,
+    "commute_cbd": 26.8,
+    "p3040": 22.9,
+    "p_child": 5.4,
+    "drop_rate": -17.9,
+    "rec_rate": -6.7,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 155,
+    "size_stats": {
+      "all": {
+        "price_eok": 6.95,
+        "unit_price": 1005.3,
+        "trades": 155
+      },
+      "small": {
+        "price_eok": 5.91,
+        "unit_price": 1105.8,
+        "trades": 62
+      },
+      "medium": {
+        "price_eok": 6.95,
+        "unit_price": 1005.3,
+        "trades": 77
+      },
+      "large": {
+        "price_eok": 9.04,
+        "unit_price": 904.8,
+        "trades": 15
+      }
+    }
+  },
+  {
+    "id": 126,
+    "gu": "종로구",
+    "dong": "평창동",
+    "lat": 37.8165,
+    "lon": 127.228,
+    "tier": "7억~9억 (표준/안정)",
+    "price_eok": 7.9,
+    "unit_price": 1012.6,
+    "score": 40.8,
+    "commute_avg": 55.8,
+    "commute_gbd": 71.8,
+    "commute_ybd": 62.6,
+    "commute_cbd": 32.8,
+    "p3040": 26.4,
+    "p_child": 13.7,
+    "drop_rate": NaN,
+    "rec_rate": 45.3,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 25,
+    "size_stats": {
+      "all": {
+        "price_eok": 7.9,
+        "unit_price": 1012.6,
+        "trades": 25
+      },
+      "small": {
+        "price_eok": 6.71,
+        "unit_price": 1113.9,
+        "trades": 10
+      },
+      "medium": {
+        "price_eok": 7.9,
+        "unit_price": 1012.6,
+        "trades": 12
+      },
+      "large": {
+        "price_eok": 10.27,
+        "unit_price": 911.3,
+        "trades": 2
+      }
+    }
+  },
+  {
+    "id": 127,
+    "gu": "중구",
+    "dong": "묵정동",
+    "lat": 37.5602,
+    "lon": 127.0001,
+    "tier": "7억~9억 (표준/안정)",
+    "price_eok": 7.4,
+    "unit_price": 1773.3,
+    "score": 47.1,
+    "commute_avg": 39.8,
+    "commute_gbd": 46.6,
+    "commute_ybd": 50.2,
+    "commute_cbd": 22.4,
+    "p3040": 23.3,
+    "p_child": 8.0,
+    "drop_rate": NaN,
+    "rec_rate": NaN,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 20,
+    "size_stats": {
+      "all": {
+        "price_eok": 7.4,
+        "unit_price": 1773.3,
+        "trades": 20
+      },
+      "small": {
+        "price_eok": 6.29,
+        "unit_price": 1950.6,
+        "trades": 8
+      },
+      "medium": {
+        "price_eok": 7.4,
+        "unit_price": 1773.3,
+        "trades": 10
+      },
+      "large": {
+        "price_eok": 9.62,
+        "unit_price": 1596.0,
+        "trades": 2
+      }
+    }
+  },
+  {
+    "id": 128,
+    "gu": "중구",
+    "dong": "순화동",
+    "lat": 37.561,
+    "lon": 126.9768,
+    "tier": "9억~12억 (확장/선호)",
+    "price_eok": 10.58,
+    "unit_price": 1617.2,
+    "score": 63.6,
+    "commute_avg": 42.1,
+    "commute_gbd": 58.7,
+    "commute_ybd": 49.0,
+    "commute_cbd": 18.7,
+    "p3040": 52.3,
+    "p_child": 15.2,
+    "drop_rate": -31.5,
+    "rec_rate": 46.8,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 18,
+    "size_stats": {
+      "all": {
+        "price_eok": 10.58,
+        "unit_price": 1617.2,
+        "trades": 18
+      },
+      "small": {
+        "price_eok": 8.99,
+        "unit_price": 1778.9,
+        "trades": 7
+      },
+      "medium": {
+        "price_eok": 10.58,
+        "unit_price": 1617.2,
+        "trades": 9
+      },
+      "large": {
+        "price_eok": 13.75,
+        "unit_price": 1455.5,
+        "trades": 1
+      }
+    }
+  },
+  {
+    "id": 129,
+    "gu": "중구",
+    "dong": "입정동",
+    "lat": 37.5673,
+    "lon": 126.995,
+    "tier": "9억~12억 (확장/선호)",
+    "price_eok": 10.36,
+    "unit_price": 2080.4,
+    "score": 53.5,
+    "commute_avg": 47.7,
+    "commute_gbd": 53.3,
+    "commute_ybd": 68.0,
+    "commute_cbd": 21.7,
+    "p3040": 52.0,
+    "p_child": 7.0,
+    "drop_rate": NaN,
+    "rec_rate": NaN,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 25,
+    "size_stats": {
+      "all": {
+        "price_eok": 10.36,
+        "unit_price": 2080.4,
+        "trades": 25
+      },
+      "small": {
+        "price_eok": 8.81,
+        "unit_price": 2288.4,
+        "trades": 10
+      },
+      "medium": {
+        "price_eok": 10.36,
+        "unit_price": 2080.4,
+        "trades": 12
+      },
+      "large": {
+        "price_eok": 13.47,
+        "unit_price": 1872.4,
+        "trades": 2
+      }
+    }
+  },
+  {
+    "id": 130,
+    "gu": "중구",
+    "dong": "충무로4가",
+    "lat": 37.5623,
+    "lon": 126.9993,
+    "tier": "9억~12억 (확장/선호)",
+    "price_eok": 11.55,
+    "unit_price": 1401.5,
+    "score": 54.5,
+    "commute_avg": 41.3,
+    "commute_gbd": 49.8,
+    "commute_ybd": 52.0,
+    "commute_cbd": 22.2,
+    "p3040": 34.1,
+    "p_child": 5.6,
+    "drop_rate": -38.6,
+    "rec_rate": 90.3,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 20,
+    "size_stats": {
+      "all": {
+        "price_eok": 11.55,
+        "unit_price": 1401.5,
+        "trades": 20
+      },
+      "small": {
+        "price_eok": 9.82,
+        "unit_price": 1541.7,
+        "trades": 8
+      },
+      "medium": {
+        "price_eok": 11.55,
+        "unit_price": 1401.5,
+        "trades": 10
+      },
+      "large": {
+        "price_eok": 15.02,
+        "unit_price": 1261.4,
+        "trades": 2
+      }
+    }
+  },
+  {
+    "id": 131,
+    "gu": "중구",
+    "dong": "황학동",
+    "lat": 37.5678,
+    "lon": 127.0205,
+    "tier": "9억~12억 (확장/선호)",
+    "price_eok": 9.8,
+    "unit_price": 1264.2,
+    "score": 54.0,
+    "commute_avg": 43.9,
+    "commute_gbd": 49.5,
+    "commute_ybd": 56.5,
+    "commute_cbd": 25.6,
+    "p3040": 35.2,
+    "p_child": 4.5,
+    "drop_rate": -6.9,
+    "rec_rate": 33.5,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 221,
+    "size_stats": {
+      "all": {
+        "price_eok": 9.8,
+        "unit_price": 1264.2,
+        "trades": 221
+      },
+      "small": {
+        "price_eok": 8.33,
+        "unit_price": 1390.6,
+        "trades": 88
+      },
+      "medium": {
+        "price_eok": 9.8,
+        "unit_price": 1264.2,
+        "trades": 110
+      },
+      "large": {
+        "price_eok": 12.74,
+        "unit_price": 1137.8,
+        "trades": 22
+      }
+    }
+  },
+  {
+    "id": 132,
+    "gu": "중랑구",
+    "dong": "망우동",
+    "lat": 37.5954,
+    "lon": 127.0986,
+    "tier": "5억~7억 (실속/입문)",
+    "price_eok": 6.5,
+    "unit_price": 831.2,
+    "score": 25.6,
+    "commute_avg": 69.6,
+    "commute_gbd": 61.4,
+    "commute_ybd": 83.7,
+    "commute_cbd": 63.8,
+    "p3040": 25.0,
+    "p_child": 8.0,
+    "drop_rate": -19.2,
+    "rec_rate": 13.4,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 183,
+    "size_stats": {
+      "all": {
+        "price_eok": 6.5,
+        "unit_price": 831.2,
+        "trades": 183
+      },
+      "small": {
+        "price_eok": 5.52,
+        "unit_price": 914.3,
+        "trades": 73
+      },
+      "medium": {
+        "price_eok": 6.5,
+        "unit_price": 831.2,
+        "trades": 91
+      },
+      "large": {
+        "price_eok": 8.45,
+        "unit_price": 748.1,
+        "trades": 18
+      }
+    }
+  },
+  {
+    "id": 133,
+    "gu": "중랑구",
+    "dong": "면목동",
+    "lat": 37.5833,
+    "lon": 127.0844,
+    "tier": "7억~9억 (표준/안정)",
+    "price_eok": 7.2,
+    "unit_price": 956.2,
+    "score": 34.6,
+    "commute_avg": 62.7,
+    "commute_gbd": 53.9,
+    "commute_ybd": 74.9,
+    "commute_cbd": 59.2,
+    "p3040": 28.4,
+    "p_child": 8.7,
+    "drop_rate": -16.3,
+    "rec_rate": -2.6,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 698,
+    "size_stats": {
+      "all": {
+        "price_eok": 7.2,
+        "unit_price": 956.2,
+        "trades": 698
+      },
+      "small": {
+        "price_eok": 6.12,
+        "unit_price": 1051.8,
+        "trades": 279
+      },
+      "medium": {
+        "price_eok": 7.2,
+        "unit_price": 956.2,
+        "trades": 349
+      },
+      "large": {
+        "price_eok": 9.36,
+        "unit_price": 860.6,
+        "trades": 69
+      }
+    }
+  },
+  {
+    "id": 134,
+    "gu": "중랑구",
+    "dong": "묵동",
+    "lat": 37.6117,
+    "lon": 127.0783,
+    "tier": "5억~7억 (실속/입문)",
+    "price_eok": 6.64,
+    "unit_price": 922.9,
+    "score": 35.6,
+    "commute_avg": 63.4,
+    "commute_gbd": 58.6,
+    "commute_ybd": 74.4,
+    "commute_cbd": 57.2,
+    "p3040": 29.6,
+    "p_child": 9.7,
+    "drop_rate": -22.1,
+    "rec_rate": 22.0,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 330,
+    "size_stats": {
+      "all": {
+        "price_eok": 6.64,
+        "unit_price": 922.9,
+        "trades": 330
+      },
+      "small": {
+        "price_eok": 5.64,
+        "unit_price": 1015.2,
+        "trades": 132
+      },
+      "medium": {
+        "price_eok": 6.64,
+        "unit_price": 922.9,
+        "trades": 165
+      },
+      "large": {
+        "price_eok": 8.63,
+        "unit_price": 830.6,
+        "trades": 33
+      }
+    }
+  },
+  {
+    "id": 135,
+    "gu": "중랑구",
+    "dong": "상봉동",
+    "lat": 37.5969,
+    "lon": 127.0862,
+    "tier": "5억~7억 (실속/입문)",
+    "price_eok": 6.4,
+    "unit_price": 963.0,
+    "score": 40.2,
+    "commute_avg": 60.8,
+    "commute_gbd": 55.6,
+    "commute_ybd": 72.6,
+    "commute_cbd": 54.2,
+    "p3040": 33.2,
+    "p_child": 8.5,
+    "drop_rate": -10.1,
+    "rec_rate": 16.4,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 491,
+    "size_stats": {
+      "all": {
+        "price_eok": 6.4,
+        "unit_price": 963.0,
+        "trades": 491
+      },
+      "small": {
+        "price_eok": 5.44,
+        "unit_price": 1059.3,
+        "trades": 196
+      },
+      "medium": {
+        "price_eok": 6.4,
+        "unit_price": 963.0,
+        "trades": 245
+      },
+      "large": {
+        "price_eok": 8.32,
+        "unit_price": 866.7,
+        "trades": 49
+      }
+    }
+  },
+  {
+    "id": 136,
+    "gu": "중랑구",
+    "dong": "신내동",
+    "lat": 37.6083,
+    "lon": 127.0978,
+    "tier": "5억~7억 (실속/입문)",
+    "price_eok": 5.88,
+    "unit_price": 852.0,
+    "score": 30.5,
+    "commute_avg": 68.8,
+    "commute_gbd": 66.5,
+    "commute_ybd": 79.0,
+    "commute_cbd": 61.0,
+    "p3040": 26.3,
+    "p_child": 11.0,
+    "drop_rate": -28.8,
+    "rec_rate": 17.8,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 736,
+    "size_stats": {
+      "all": {
+        "price_eok": 5.88,
+        "unit_price": 852.0,
+        "trades": 736
+      },
+      "small": {
+        "price_eok": 5.0,
+        "unit_price": 937.2,
+        "trades": 294
+      },
+      "medium": {
+        "price_eok": 5.88,
+        "unit_price": 852.0,
+        "trades": 368
+      },
+      "large": {
+        "price_eok": 7.64,
+        "unit_price": 766.8,
+        "trades": 73
+      }
+    }
+  },
+  {
+    "id": 137,
+    "gu": "중랑구",
+    "dong": "중화동",
+    "lat": 37.6005,
+    "lon": 127.0786,
+    "tier": "5억~7억 (실속/입문)",
+    "price_eok": 6.77,
+    "unit_price": 1087.7,
+    "score": 31.6,
+    "commute_avg": 62.7,
+    "commute_gbd": 58.0,
+    "commute_ybd": 74.0,
+    "commute_cbd": 56.1,
+    "p3040": 27.3,
+    "p_child": 8.2,
+    "drop_rate": -23.4,
+    "rec_rate": 6.1,
+    "cluster_id": 0,
+    "cluster_name": "그룹 4: 학군 & 자녀 보육 배후 주거지",
+    "move_morning": 35.0,
+    "move_evening": 28.0,
+    "move_weekend": 37.0,
+    "trades": 180,
+    "size_stats": {
+      "all": {
+        "price_eok": 6.77,
+        "unit_price": 1087.7,
+        "trades": 180
+      },
+      "small": {
+        "price_eok": 5.75,
+        "unit_price": 1196.5,
+        "trades": 72
+      },
+      "medium": {
+        "price_eok": 6.77,
+        "unit_price": 1087.7,
+        "trades": 90
+      },
+      "large": {
+        "price_eok": 8.8,
+        "unit_price": 978.9,
+        "trades": 18
+      }
+    }
+  }
+];
+    allData = embeddedData;
+
+    let currentSize = 'all';
+    let currentBudget = 'all';
+    let currentCluster = 'all';
+    let currentSearch = '';
+
+    document.querySelectorAll('#sizeFilter .filter-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        document.querySelectorAll('#sizeFilter .filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentSize = btn.dataset.size;
+        
+        const sizeLabels = {
+          'all': '전체 평형',
+          'small': '소형 (~25평형 / 59㎡이하)',
+          'medium': '국민평형 (25~34평형 / 84㎡)',
+          'large': '중대형 (35평형+ / 84㎡초과)'
+        };
+        document.getElementById('selectedSizeText').innerText = sizeLabels[currentSize];
+        updateDashboard();
+      });
+    });
+
+    document.querySelectorAll('#budgetFilter .filter-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        document.querySelectorAll('#budgetFilter .filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentBudget = btn.dataset.budget;
+        updateDashboard();
+      });
+    });
+
+    document.querySelectorAll('#clusterFilter .filter-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        document.querySelectorAll('#clusterFilter .filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentCluster = btn.dataset.cluster;
+        updateDashboard();
+      });
+    });
+
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+      currentSearch = e.target.value.trim().toLowerCase();
+      updateDashboard();
+    });
+
+    function getItemPrice(d, sizeKey) {
+      if (!d.size_stats) return d.price_eok;
+      if (sizeKey === 'all' || !d.size_stats[sizeKey]) {
+        return d.size_stats.all ? d.size_stats.all.price_eok : d.price_eok;
+      }
+      return d.size_stats[sizeKey].price_eok;
+    }
+
+    function updateDashboard() {
+      markersLayer.clearLayers();
+      markerMap.clear();
+
+      const filtered = allData.filter(d => {
+        if (currentSize !== 'all') {
+          if (!d.size_stats || !d.size_stats[currentSize]) return false;
+        }
+
+        const price = getItemPrice(d, currentSize);
+
+        if (currentBudget === '5~7억' && !(price >= 5.0 && price < 7.0)) return false;
+        if (currentBudget === '7~9억' && !(price >= 7.0 && price < 9.0)) return false;
+        if (currentBudget === '9~12억' && !(price >= 9.0 && price <= 12.0)) return false;
+
+        if (currentCluster !== 'all' && d.cluster_id !== parseInt(currentCluster)) return false;
+
+        if (currentSearch) {
+          const target = (d.gu + ' ' + d.dong).toLowerCase();
+          if (!target.includes(currentSearch)) return false;
+        }
+
+        return true;
+      });
+
+      document.getElementById('stat-count').innerText = `${filtered.length}개`;
+      if (filtered.length > 0) {
+        const avgP = (filtered.reduce((acc, cur) => acc + getItemPrice(cur, currentSize), 0) / filtered.length).toFixed(1);
+        const avgC = (filtered.reduce((acc, cur) => acc + cur.commute_avg, 0) / filtered.length).toFixed(1);
+        document.getElementById('stat-price').innerText = `${avgP}억`;
+        document.getElementById('stat-commute').innerText = `${avgC}분`;
+      } else {
+        document.getElementById('stat-price').innerText = '-';
+        document.getElementById('stat-commute').innerText = '-';
+      }
+
+      filtered.forEach(d => {
+        const cInfo = clusterColors[d.cluster_id] || clusterColors[1];
+        const displayPrice = getItemPrice(d, currentSize);
+
+        const iconHtml = `
+          <div class="custom-dong-marker">
+            <div class="marker-badge ${cInfo.bg}">
+              ${d.dong} ${displayPrice.toFixed(1)}억 (${Math.round(d.commute_avg)}분)
+            </div>
+          </div>
+        `;
+
+        const customIcon = L.divIcon({
+          html: iconHtml,
+          className: '',
+          iconSize: [130, 24],
+          iconAnchor: [65, 12]
+        });
+
+        const marker = L.marker([d.lat, d.lon], { icon: customIcon }).addTo(markersLayer);
+
+        const popupHtml = `
+          <div style="font-size: 12.5px;">
+            <div style="font-weight: 800; font-size: 14.5px; margin-bottom: 3px; color: #fff;">
+              ${d.gu} ${d.dong}
+            </div>
+            <div style="color: #facc15; font-weight: 900; font-size: 15.5px; margin-bottom: 5px;">
+              중앙 매매가: ${displayPrice.toFixed(2)}억원
+            </div>
+            <div style="margin-bottom: 3px; font-size: 11px; color: #cbd5e1;">
+              • <b>3대도심 평균통근</b>: ${d.commute_avg.toFixed(1)}분
+            </div>
+            <div style="margin-bottom: 3px; font-size: 11px; color: #cbd5e1;">
+              • <b>하락장 낙폭</b>: ${d.drop_rate.toFixed(1)}% | <b>3040비중</b>: ${d.p3040.toFixed(1)}%
+            </div>
+            <button onclick="selectDong(${d.id})" style="width:100%; margin-top:5px; padding:5px 0; background:#2563eb; color:#fff; border:none; border-radius:6px; font-size:11px; font-weight:bold; cursor:pointer;">
+              상세 분석 보기
+            </button>
+          </div>
+        `;
+        marker.bindPopup(popupHtml);
+
+        marker.on('click', () => {
+          selectDong(d.id);
+        });
+
+        markerMap.set(d.id, marker);
+      });
+
+      renderDongList(filtered);
+    }
+
+    function renderDongList(list) {
+      const container = document.getElementById('dongListContainer');
+      container.innerHTML = '';
+
+      const sorted = [...list].sort((a, b) => b.score - a.score);
+
+      if (sorted.length === 0) {
+        container.innerHTML = `<div style="text-align:center; padding:40px 0; color:#64748b; font-size:13px;">선택한 조건을 만족하는 동네가 없습니다.</div>`;
+        return;
+      }
+
+      sorted.forEach((d, idx) => {
+        const cInfo = clusterColors[d.cluster_id] || clusterColors[1];
+        const displayPrice = getItemPrice(d, currentSize);
+
+        const card = document.createElement('div');
+        card.className = 'dong-card';
+        card.id = `card-${d.id}`;
+
+        card.innerHTML = `
+          <div class="card-cluster-bar" style="background: ${cInfo.hex};"></div>
+          <div class="card-top">
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span class="card-rank">#${idx + 1}</span>
+              <span class="card-title">${d.gu} ${d.dong}</span>
+            </div>
+            <div class="card-price">${displayPrice.toFixed(2)}억</div>
+          </div>
+          <div>
+            <span class="card-cluster-tag" style="background:${cInfo.tagBg}; color:${cInfo.tagColor};">
+              ${cInfo.tag}
+            </span>
+          </div>
+          <div class="card-metrics">
+            <div class="metric-col">
+              <span>통근시간</span>
+              <span>${d.commute_avg.toFixed(1)}분</span>
+            </div>
+            <div class="metric-col">
+              <span>하락낙폭</span>
+              <span>${d.drop_rate.toFixed(1)}%</span>
+            </div>
+            <div class="metric-col">
+              <span>3040비중</span>
+              <span>${d.p3040.toFixed(1)}%</span>
+            </div>
+          </div>
+        `;
+
+        card.addEventListener('click', () => {
+          selectDong(d.id);
+        });
+
+        container.appendChild(card);
+      });
+    }
+
+    window.selectDong = function(id) {
+      const item = allData.find(d => d.id === id);
+      if (!item) return;
+
+      const cInfo = clusterColors[item.cluster_id] || clusterColors[1];
+      const displayPrice = getItemPrice(item, currentSize);
+
+      const tagEl = document.getElementById('d-cluster-tag');
+      tagEl.innerText = cInfo.tag;
+      tagEl.style.background = cInfo.tagBg;
+      tagEl.style.color = cInfo.tagColor;
+
+      document.getElementById('d-title').innerText = `${item.gu} ${item.dong}`;
+      document.getElementById('d-price').innerText = `${displayPrice.toFixed(2)}억원`;
+      document.getElementById('d-unit-price').innerText = `${item.unit_price.toLocaleString()}만원`;
+      document.getElementById('d-score').innerText = `${item.score.toFixed(1)}점`;
+
+      const stats = item.size_stats || {};
+      
+      if (stats.small) {
+        document.getElementById('d-size-small-price').innerText = `${stats.small.price_eok.toFixed(2)}억`;
+        document.getElementById('d-size-small-trades').innerText = `최근 ${stats.small.trades}건`;
+      } else {
+        document.getElementById('d-size-small-price').innerText = '-';
+        document.getElementById('d-size-small-trades').innerText = '표본 부족';
+      }
+
+      if (stats.medium) {
+        document.getElementById('d-size-medium-price').innerText = `${stats.medium.price_eok.toFixed(2)}억`;
+        document.getElementById('d-size-medium-trades').innerText = `최근 ${stats.medium.trades}건`;
+      } else {
+        document.getElementById('d-size-medium-price').innerText = '-';
+        document.getElementById('d-size-medium-trades').innerText = '표본 부족';
+      }
+
+      if (stats.large) {
+        document.getElementById('d-size-large-price').innerText = `${stats.large.price_eok.toFixed(2)}억`;
+        document.getElementById('d-size-large-trades').innerText = `최근 ${stats.large.trades}건`;
+      } else {
+        document.getElementById('d-size-large-price').innerText = '-';
+        document.getElementById('d-size-large-trades').innerText = '표본 부족';
+      }
+
+      document.querySelectorAll('.size-price-card').forEach(c => c.classList.remove('active-size'));
+      if (currentSize === 'small') document.getElementById('card-size-small').classList.add('active-size');
+      else if (currentSize === 'medium') document.getElementById('card-size-medium').classList.add('active-size');
+      else if (currentSize === 'large') document.getElementById('card-size-large').classList.add('active-size');
+
+      document.getElementById('d-move-morning').innerText = `${item.move_morning.toFixed(1)}%`;
+      document.getElementById('d-bar-morning').style.width = `${item.move_morning}%`;
+
+      document.getElementById('d-move-evening').innerText = `${item.move_evening.toFixed(1)}%`;
+      document.getElementById('d-bar-evening').style.width = `${item.move_evening}%`;
+
+      document.getElementById('d-move-weekend').innerText = `${item.move_weekend.toFixed(1)}%`;
+      document.getElementById('d-bar-weekend').style.width = `${item.move_weekend}%`;
+
+      document.getElementById('d-gbd-time').innerText = `${item.commute_gbd.toFixed(1)}분`;
+      document.getElementById('d-ybd-time').innerText = `${item.commute_ybd.toFixed(1)}분`;
+      document.getElementById('d-cbd-time').innerText = `${item.commute_cbd.toFixed(1)}분`;
+
+      document.getElementById('d-p3040').innerText = `${item.p3040.toFixed(1)}%`;
+      document.getElementById('d-pchild').innerText = `${item.p_child.toFixed(1)}%`;
+      document.getElementById('d-drop').innerText = `${item.drop_rate.toFixed(1)}%`;
+      document.getElementById('d-rec').innerText = `+${item.rec_rate.toFixed(1)}%`;
+
+      document.getElementById('tabListBtn').classList.remove('active');
+      document.getElementById('tabDetailBtn').classList.add('active');
+      document.getElementById('listView').style.display = 'none';
+      document.getElementById('detailView').style.display = 'block';
+
+      document.querySelectorAll('.dong-card').forEach(c => c.classList.remove('selected'));
+      const activeCard = document.getElementById(`card-${id}`);
+      if (activeCard) activeCard.classList.add('selected');
+
+      map.setView([item.lat, item.lon], 14, { animate: true });
+      const marker = markerMap.get(id);
+      if (marker) {
+        marker.openPopup();
+      }
+    };
+
+    document.getElementById('tabListBtn').addEventListener('click', () => {
+      document.getElementById('tabDetailBtn').classList.remove('active');
+      document.getElementById('tabListBtn').classList.add('active');
+      document.getElementById('detailView').style.display = 'none';
+      document.getElementById('listView').style.display = 'block';
+    });
+
+    document.getElementById('tabDetailBtn').addEventListener('click', () => {
+      document.getElementById('tabListBtn').classList.remove('active');
+      document.getElementById('tabDetailBtn').classList.add('active');
+      document.getElementById('listView').style.display = 'none';
+      document.getElementById('detailView').style.display = 'block';
+    });
+
+    document.getElementById('backToListBtn').addEventListener('click', () => {
+      document.getElementById('tabDetailBtn').classList.remove('active');
+      document.getElementById('tabListBtn').classList.add('active');
+      document.getElementById('detailView').style.display = 'none';
+      document.getElementById('listView').style.display = 'block';
+    });
+
+    updateDashboard();
+  </script>
+</body>
+</html>

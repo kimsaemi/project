@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3040 맞벌이를 위한 서울 아파트 주거지 지도 대시보드 v3.5</title>
+  
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  
+  <style>
+    :root {
+      --bg-dark: #0f172a;
+      --panel-bg: rgba(30, 41, 59, 0.95);
+      --panel-card: #1e293b;
+      --panel-hover: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border-color: #334155;
+      
+      --c-cluster1: #10b981;
+      --c-cluster2: #f59e0b;
+      --c-cluster3: #6366f1;
+      --c-cluster0: #ec4899;
+      
+      --accent: #3b82f6;
+      --accent-light: #60a5fa;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      display: flex;
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+    }
+
+    #sidebar {
+      width: 460px;
+      height: 100%;
+      background: var(--panel-bg);
+      backdrop-filter: blur(12px);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      z-index: 1000;
+      box-shadow: 4px 0 24px rgba(0, 0, 0, 0.4);
+    }
+
+    .sidebar-header {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border-color);
+      background: rgba(15, 23, 42, 0.8);
+    }
+
+    .header-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      background: rgba(251, 191, 36, 0.15);
+      border: 1px solid rgba(251, 191, 36, 0.4);
+      color: #fbbf24;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .sidebar-title { font-size: 17px; font-weight: 900; color: #ffffff; letter-spacing: -0.3px; }
+    .sidebar-subtitle { font-size: 11.5px; color: var(--text-muted); margin-top: 3px; }
+
+    .filter-section {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      background: rgba(30, 41, 59, 0.5);
+      overflow-y: auto;
+    }
+
+    /* REAL-TIME SLIDER BOX */
+    .slider-main-box {
+      background: #0f172a;
+      border: 2px solid var(--accent);
+      border-radius: 12px;
+      padding: 12px 14px;
+      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);
+    }
+
+    .slider-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12.5px;
+      font-weight: 800;
+      color: #38bdf8;
+      margin-bottom: 10px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 6px;
+    }
+
+    .slider-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .slider-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 11.5px;
+    }
+
+    .slider-label {
+      width: 105px;
+      font-weight: 700;
+      color: #cbd5e1;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .slider-item input[type="range"] {
+      flex: 1;
+      height: 6px;
+      border-radius: 3px;
+      background: #334155;
+      outline: none;
+      accent-color: #38bdf8;
+      cursor: pointer;
+    }
+
+    .slider-val-badge {
+      width: 40px;
+      text-align: right;
+      font-weight: 900;
+      font-size: 12px;
+      color: #fbbf24;
+    }
+
+    .search-box { position: relative; }
+    .search-box input {
+      width: 100%;
+      padding: 8px 12px 8px 32px;
+      background: #0f172a;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      color: #fff;
+      font-size: 12px;
+      outline: none;
+    }
+    .search-box i { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 12px; }
+
+    .filter-group { display: flex; flex-direction: column; gap: 5px; }
+    .filter-label { font-size: 11px; font-weight: 700; color: var(--text-muted); display: flex; justify-content: space-between; }
+    .btn-group { display: flex; gap: 4px; flex-wrap: wrap; }
+
+    .filter-btn {
+      padding: 5px 9px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      background: #0f172a;
+      color: var(--text-muted);
+      border: 1px solid var(--border-color);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .filter-btn:hover { background: var(--panel-hover); color: #fff; }
+    .filter-btn.active { background: var(--accent); color: #ffffff; border-color: var(--accent-light); }
+    .size-btn.active { background: #8b5cf6; border-color: #a78bfa; }
+
+    .stat-banner {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      padding: 10px 16px;
+      background: rgba(15, 23, 42, 0.9);
+      border-bottom: 1px solid var(--border-color);
+    }
+    .stat-item { text-align: center; }
+    .stat-value { font-size: 14.5px; font-weight: 900; color: #38bdf8; }
+    .stat-title { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+
+    .nav-tabs { display: flex; border-bottom: 1px solid var(--border-color); }
+    .nav-tab {
+      flex: 1; text-align: center; padding: 10px 0; font-size: 12.5px; font-weight: 800; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent;
+    }
+    .nav-tab.active { color: #fff; border-bottom-color: var(--accent); background: rgba(59, 130, 246, 0.1); }
+
+    .content-area { flex: 1; overflow-y: auto; padding: 14px 16px; }
+
+    .dong-card {
+      background: var(--panel-card);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin-bottom: 9px;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .dong-card:hover { transform: translateY(-2px); border-color: var(--accent); }
+
+    .card-cluster-bar { position: absolute; left: 0; top: 0; bottom: 0; width: 4px; }
+    .card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .card-title { font-size: 15px; font-weight: 800; color: #fff; }
+    .card-rank { font-size: 11px; font-weight: 900; padding: 2px 7px; border-radius: 10px; background: rgba(59, 130, 246, 0.25); color: #60a5fa; }
+    .card-price { font-size: 16px; font-weight: 900; color: #facc15; }
+
+    .card-metrics {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4px;
+      font-size: 10.5px;
+      background: rgba(15, 23, 42, 0.6);
+      padding: 6px 8px;
+      border-radius: 6px;
+    }
+    .metric-col span:first-child { color: var(--text-muted); display: block; font-size: 9.5px; }
+    .metric-col span:last-child { color: #e2e8f0; font-weight: 800; }
+
+    /* DETAIL VIEW STYLING */
+    .detail-view { display: none; }
+    .back-btn { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 800; color: var(--text-muted); cursor: pointer; margin-bottom: 14px; transition: color 0.2s; }
+    .back-btn:hover { color: #fff; }
+
+    .detail-header { background: #0f172a; border-radius: 10px; padding: 16px; border: 1px solid var(--border-color); margin-bottom: 16px; }
+    .detail-cluster-lbl { font-size: 11.5px; font-weight: 700; color: #94a3b8; margin-bottom: 4px; display: block; }
+    .detail-dong-title { font-size: 20px; font-weight: 900; color: #fff; }
+    .detail-price-main { font-size: 24px; font-weight: 900; color: #facc15; margin-top: 4px; }
+    .detail-header-sub { font-size: 12px; color: #94a3b8; margin-top: 4px; }
+
+    .section-title { font-size: 12px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin: 16px 0 8px 0; display: flex; align-items: center; gap: 6px; }
+
+    /* 3 Grid Size Cards */
+    .size-price-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+    .size-price-card { background: var(--panel-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px 8px; text-align: center; }
+    .size-price-card.active-size { border-color: #a78bfa; background: rgba(139, 92, 246, 0.15); }
+    .size-label { font-size: 11px; color: var(--text-muted); font-weight: 700; }
+    .size-val { font-size: 14px; font-weight: 800; color: #facc15; margin-top: 3px; }
+    .size-sub { font-size: 10px; color: #94a3b8; margin-top: 2px; }
+
+    /* Movement Progress Bars */
+    .move-stat-box { background: var(--panel-card); border: 1px solid var(--border-color); border-radius: 10px; padding: 14px; display: flex; flex-direction: column; gap: 11px; }
+    .move-bar-row { display: flex; flex-direction: column; gap: 4px; }
+    .move-bar-label { display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; }
+    .progress-track { height: 7px; background: #0f172a; border-radius: 4px; overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
+    .fill-morning { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+    .fill-evening { background: linear-gradient(90deg, #ec4899, #f472b6); }
+    .fill-weekend { background: linear-gradient(90deg, #10b981, #34d399); }
+
+    /* Commute 3 Cards */
+    .commute-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .commute-card { background: #0f172a; border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; text-align: center; }
+    .commute-name { font-size: 11px; color: var(--text-muted); font-weight: 700; }
+    .commute-time { font-size: 16px; font-weight: 900; color: #38bdf8; margin-top: 3px; }
+
+    #map { flex: 1; height: 100%; background: #0b1120; }
+
+    .custom-dong-marker { display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+    .marker-badge {
+      padding: 4px 9px; border-radius: 12px; font-size: 11.5px; font-weight: 800; color: #ffffff; white-space: nowrap; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5); border: 1.5px solid rgba(255, 255, 255, 0.8);
+    }
+
+    .bg-c1 { background: #059669; }
+    .bg-c2 { background: #d97706; }
+    .bg-c3 { background: #4f46e5; }
+    .bg-c0 { background: #db2777; }
+
+    .map-legend {
+      position: absolute; bottom: 24px; right: 24px; background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(8px); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px 14px; z-index: 1000; font-size: 11px;
+    }
+    .legend-title { font-weight: 800; color: #fff; margin-bottom: 6px; }
+    .legend-item { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; color: #cbd5e1; }
+    .legend-dot { width: 9px; height: 9px; border-radius: 50%; }
+  </style>
+</head>
+<body>
+
+  <aside id="sidebar">
+    <div class="sidebar-header">
+      <div class="header-badge">
+        <i class="fa-solid fa-sliders"></i> 실시간 가중치 조절 바 엔진 탑재
+      </div>
+      <h1 class="sidebar-title">3040 맞벌이 서울 주거지 지도 대시보드 v3.5</h1>
+      <p class="sidebar-subtitle">실시간 1등 동네 재계산 반응형 추천 지도</p>
+    </div>
+
+    <div class="stat-banner">
+      <div class="stat-item">
+        <div class="stat-value" id="stat-count">137개</div>
+        <div class="stat-title">분석 법정동</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value" id="stat-top" style="color:#fbbf24;">영등포 당산동</div>
+        <div class="stat-title">실시간 1위 추천</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value" id="stat-anchor">43.8분</div>
+        <div class="stat-title">서울시 평균 기준선</div>
+      </div>
+    </div>
+
+    <div class="filter-section">
+      <!-- REAL-TIME SLIDER BOX -->
+      <div class="slider-main-box">
+        <div class="slider-header">
+          <span><i class="fa-solid fa-sliders"></i> 🎛️ 실시간 가중치 조절 바</span>
+          <span id="totalWeightBadge" style="color:#fbbf24;">총합 100%</span>
+        </div>
+        <div class="slider-group">
+          <div class="slider-item">
+            <div class="slider-label"><i class="fa-solid fa-train" style="color:#38bdf8;"></i> 🚀 통근 편리성</div>
+            <input type="range" id="slider_commute" min="0" max="100" value="35" step="5">
+            <div class="slider-val-badge" id="val_commute">35%</div>
+          </div>
+          <div class="slider-item">
+            <div class="slider-label"><i class="fa-solid fa-shield-halved" style="color:#34d399;"></i> 🛡️ 가격 방어력</div>
+            <input type="range" id="slider_defense" min="0" max="100" value="30" step="5">
+            <div class="slider-val-badge" id="val_defense">30%</div>
+          </div>
+          <div class="slider-item">
+            <div class="slider-label"><i class="fa-solid fa-people-roof" style="color:#fbbf24;"></i> 👨‍👩‍👧 3040 친화도</div>
+            <input type="range" id="slider_3040" min="0" max="100" value="25" step="5">
+            <div class="slider-val-badge" id="val_3040">25%</div>
+          </div>
+          <div class="slider-item">
+            <div class="slider-label"><i class="fa-solid fa-water" style="color:#a78bfa;"></i> 💧 거래 유동성</div>
+            <input type="range" id="slider_liquidity" min="0" max="100" value="10" step="5">
+            <div class="slider-val-badge" id="val_liquidity">10%</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="searchInput" placeholder="동네명/자치구 검색 (예: 당산, 염창, 공덕)" />
+      </div>
+
+      <div class="filter-group">
+        <div class="filter-label">📐 면적구간 선택</div>
+        <div class="btn-group" id="sizeFilter">
+          <button class="filter-btn size-btn active" data-size="all">전체 평형</button>
+          <button class="filter-btn size-btn" data-size="59">59㎡급 (소형)</button>
+          <button class="filter-btn size-btn" data-size="84">84㎡급 (국민평형)</button>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <div class="filter-label">💰 예산 구간 선택</div>
+        <div class="btn-group" id="budgetFilter">
+          <button class="filter-btn active" data-budget="all">전체 (5~15억)</button>
+          <button class="filter-btn" data-budget="7억 이하">7억 이하</button>
+          <button class="filter-btn" data-budget="7~9억">7억~9억</button>
+          <button class="filter-btn" data-budget="9~12억">9억~12억</button>
+          <button class="filter-btn" data-budget="12억 초과">12억 초과</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-tabs">
+      <div class="nav-tab active" id="tabListBtn"><i class="fa-solid fa-list-ol"></i> 추천 순위 리스트</div>
+      <div class="nav-tab" id="tabDetailBtn"><i class="fa-solid fa-chart-pie"></i> 상세 분석 패널</div>
+    </div>
+
+    <div class="content-area">
+      <div id="listView">
+        <div id="dongListContainer"></div>
+      </div>
+
+      <div id="detailView" class="detail-view">
+        <div class="back-btn" id="backToListBtn">
+          <i class="fa-solid fa-arrow-left"></i> 목록으로 돌아가기
+        </div>
+
+        <div class="detail-header">
+          <span class="detail-cluster-lbl" id="d-cluster-lbl">군집 1</span>
+          <div class="detail-dong-title" id="d-title">영등포구 당산동</div>
+          <div class="detail-price-main" id="d-price">11.50억</div>
+          <div class="detail-header-sub">
+            평당 단가: <span id="d-unit-price" style="color: #fff; font-weight: 700;">1,535만원</span> · 종합점수: <span id="d-score" style="color: #38bdf8; font-weight: 800;">58.8점</span>
+          </div>
+        </div>
+
+        <div class="section-title">
+          <i class="fa-solid fa-ruler-combined"></i> 평형대별 실거래 시세 비교
+        </div>
+        <div class="size-price-grid">
+          <div class="size-price-card" id="card-size-small">
+            <div class="size-label">소형 (~59㎡)</div>
+            <div class="size-val" id="d-size-small-price">11.00억</div>
+            <div class="size-sub" id="d-size-small-trades">최근 14건</div>
+          </div>
+          <div class="size-price-card" id="card-size-medium">
+            <div class="size-label">국민평형 (59~84㎡)</div>
+            <div class="size-val" id="d-size-medium-price">14.50억</div>
+            <div class="size-sub" id="d-size-medium-trades">최근 47건</div>
+          </div>
+          <div class="size-price-card" id="card-size-large">
+            <div class="size-label">중대형 (84㎡+)</div>
+            <div class="size-val" id="d-size-large-price">19.60억</div>
+            <div class="size-sub" id="d-size-large-trades">최근 24건</div>
+          </div>
+        </div>
+
+        <div class="section-title">
+          <i class="fa-solid fa-clock-rotate-left"></i> 시간대 및 요일별 이동 비중
+        </div>
+        <div class="move-stat-box">
+          <div class="move-bar-row">
+            <div class="move-bar-label">
+              <span style="color: #60a5fa;"><i class="fa-solid fa-sun"></i> 출근 시간대 (07~09시)</span>
+              <span id="d-move-morning" style="color: #60a5fa;">35.0%</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill fill-morning" id="d-bar-morning" style="width: 35.0%;"></div>
+            </div>
+          </div>
+
+          <div class="move-bar-row">
+            <div class="move-bar-label">
+              <span style="color: #f472b6;"><i class="fa-solid fa-moon"></i> 퇴근 시간대 (18~20시)</span>
+              <span id="d-move-evening" style="color: #f472b6;">28.0%</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill fill-evening" id="d-bar-evening" style="width: 28.0%;"></div>
+            </div>
+          </div>
+
+          <div class="move-bar-row">
+            <div class="move-bar-label">
+              <span style="color: #34d399;"><i class="fa-solid fa-mug-hot"></i> 낮시간 및 주말 활동</span>
+              <span id="d-move-weekend" style="color: #34d399;">37.0%</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill fill-weekend" id="d-bar-weekend" style="width: 37.0%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-title">
+          <i class="fa-solid fa-train-subway"></i> 3대 업무지구 통근 소요시간
+        </div>
+        <div class="commute-grid">
+          <div class="commute-card">
+            <div class="commute-name">GBD (강남)</div>
+            <div class="commute-time" id="d-gbd-time">15.0분</div>
+          </div>
+          <div class="commute-card">
+            <div class="commute-name">YBD (여의도)</div>
+            <div class="commute-time" id="d-ybd-time" style="color: #34d399;">5.0분</div>
+          </div>
+          <div class="commute-card">
+            <div class="commute-name">CBD (도심)</div>
+            <div class="commute-time" id="d-cbd-time">20.0분</div>
+          </div>
+        </div>
+
+        <div class="section-title">
+          <i class="fa-solid fa-shield-halved"></i> 3040 맞벌이 및 자산 안정성
+        </div>
+        <div class="move-stat-box">
+          <div style="display: flex; justify-content: space-between; font-size: 12px;">
+            <span style="color: #94a3b8;">3040 인구 비중:</span>
+            <span id="d-p3040" style="font-weight: 700; color: #fff;">38.5%</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 12px;">
+            <span style="color: #94a3b8;">10대 이하 자녀 비중:</span>
+            <span id="d-pchild" style="font-weight: 700; color: #fff;">8.5%</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 12px;">
+            <span style="color: #94a3b8;">금리충격 하락기 낙폭:</span>
+            <span id="d-drop" style="font-weight: 700; color: #38bdf8;">-12.0%</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 12px;">
+            <span style="color: #94a3b8;">저점 대비 회복률:</span>
+            <span id="d-rec" style="font-weight: 700; color: #facc15;">+13.1%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main id="map"></main>
+
+  <div class="map-legend">
+    <div class="legend-title"><i class="fa-solid fa-layer-group"></i> 주거 세그먼트 (클러스터)</div>
+    <div class="legend-item"><div class="legend-dot" style="background: var(--c-cluster1);"></div> 그룹 1: 가성비 실속형</div>
+    <div class="legend-item"><div class="legend-dot" style="background: var(--c-cluster2);"></div> 그룹 2: 광역 허브 & 방어 1위</div>
+    <div class="legend-item"><div class="legend-dot" style="background: var(--c-cluster3);"></div> 그룹 3: 쿼드러플 도심 거점</div>
+    <div class="legend-item"><div class="legend-dot" style="background: var(--c-cluster0);"></div> 그룹 4: 학군 배후 주거지</div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <script>
+    const map = L.map('map', { center: [37.5400, 126.9780], zoom: 11, zoomControl: false });
+    L.control.zoom({ position: 'topright' }).addTo(map);
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; OpenStreetMap &copy; CARTO', subdomains: 'abcd', maxZoom: 19
+    }).addTo(map);
+
+    let allData = [
+      { id: 1, gu: "영등포구", dong: "당산동", size: "59", price_eok: 11.0, unit_price: 1535, s_commute: 88.4, s_defense: 89.7, s_3040: 60.8, s_liquidity: 34.0, gbd: 15.0, ybd: 5.0, cbd: 20.0, commute_avg: 43.0, p3040: 38.5, p_child: 8.5, drop: -12.0, rec: 13.1, move_morning: 35.0, move_evening: 28.0, move_weekend: 37.0, trades: 14, cluster_id: 2, cluster_name: "그룹 2: 광역 허브 & 방어 1위", lat: 37.5230, lon: 126.8962 },
+      { id: 2, gu: "마포구", dong: "공덕동", size: "84", price_eok: 14.1, unit_price: 2378, s_commute: 98.0, s_defense: 75.0, s_3040: 54.1, s_liquidity: 50.2, gbd: 25.0, ybd: 5.0, cbd: 10.0, commute_avg: 35.0, p3040: 32.9, p_child: 7.8, drop: -8.0, rec: 40.9, move_morning: 38.0, move_evening: 30.0, move_weekend: 32.0, trades: 38, cluster_id: 3, cluster_name: "그룹 3: 쿼드러플 도심 거점", lat: 37.5440, lon: 126.9550 },
+      { id: 3, gu: "강서구", dong: "염창동", size: "59", price_eok: 8.3, unit_price: 1392, s_commute: 73.5, s_defense: 61.4, s_3040: 81.8, s_liquidity: 72.4, gbd: 25.0, ybd: 10.0, cbd: 30.0, commute_avg: 49.0, p3040: 43.3, p_child: 11.2, drop: -29.1, rec: 24.5, move_morning: 40.0, move_evening: 25.0, move_weekend: 35.0, trades: 144, cluster_id: 1, cluster_name: "그룹 1: 가성비 실속형", lat: 37.5551, lon: 126.8684 },
+      { id: 4, gu: "동작구", dong: "사당동", size: "59", price_eok: 10.7, unit_price: 1780, s_commute: 76.5, s_defense: 94.0, s_3040: 51.7, s_liquidity: 73.5, gbd: 10.0, ybd: 15.0, cbd: 20.0, commute_avg: 47.8, p3040: 33.0, p_child: 9.1, drop: -7.1, rec: 15.4, move_morning: 36.0, move_evening: 29.0, move_weekend: 35.0, trades: 154, cluster_id: 2, cluster_name: "그룹 2: 광역 허브 & 방어 1위", lat: 37.4820, lon: 126.9730 },
+      { id: 5, gu: "구로구", dong: "구로동", size: "59", price_eok: 5.98, unit_price: 1001, s_commute: 61.9, s_defense: 96.0, s_3040: 47.0, s_liquidity: 81.5, gbd: 30.0, ybd: 15.0, cbd: 25.0, commute_avg: 53.8, p3040: 29.8, p_child: 7.0, drop: -3.0, rec: 16.8, move_morning: 34.0, move_evening: 27.0, move_weekend: 39.0, trades: 248, cluster_id: 2, cluster_name: "그룹 2: 광역 허브 & 방어 1위", lat: 37.4927, lon: 126.8893 },
+      { id: 6, gu: "서대문구", dong: "연희동", size: "84", price_eok: 7.2, unit_price: 1135, s_commute: 70.0, s_defense: 95.0, s_3040: 45.0, s_liquidity: 51.8, gbd: 35.0, ybd: 20.0, cbd: 15.0, commute_avg: 44.0, p3040: 28.9, p_child: 8.3, drop: -0.4, rec: 15.5, move_morning: 33.0, move_evening: 28.0, move_weekend: 39.0, trades: 42, cluster_id: 1, cluster_name: "그룹 1: 가성비 실속형", lat: 37.5710, lon: 126.9303 }
+    ];
+
+    let markersLayer = L.layerGroup().addTo(map);
+    let markerMap = new Map();
+
+    const clusterColors = {
+      1: { bg: 'bg-c1', hex: '#10b981', tag: '그룹 1: 가성비 실속형', tagBg: 'rgba(16, 185, 129, 0.15)', tagColor: '#34d399' },
+      2: { bg: 'bg-c2', hex: '#f59e0b', tag: '그룹 2: 광역 허브 & 방어 1위 ★', tagBg: 'rgba(245, 158, 11, 0.15)', tagColor: '#fbbf24' },
+      3: { bg: 'bg-c3', hex: '#6366f1', tag: '그룹 3: 쿼드러플 도심 거점', tagBg: 'rgba(99, 102, 241, 0.15)', tagColor: '#818cf8' },
+      0: { bg: 'bg-c0', hex: '#ec4899', tag: '그룹 4: 학군 배후 주거지', tagBg: 'rgba(236, 72, 153, 0.15)', tagColor: '#f472b6' }
+    };
+
+    let w_commute = 35;
+    let w_defense = 30;
+    let w_3040 = 25;
+    let w_liquidity = 10;
+
+    let currentSize = 'all';
+    let currentBudget = 'all';
+    let currentSearch = '';
+
+    function calcScore(d) {
+      const sumW = w_commute + w_defense + w_3040 + w_liquidity;
+      if (sumW === 0) return 0;
+      return (d.s_commute * w_commute + d.s_defense * w_defense + d.s_3040 * w_3040 + d.s_liquidity * w_liquidity) / sumW;
+    }
+
+    ['commute', 'defense', '3040', 'liquidity'].forEach(key => {
+      document.getElementById(`slider_${key}`).addEventListener('input', (e) => {
+        const val = parseInt(e.target.value);
+        document.getElementById(`val_${key}`).innerText = `${val}%`;
+
+        if (key === 'commute') w_commute = val;
+        if (key === 'defense') w_defense = val;
+        if (key === '3040') w_3040 = val;
+        if (key === 'liquidity') w_liquidity = val;
+
+        const total = w_commute + w_defense + w_3040 + w_liquidity;
+        document.getElementById('totalWeightBadge').innerText = `총합 ${total}%`;
+
+        updateDashboard();
+      });
+    });
+
+    document.querySelectorAll('#sizeFilter .filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('#sizeFilter .filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentSize = btn.dataset.size;
+        updateDashboard();
+      });
+    });
+
+    document.querySelectorAll('#budgetFilter .filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('#budgetFilter .filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentBudget = btn.dataset.budget;
+        updateDashboard();
+      });
+    });
+
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+      currentSearch = e.target.value.trim().toLowerCase();
+      updateDashboard();
+    });
+
+    function updateDashboard() {
+      markersLayer.clearLayers();
+      markerMap.clear();
+
+      allData.forEach(d => {
+        d.dynamicScore = calcScore(d);
+      });
+
+      const filtered = allData.filter(d => {
+        if (currentSize !== 'all' && d.size !== currentSize) return false;
+        if (currentBudget === '7억 이하' && d.price_eok > 7.0) return false;
+        if (currentBudget === '7~9억' && (d.price_eok < 7.0 || d.price_eok > 9.0)) return false;
+        if (currentBudget === '9~12억' && (d.price_eok < 9.0 || d.price_eok > 12.0)) return false;
+        if (currentBudget === '12억 초과' && d.price_eok <= 12.0) return false;
+        if (currentSearch && !(d.gu + ' ' + d.dong).toLowerCase().includes(currentSearch)) return false;
+        return true;
+      });
+
+      const sorted = [...filtered].sort((a, b) => b.dynamicScore - a.dynamicScore);
+
+      document.getElementById('stat-count').innerText = `${sorted.length}개`;
+      if (sorted.length > 0) {
+        document.getElementById('stat-top').innerText = `${sorted[0].gu} ${sorted[0].dong}`;
+      } else {
+        document.getElementById('stat-top').innerText = '-';
+      }
+
+      sorted.forEach(d => {
+        const cInfo = clusterColors[d.cluster_id] || clusterColors[1];
+        const iconHtml = `
+          <div class="custom-dong-marker">
+            <div class="marker-badge ${cInfo.bg}">
+              ${d.dong} (${d.dynamicScore.toFixed(1)}점)
+            </div>
+          </div>
+        `;
+        const customIcon = L.divIcon({ html: iconHtml, className: '', iconSize: [130, 24], iconAnchor: [65, 12] });
+        const marker = L.marker([d.lat, d.lon], { icon: customIcon }).addTo(markersLayer);
+
+        const popupHtml = `
+          <div style="font-size: 12px;">
+            <div style="font-weight: 800; font-size: 14px; color: #fff;">${d.gu} ${d.dong} (${d.size}㎡)</div>
+            <div style="color: #facc15; font-weight: 900; font-size: 15px; margin: 3px 0;">재계산 점수: ${d.dynamicScore.toFixed(1)}점</div>
+            <div style="color: #cbd5e1; font-size: 11px;">중앙가: ${d.price_eok.toFixed(2)}억 원</div>
+            <button onclick="selectDong(${d.id})" style="width:100%; margin-top:6px; padding:5px 0; background:#2563eb; color:#fff; border:none; border-radius:6px; font-weight:bold; cursor:pointer;">
+              상세 분석 보기
+            </button>
+          </div>
+        `;
+        marker.bindPopup(popupHtml);
+        marker.on('click', () => selectDong(d.id));
+        markerMap.set(d.id, marker);
+      });
+
+      renderDongList(sorted);
+    }
+
+    function renderDongList(sorted) {
+      const container = document.getElementById('dongListContainer');
+      container.innerHTML = '';
+
+      if (sorted.length === 0) {
+        container.innerHTML = `<div style="text-align:center; padding:40px 0; color:#64748b; font-size:12.5px;">선택 조건에 해당하는 동네가 없습니다.</div>`;
+        return;
+      }
+
+      sorted.forEach((d, idx) => {
+        const cInfo = clusterColors[d.cluster_id] || clusterColors[1];
+        const card = document.createElement('div');
+        card.className = 'dong-card';
+        card.id = `card-${d.id}`;
+        card.innerHTML = `
+          <div class="card-cluster-bar" style="background: ${cInfo.hex};"></div>
+          <div class="card-top">
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span class="card-rank">#${idx + 1}</span>
+              <span class="card-title">${d.gu} ${d.dong} (${d.size}㎡)</span>
+            </div>
+            <div class="card-price">${d.price_eok.toFixed(2)}억</div>
+          </div>
+          <div>
+            <span class="card-cluster-tag" style="background:${cInfo.tagBg}; color:${cInfo.tagColor};">
+              ${cInfo.tag}
+            </span>
+          </div>
+          <div class="card-metrics">
+            <div class="metric-col"><span>통근</span><span style="color:#38bdf8;">${d.s_commute.toFixed(1)}</span></div>
+            <div class="metric-col"><span>방어</span><span style="color:#34d399;">${d.s_defense.toFixed(1)}</span></div>
+            <div class="metric-col"><span>3040</span><span style="color:#fbbf24;">${d.s_3040.toFixed(1)}</span></div>
+            <div class="metric-col"><span>총점</span><span style="color:#fff; font-weight:900;">${d.dynamicScore.toFixed(1)}</span></div>
+          </div>
+        `;
+        card.addEventListener('click', () => selectDong(d.id));
+        container.appendChild(card);
+      });
+    }
+
+    window.selectDong = function(id) {
+      const item = allData.find(d => d.id === id);
+      if (!item) return;
+
+      const cInfo = clusterColors[item.cluster_id] || clusterColors[1];
+      document.getElementById('d-cluster-lbl').innerText = `군집 ${item.cluster_id || 1}`;
+      document.getElementById('d-title').innerText = `${item.gu} ${item.dong}`;
+      document.getElementById('d-price').innerText = `${item.price_eok.toFixed(2)}억`;
+      document.getElementById('d-unit-price').innerText = `${item.unit_price.toLocaleString()}만원`;
+      document.getElementById('d-score').innerText = `${item.dynamicScore.toFixed(1)}점`;
+
+      // Movement Bars
+      document.getElementById('d-move-morning').innerText = `${item.move_morning.toFixed(1)}%`;
+      document.getElementById('d-bar-morning').style.width = `${item.move_morning}%`;
+
+      document.getElementById('d-move-evening').innerText = `${item.move_evening.toFixed(1)}%`;
+      document.getElementById('d-bar-evening').style.width = `${item.move_evening}%`;
+
+      document.getElementById('d-move-weekend').innerText = `${item.move_weekend.toFixed(1)}%`;
+      document.getElementById('d-bar-weekend').style.width = `${item.move_weekend}%`;
+
+      // Commute Times
+      document.getElementById('d-gbd-time').innerText = `${item.gbd.toFixed(1)}분`;
+      document.getElementById('d-ybd-time').innerText = `${item.ybd.toFixed(1)}분`;
+      document.getElementById('d-cbd-time').innerText = `${item.cbd.toFixed(1)}분`;
+
+      // 3040 & Resilience
+      document.getElementById('d-p3040').innerText = `${item.p3040.toFixed(1)}%`;
+      document.getElementById('d-pchild').innerText = `${item.p_child.toFixed(1)}%`;
+      document.getElementById('d-drop').innerText = `${item.drop.toFixed(1)}%`;
+      document.getElementById('d-rec').innerText = `+${item.rec.toFixed(1)}%`;
+
+      document.getElementById('tabListBtn').classList.remove('active');
+      document.getElementById('tabDetailBtn').classList.add('active');
+      document.getElementById('listView').style.display = 'none';
+      document.getElementById('detailView').style.display = 'block';
+
+      map.setView([item.lat, item.lon], 14, { animate: true });
+      const marker = markerMap.get(id);
+      if (marker) marker.openPopup();
+    };
+
+    document.getElementById('tabListBtn').addEventListener('click', () => {
+      document.getElementById('tabDetailBtn').classList.remove('active');
+      document.getElementById('tabListBtn').classList.add('active');
+      document.getElementById('detailView').style.display = 'none';
+      document.getElementById('listView').style.display = 'block';
+    });
+
+    document.getElementById('tabDetailBtn').addEventListener('click', () => {
+      document.getElementById('tabListBtn').classList.remove('active');
+      document.getElementById('tabDetailBtn').classList.add('active');
+      document.getElementById('listView').style.display = 'none';
+      document.getElementById('detailView').style.display = 'block';
+    });
+
+    document.getElementById('backToListBtn').addEventListener('click', () => {
+      document.getElementById('tabDetailBtn').classList.remove('active');
+      document.getElementById('tabListBtn').classList.add('active');
+      document.getElementById('detailView').style.display = 'none';
+      document.getElementById('listView').style.display = 'block';
+    });
+
+    updateDashboard();
+  </script>
+</body>
+</html>

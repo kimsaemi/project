@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>[기획안 추천 옵션 반영] 3040 맞벌이 주거지 분석 최종 확정안</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg: #F4F7FB;
+    --paper: #FFFFFF;
+    --border: #DCE4EF;
+    --text-main: #172033;
+    --text-sub: #5F6B7A;
+    --blue: #2855D9;
+    --blue-soft: #EAF0FF;
+    --green: #1D7950;
+    --green-soft: #E9F8F0;
+    --amber: #A86F00;
+    --amber-soft: #FFF4D6;
+    --purple: #6B21A8;
+    --purple-soft: #F3E8FF;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #101522;
+      --paper: #171E2C;
+      --border: #303A4D;
+      --text-main: #EDF2FB;
+      --text-sub: #A7B2C4;
+      --blue: #91ADFF;
+      --blue-soft: #1B2A50;
+      --green: #85DBAF;
+      --green-soft: #173728;
+      --amber: #FFD47A;
+      --amber-soft: #382D16;
+      --purple: #D8B4FE;
+      --purple-soft: #3B0764;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 24px;
+    background-color: var(--bg);
+    color: var(--text-main);
+    font-family: "Pretendard", -apple-system, sans-serif;
+    line-height: 1.7;
+  }
+
+  .wrap { max-width: 960px; margin: 0 auto; }
+
+  header {
+    background: linear-gradient(135deg, #18356F 0%, #2855D9 100%);
+    color: white;
+    padding: 28px 32px;
+    border-radius: 18px;
+    margin-bottom: 24px;
+    box-shadow: 0 10px 25px rgba(40, 85, 217, 0.2);
+  }
+  .eyebrow { font-size: 13px; font-weight: 800; opacity: 0.9; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px; }
+  h1 { font-size: 25px; font-weight: 900; margin: 0 0 8px; line-height: 1.3; }
+  .lead { font-size: 14.5px; opacity: 0.92; margin: 0; line-height: 1.5; }
+
+  .card {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 22px 24px;
+    margin-bottom: 18px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  }
+
+  .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 14px; margin-top: 14px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th, td { padding: 12px 14px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: middle; }
+  th { background: var(--blue-soft); color: #17316f; font-size: 13px; font-weight: 800; }
+
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 12px; font-weight: 800; }
+  .badge-green { background: var(--green-soft); color: var(--green); }
+  .badge-blue { background: var(--blue-soft); color: var(--blue); }
+
+  .btn-print {
+    position: fixed;
+    top: 24px; right: 24px;
+    background: #0F172A; color: white; border: none; padding: 9px 18px; border-radius: 999px; font-weight: 800; font-size: 13px; cursor: pointer; z-index: 999;
+  }
+  @media print { .btn-print { display: none; } body { padding: 0; background: white; } }
+</style>
+</head>
+<body>
+
+<button class="btn-print" onclick="window.print()">🖨️ 가이드 인쇄 / PDF 저장</button>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">RECOMMENDED OPTION MATRIX</div>
+    <h1>기획안 추천 옵션 반영 및 최종 프로젝트 확정안</h1>
+    <p class="lead">기획안 문서에서 추천한 옵션(② 선형/비례 점수화, ② 비율%, ② 상대평가, ② 순위 먼저)을 100% 반영한 정비안입니다.</p>
+  </header>
+
+  <div class="card">
+    <div style="font-size:18px; font-weight:800; color:var(--text-main); margin-bottom:12px;">📋 기획안 추천 옵션 반영 결과 표</div>
+    
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:5%;">#</th>
+            <th style="width:22%;">핵심 평가 항목</th>
+            <th style="width:22%;">기획안 추천 옵션</th>
+            <th style="width:51%;">최종 확정 및 구현 수치 / 로직</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><b>1</b></td>
+            <td><b>가격방어력 점수화</b></td>
+            <td><span class="badge badge-blue">② 비율 (%)</span></td>
+            <td>예산 한도 대비 사용 비율(%) 및 낙폭 비율에 따른 <b>직선형 비례 점수화</b></td>
+          </tr>
+          <tr>
+            <td><b>2</b></td>
+            <td><b>가성비/예산 잔액</b></td>
+            <td><span class="badge badge-green">② 비율 (%)</span></td>
+            <td>10억 예산 대비 9억 매물(90% 소진)은 [입지가점], 5억 매물(50% 소진)은 [가성비가점] 적용</td>
+          </tr>
+          <tr>
+            <td><b>3</b></td>
+            <td><b>통근시간 점수화</b></td>
+            <td><span class="badge badge-blue">② 선형 / 비례</span></td>
+            <td>30분/31분 불연속 경계 태클 차단 ➔ <b>분 단위 통근시간 비례 부드러운 연속 점수화</b></td>
+          </tr>
+          <tr>
+            <td><b>4</b></td>
+            <td><b>3040비중 · 유동성</b></td>
+            <td><span class="badge badge-blue">② 선형 / 비례</span></td>
+            <td>3040 상주 인구 비율 및 연 거래량 수치에 그대로 비례하는 연속 점수화 적용</td>
+          </tr>
+          <tr>
+            <td><b>5</b></td>
+            <td><b>비교 기준점 (벤치마크)</b></td>
+            <td><span class="badge badge-green">② 상대 평가</span></td>
+            <td>출처 시비 차단 ➔ <b>서울 137개 분석 법정동 데이터군 내 상대평가 (Min-Max Scaling)</b></td>
+          </tr>
+          <tr>
+            <td><b>6</b></td>
+            <td><b>가중치 산정 방식</b></td>
+            <td><span class="badge badge-blue">① 가중치 합산</span></td>
+            <td>통근 35% + 방어 30% + 3040 25% + 유동성 10% = <b>100% 가중치 합산 랭킹 (TOPSIS)</b></td>
+          </tr>
+          <tr>
+            <td><b>7</b></td>
+            <td><b>클러스터링 - 순위 결합</b></td>
+            <td><span class="badge badge-green">② 순위 먼저</span></td>
+            <td>1~10위 순위는 점수로 먼저 보여주고, K-Means 군집은 <b>'동네 성격 태그'</b>로 분리 사용</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

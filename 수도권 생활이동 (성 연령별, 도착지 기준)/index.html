@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>서울 3040 맞벌이 생활이동 & 최적 주거지 지도 대시보드</title>
+  <meta name="description" content="서울시 30~40대 성·연령별 생활이동 데이터를 기반으로 출근, 퇴근 귀가, 주말 이동 패턴을 시각화한 대시보드">
+  
+  <!-- Google Fonts: Inter & Outfit & Pretendard fallback -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="dark-theme">
+  <div id="app" class="app-layout">
+    <!-- Header -->
+    <header class="app-header" id="main-header">
+      <div class="brand">
+        <div class="brand-badge"><i class="fa-solid fa-map-location-dot"></i></div>
+        <div class="brand-text">
+          <h1>3040 맞벌이 서울 생활이동 & 주거지 맵</h1>
+          <p class="subtitle">출근(업무지구) · 퇴근 귀가(주거지) · 주말 이동 패턴 인터랙티브 시각화</p>
+        </div>
+      </div>
+
+      <div class="header-stats">
+        <div class="stat-pill">
+          <span class="label"><i class="fa-solid fa-building-user"></i> 분석 대상</span>
+          <strong id="total-dongs-count">426개 행정동</strong>
+        </div>
+        <div class="stat-pill highlight">
+          <span class="label"><i class="fa-solid fa-briefcase"></i> 최대 출근지</span>
+          <strong id="top-commute-dong">영등포구 여의동</strong>
+        </div>
+        <div class="stat-pill highlight-green">
+          <span class="label"><i class="fa-solid fa-house-chimney"></i> 최대 귀가지</span>
+          <strong id="top-return-dong">금천구 독산3동</strong>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="main-container">
+      <!-- Sidebar Control & Ranking -->
+      <aside class="sidebar" id="sidebar">
+        <!-- Visual Mode Toggle -->
+        <section class="panel-section">
+          <label class="section-title"><i class="fa-solid fa-layer-group"></i> 시각화 모드</label>
+          <div class="mode-buttons" id="mode-selector">
+            <button class="mode-btn active" data-mode="commute" id="btn-mode-commute">
+              <i class="fa-solid fa-briefcase"></i>
+              <span>출근 중심 (직장지)</span>
+            </button>
+            <button class="mode-btn" data-mode="return" id="btn-mode-return">
+              <i class="fa-solid fa-house-user"></i>
+              <span>퇴근 귀가 (주거지)</span>
+            </button>
+            <button class="mode-btn" data-mode="ratio" id="btn-mode-ratio">
+              <i class="fa-solid fa-chart-pie"></i>
+              <span>3040 비중 (%)</span>
+            </button>
+            <button class="mode-btn" data-mode="weekend" id="btn-mode-weekend">
+              <i class="fa-solid fa-umbrella-beach"></i>
+              <span>주말 이동</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- Filters & Search -->
+        <section class="panel-section">
+          <label class="section-title"><i class="fa-solid fa-filter"></i> 지역 필터 & 검색</label>
+          <div class="filter-group">
+            <div class="search-box">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input type="text" id="dong-search-input" placeholder="행정동 / 자치구 검색 (예: 여의, 역삼, 가산)" autocomplete="off">
+              <button id="search-clear-btn" class="clear-btn" title="검색어 지우기"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <select id="gu-filter-select" class="custom-select">
+              <option value="all">서울시 전체 (25개 자치구)</option>
+            </select>
+          </div>
+        </section>
+
+        <!-- Selected Dong Detail Card -->
+        <section class="panel-section detail-panel" id="detail-panel">
+          <div class="detail-empty-state" id="detail-empty">
+            <i class="fa-solid fa-hand-pointer"></i>
+            <p>지도에서 마커를 클릭하면<br>해당 동의 상세 이동 통계가 표시됩니다.</p>
+          </div>
+
+          <div class="detail-content" id="detail-content" style="display: none;">
+            <div class="detail-header">
+              <div>
+                <span class="detail-gu" id="detail-gu">영등포구</span>
+                <h3 class="detail-dong" id="detail-dong">여의동</h3>
+                <span class="detail-code" id="detail-code">코드: 11560540</span>
+              </div>
+              <button id="btn-zoom-dong" class="icon-btn" title="이 위치로 확대"><i class="fa-solid fa-crosshairs"></i></button>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="detail-stats-grid">
+              <div class="stat-card commute-card">
+                <div class="card-icon"><i class="fa-solid fa-sun"></i></div>
+                <div class="card-info">
+                  <span class="card-label">평일 출근 유입 (07~10시)</span>
+                  <strong class="card-value" id="detail-commute">61,048 명/일</strong>
+                  <div class="gender-bar">
+                    <div class="bar-m" id="detail-commute-m-bar" style="width: 58%;" title="남성"></div>
+                    <div class="bar-f" id="detail-commute-f-bar" style="width: 42%;" title="여성"></div>
+                  </div>
+                  <div class="gender-labels">
+                    <span id="detail-commute-m-lbl">남 58%</span>
+                    <span id="detail-commute-f-lbl">여 42%</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="stat-card return-card">
+                <div class="card-icon"><i class="fa-solid fa-moon"></i></div>
+                <div class="card-info">
+                  <span class="card-label">평일 퇴근 귀가 (17~22시)</span>
+                  <strong class="card-value" id="detail-return">5,088 명/일</strong>
+                  <div class="gender-bar">
+                    <div class="bar-m" id="detail-return-m-bar" style="width: 44%;" title="남성"></div>
+                    <div class="bar-f" id="detail-return-f-bar" style="width: 56%;" title="여성"></div>
+                  </div>
+                  <div class="gender-labels">
+                    <span id="detail-return-m-lbl">남 44%</span>
+                    <span id="detail-return-f-lbl">여 56%</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="stat-card weekend-card">
+                <div class="card-icon"><i class="fa-solid fa-mug-hot"></i></div>
+                <div class="card-info">
+                  <span class="card-label">주말 3040 유입량</span>
+                  <strong class="card-value" id="detail-weekend">71,186 명/일</strong>
+                  <div class="sub-text" id="detail-weekday-compare">평일 대비 48.6% 수준</div>
+                </div>
+              </div>
+
+              <div class="stat-card ratio-card">
+                <div class="card-icon"><i class="fa-solid fa-users"></i></div>
+                <div class="card-info">
+                  <span class="card-label">3040 세대 비중</span>
+                  <strong class="card-value" id="detail-ratio">47.8 %</strong>
+                  <div class="progress-container">
+                    <div class="progress-bar" id="detail-ratio-progress" style="width: 47.8%;"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Dynamic Ranking List -->
+        <section class="panel-section ranking-section">
+          <div class="ranking-header">
+            <label class="section-title"><i class="fa-solid fa-ranking-star"></i> <span id="ranking-title">출근 유입 상위 TOP 10</span></label>
+            <span class="badge" id="ranking-count">TOP 10</span>
+          </div>
+          <div class="ranking-list" id="ranking-list">
+            <!-- Dynamically injected -->
+          </div>
+        </section>
+      </aside>
+
+      <!-- Map Area -->
+      <main class="map-wrapper">
+        <div id="map" class="map-container"></div>
+        
+        <!-- Map Floating Controls -->
+        <div class="map-floating-controls">
+          <button id="btn-reset-view" class="floating-btn" title="서울 전체 보기">
+            <i class="fa-solid fa-house"></i>
+            <span>서울 전체</span>
+          </button>
+          <div class="theme-switcher">
+            <button id="btn-map-dark" class="tile-btn active" data-theme="dark" title="다크 테마 지도">Dark</button>
+            <button id="btn-map-light" class="tile-btn" data-theme="light" title="라이트 테마 지도">Light</button>
+          </div>
+        </div>
+
+        <!-- Legend Overlay -->
+        <div class="map-legend" id="map-legend">
+          <div class="legend-header">
+            <span id="legend-mode-title">출근 유입량 (일평균)</span>
+          </div>
+          <div class="legend-gradient">
+            <span class="legend-bar" id="legend-gradient-bar"></span>
+          </div>
+          <div class="legend-labels">
+            <span id="legend-min">낮음</span>
+            <span id="legend-mid">중간</span>
+            <span id="legend-max">높음</span>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <!-- Embedded Data -->
+  <script src="data.js"></script>
+  <!-- App JS -->
+  <script src="app.js"></script>
+</body>
+</html>

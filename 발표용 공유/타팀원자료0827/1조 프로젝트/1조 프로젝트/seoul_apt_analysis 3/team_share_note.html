@@ -1,0 +1,488 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>서울 아파트 가격 프로젝트 — 현황 공유와 논의 안건</title>
+<style>*,*::before,*::after{box-sizing:border-box}body{margin:0}img{max-width:100%}</style>
+</head>
+<body>
+<style>
+  :root {
+    color-scheme: light;
+    --ground: #f4f6f9;
+    --surface: #ffffff;
+    --surface-2: #fafbfd;
+    --ink: #0e141b;
+    --ink-2: #4c5763;
+    --ink-3: #7c8794;
+    --rule: #dde3ea;
+    --rule-soft: #eaeef3;
+    --accent: #2a78d6;
+    --accent-ink: #1a5cab;
+    --accent-wash: #eaf2fc;
+    --flag: #b3402f;
+    --flag-wash: #fbf0ee;
+    --ok: #1a7f52;
+    --ok-wash: #eaf5ef;
+    --plate: #fcfcfb;
+    --sans: "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo",
+            "Malgun Gothic", "맑은 고딕", system-ui, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+            "D2Coding", "Liberation Mono", monospace;
+    --s1: .25rem; --s2: .5rem; --s3: .75rem; --s4: 1rem;
+    --s5: 1.5rem; --s6: 2rem; --s7: 3rem; --s8: 4.5rem;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --ground: #0f1216; --surface: #171b21; --surface-2: #1c2129;
+      --ink: #eef2f6; --ink-2: #a8b3bf; --ink-3: #78838f;
+      --rule: #2a313a; --rule-soft: #22282f;
+      --accent: #3987e5; --accent-ink: #8ab8f2; --accent-wash: #16233a;
+      --flag: #e08a79; --flag-wash: #2a1c19;
+      --ok: #4fc08a; --ok-wash: #14261d;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --ground: #0f1216; --surface: #171b21; --surface-2: #1c2129;
+    --ink: #eef2f6; --ink-2: #a8b3bf; --ink-3: #78838f;
+    --rule: #2a313a; --rule-soft: #22282f;
+    --accent: #3987e5; --accent-ink: #8ab8f2; --accent-wash: #16233a;
+    --flag: #e08a79; --flag-wash: #2a1c19;
+    --ok: #4fc08a; --ok-wash: #14261d;
+  }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--sans);
+         font-size: 16px; line-height: 1.72; -webkit-font-smoothing: antialiased; }
+  .shell { max-width: 60rem; margin: 0 auto; padding: 0 clamp(1rem, 4vw, 3rem); }
+
+  header.top { padding: var(--s7) 0 var(--s6); border-bottom: 2px solid var(--ink); }
+  .eyebrow { font-family: var(--mono); font-size: .7rem; letter-spacing: .16em; text-transform: uppercase;
+             color: var(--accent-ink); margin: 0 0 var(--s4); }
+  h1 { font-size: clamp(1.8rem, 4.4vw, 2.7rem); line-height: 1.18; font-weight: 800;
+       letter-spacing: -.025em; text-wrap: balance; margin: 0 0 var(--s3); }
+  .dek { font-size: 1.06rem; color: var(--ink-2); max-width: 60ch; margin: 0; text-wrap: pretty; }
+
+  .strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+           border: 1px solid var(--rule); border-radius: 3px; background: var(--surface);
+           margin: var(--s6) 0 0; overflow: hidden; }
+  .strip div { padding: var(--s4); border-right: 1px solid var(--rule-soft); }
+  .strip div:last-child { border-right: 0; }
+  .strip b { display: block; font-family: var(--mono); font-variant-numeric: tabular-nums;
+             font-size: 1.35rem; font-weight: 600; letter-spacing: -.02em; line-height: 1.2; }
+  .strip span { display: block; font-size: .74rem; color: var(--ink-3); margin-top: .2rem; }
+
+  section { padding: var(--s8) 0 0; }
+  .kicker { font-family: var(--mono); font-size: .7rem; letter-spacing: .13em; text-transform: uppercase;
+            color: var(--ink-3); margin: 0 0 var(--s2); }
+  h2 { font-size: clamp(1.3rem, 2.6vw, 1.65rem); font-weight: 800; letter-spacing: -.02em;
+       margin: 0 0 var(--s4); text-wrap: balance; }
+  h3 { font-size: 1.02rem; font-weight: 700; margin: var(--s6) 0 var(--s3); letter-spacing: -.01em; }
+  p { margin: 0 0 var(--s4); max-width: 68ch; text-wrap: pretty; }
+  ul.plain { margin: 0 0 var(--s4); padding-left: 1.1rem; max-width: 68ch; }
+  ul.plain li { margin-bottom: var(--s2); }
+  code { font-family: var(--mono); font-size: .88em; background: var(--accent-wash);
+         color: var(--accent-ink); padding: .1em .34em; border-radius: 2px; }
+  .num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+  /* 요약 3줄 */
+  ol.tldr { list-style: none; counter-reset: t; margin: 0 0 var(--s4); padding: 0; }
+  ol.tldr li { counter-increment: t; position: relative; padding-left: 2.4rem; margin-bottom: var(--s4);
+               max-width: 68ch; }
+  ol.tldr li::before { content: counter(t); position: absolute; left: 0; top: .05rem;
+    font-family: var(--mono); font-size: .78rem; color: var(--accent); border: 1px solid var(--accent);
+    border-radius: 50%; width: 1.55rem; height: 1.55rem; display: grid; place-items: center; }
+
+  /* 신뢰 구분 */
+  .split { display: grid; gap: var(--s4); grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); margin-bottom: var(--s4); }
+  .card { border: 1px solid var(--rule); border-radius: 3px; background: var(--surface); padding: var(--s4) var(--s5); }
+  .card .tag { display: inline-block; font-family: var(--mono); font-size: .66rem; letter-spacing: .1em;
+    text-transform: uppercase; padding: .12rem .4rem; border-radius: 2px; margin-bottom: var(--s3); }
+  .card.a .tag { background: var(--ok-wash); color: var(--ok); }
+  .card.b .tag { background: var(--flag-wash); color: var(--flag); }
+  .card h4 { margin: 0 0 var(--s2); font-size: .98rem; font-weight: 700; }
+  .card p { margin: 0; font-size: .9rem; color: var(--ink-2); max-width: none; }
+
+  /* 가설 사슬 */
+  .chain { margin: 0 0 var(--s4); }
+  .link { border: 1px solid var(--rule); border-left: 3px solid var(--accent); border-radius: 0 3px 3px 0;
+          background: var(--surface); padding: var(--s4) var(--s5); }
+  .link .hn { font-family: var(--mono); font-size: .68rem; letter-spacing: .12em; text-transform: uppercase;
+              color: var(--accent-ink); }
+  .link h4 { margin: var(--s1) 0 var(--s3); font-size: 1.06rem; font-weight: 700; letter-spacing: -.01em; }
+  .link dl { display: grid; grid-template-columns: auto 1fr; gap: var(--s2) var(--s4); margin: 0; font-size: .89rem; }
+  .link dt { font-family: var(--mono); font-size: .66rem; letter-spacing: .08em; text-transform: uppercase;
+             color: var(--ink-3); padding-top: .3rem; white-space: nowrap; }
+  .link dd { margin: 0; color: var(--ink-2); }
+  .link dd.verdict { color: var(--flag); font-weight: 600; }
+  .link.win { border-left-color: var(--ok); }
+  .link.win .hn { color: var(--ok); }
+  .drop { display: flex; align-items: center; gap: var(--s3); padding: var(--s3) 0 var(--s3) var(--s5);
+          font-size: .86rem; color: var(--ink-3); }
+  .drop::before { content: "↓"; font-family: var(--mono); color: var(--flag); font-size: 1.1rem; }
+
+  /* 안건 */
+  ol.agenda { list-style: none; counter-reset: a -1; margin: 0; padding: 0; }
+  ol.agenda > li { counter-increment: a; border-top: 1px solid var(--rule); padding: var(--s5) 0; }
+  ol.agenda > li:last-child { border-bottom: 1px solid var(--rule); }
+  ol.agenda h4 { margin: 0 0 var(--s2); font-size: 1.02rem; font-weight: 700; }
+  ol.agenda h4::before { content: "안건 " counter(a); font-family: var(--mono); font-size: .68rem;
+    letter-spacing: .1em; color: var(--accent); display: block; font-weight: 400; margin-bottom: var(--s1); }
+  ol.agenda p { margin: 0 0 var(--s2); font-size: .93rem; }
+  ol.agenda p:last-child { margin: 0; }
+  .ask { font-family: var(--mono); font-size: .82rem; color: var(--accent-ink); }
+
+  .tw { overflow-x: auto; border: 1px solid var(--rule); border-radius: 3px; background: var(--surface); margin: 0 0 var(--s4); }
+  table { border-collapse: collapse; width: 100%; font-size: .84rem; }
+  caption { text-align: left; font-family: var(--mono); font-size: .68rem; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--ink-3); padding: var(--s3) var(--s4) 0; }
+  th, td { padding: .5rem var(--s4); text-align: left; border-bottom: 1px solid var(--rule-soft); }
+  thead th { font-family: var(--mono); font-size: .68rem; letter-spacing: .07em; text-transform: uppercase;
+    color: var(--ink-3); font-weight: 500; background: var(--surface-2); border-bottom: 1px solid var(--rule); white-space: nowrap; }
+  tbody tr:last-child td { border-bottom: 0; }
+  td.n, th.n { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .hl { color: var(--accent-ink); font-weight: 700; }
+  .warn { color: var(--flag); font-weight: 700; }
+  .no { color: var(--ink-3); }
+
+  .note { border-left: 2px solid var(--flag); background: var(--flag-wash);
+          padding: var(--s4) var(--s5); margin: 0 0 var(--s4); border-radius: 0 3px 3px 0; }
+  .note .lab { display: block; font-family: var(--mono); font-size: .67rem; letter-spacing: .13em;
+    text-transform: uppercase; color: var(--flag); margin-bottom: var(--s2); }
+  .note p:last-child { margin-bottom: 0; }
+  .note.calm { border-left-color: var(--accent); background: var(--accent-wash); }
+  .note.calm .lab { color: var(--accent-ink); }
+
+  figure { margin: 0 0 var(--s5); }
+  figure .plate { background: var(--plate); border: 1px solid var(--rule); border-radius: 3px; padding: var(--s3); }
+  figure img { display: block; width: 100%; height: auto; }
+  figcaption { font-size: .8rem; color: var(--ink-3); margin-top: var(--s2); max-width: 68ch; }
+
+  pre { font-family: var(--mono); font-size: .8rem; line-height: 1.68; margin: 0 0 var(--s4);
+        background: var(--surface); border: 1px solid var(--rule); border-radius: 3px;
+        padding: var(--s4); overflow-x: auto; color: var(--ink-2); }
+  pre b { color: var(--ink); font-weight: 600; }
+  pre .c { color: var(--ink-3); }
+
+  footer { margin-top: var(--s8); padding: var(--s5) 0 var(--s7); border-top: 1px solid var(--rule);
+           font-size: .8rem; color: var(--ink-3); }
+  a { color: var(--accent-ink); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  @media print { body { background: #fff; font-size: 11pt; } section { padding-top: var(--s6); break-inside: avoid; }
+    .tw, pre, figure, .link { break-inside: avoid; } }
+</style>
+
+<div class="shell">
+
+<header class="top">
+  <p class="eyebrow">팀 공유 · 현황과 논의 안건 · 2026-08-13</p>
+  <h1>인구로 아파트 가격을 설명하려 했고,<br>가설 세 개가 기각됐습니다</h1>
+  <p class="dek">서울 아파트 실거래가와 상권 인구를 법정동·분기로 결합한 패널로 검증하는 중입니다.
+    총량 가설, 거래량 선행지표 가설, 직장의 질 가설이 모두 데이터에 의해 기각됐습니다.
+    대신 <strong>예상하지 못한 설명자</strong>가 나왔고, 살아남은 변수가 둘 있습니다.</p>
+  <div class="strip">
+    <div><b>5,672</b><span>행 (동×분기)</span></div>
+    <div><b>331</b><span>법정동</span></div>
+    <div><b>21</b><span>분기 (21Q1~26Q1)</span></div>
+    <div><b>3</b><span>기각된 가설</span></div>
+    <div><b>4</b><span>논의 안건</span></div>
+  </div>
+</header>
+
+<section>
+  <p class="kicker">세 줄 요약</p>
+  <h2>먼저 이것만 읽어도 됩니다</h2>
+  <ol class="tldr">
+    <li><strong>가격 변동의 90%는 '어디'가 아니라 '언제'였습니다.</strong>
+      분기 고정효과만으로 R²=0.067, 법정동 고정효과는 0.006. 서울 전체 분기 변화율이 금리 사이클과
+      거의 일치합니다(22Q4 −12.14%, 기준금리 3% 돌파 시점). <strong>인구 변수가 계속 약했던 이유가 여기 있습니다.</strong></li>
+    <li><strong>살아남은 변수는 둘입니다 — <code>log직주비</code>와 핵심생애주기비중(30대+40대).</strong>
+      직주비는 자치구 0.597 / 법정동 0.394로 4개 강건성 기준을 모두 통과했습니다.
+      다만 <strong>단면 상관이고 인과가 아닙니다</strong> — 시간 변동이 없어 고정효과 검증이 원천 불가합니다.</li>
+    <li><strong>KPI 순위가 집계 단위에 따라 바뀝니다.</strong> 자치구 3위가 행 단위면 용산구,
+      동 단위로 접으면 송파구입니다. 그리고 자치구(n=25) 결과는 강남·중구·종로 2~3개가 좌우해서
+      직주비 상관이 어느 구를 빼느냐에 따라 <strong>0.19~0.78로 요동</strong>합니다.</li>
+  </ol>
+</section>
+
+<section>
+  <p class="kicker">데이터</p>
+  <h2>우리가 가진 것</h2>
+  <p>1행 = <strong>법정동 1개 × 분기 1개</strong>. 아파트 실거래 234,485건(2021Q1~2026Q1)을 법정동·분기별로
+    집계해 가격 지표를 만들고, 서울시 상권분석서비스의 상주·유동·직장 인구를 면적 비례로 배분해 붙였습니다.
+    조인 키는 법정동코드 8자리와 분기(<code>20211</code> = 2021년 1분기).</p>
+  <div class="note calm">
+    <span class="lab">왜 6,951이 아니라 5,672인가</span>
+    <p>법정동 331개 × 21분기 = 6,951칸이어야 하는데 실제는 5,672행입니다.
+      거래가 없던 동·분기는 <strong>행 자체가 없는 불균형 패널</strong>이고 빈 칸이 1,279개(18.4%)입니다.
+      종로구는 법정동이 35개로 가장 많은데 동당 10.2분기뿐입니다 — 아파트 없는 동이 태반이라서입니다.
+      이게 <strong>안건 2</strong>가 됩니다.</p>
+  </div>
+</section>
+
+<section>
+  <p class="kicker">전제</p>
+  <h2>"틀렸다"와 "알 수 없다"를 구분해야 합니다</h2>
+  <p>지금까지 나온 부정적 결론이 두 종류입니다. 이걸 섞으면 발표와 의사결정이 모두 어긋납니다.</p>
+  <div class="split">
+    <div class="card a">
+      <span class="tag">A · 검증해서 틀림</span>
+      <h4>가설 반증</h4>
+      <p>계산했고 아니라는 답이 나온 것. 아래 기각된 가설 3개가 여기 해당합니다.
+        <strong>결론으로 말할 수 있습니다.</strong></p>
+    </div>
+    <div class="card b">
+      <span class="tag">B · 판정 불가</span>
+      <h4>검증 자체가 안 됨</h4>
+      <p>데이터 성질 때문에 계산이 성립하지 않는 것. 인과 검증, 금리 효과 식별, 직주근접 측정.
+        <strong>"틀렸다"가 아니라 "이 데이터로는 모른다"입니다.</strong></p>
+    </div>
+  </div>
+  <div class="tw"><table>
+    <caption>B · 이 데이터로 판정할 수 없는 것</caption>
+    <thead><tr><th>못 하는 것</th><th>이유</th></tr></thead>
+    <tbody>
+      <tr><td>인과 주장</td><td>상주·직장인구가 연 1회 갱신. 21분기 동안 동별 고유값 <span class="warn">3개</span> → 고정효과 계수가 추정되지 않음</td></tr>
+      <tr><td>금리의 인과효과 식별</td><td>모든 법정동이 같은 시점에 같은 충격을 받으므로 금리가 분기 고정효과와 완전히 겹침. 서울만으로는 불가</td></tr>
+      <tr><td>직주<strong>근접</strong> 측정</td><td>통근 흐름(OD) 데이터가 없음. 우리가 가진 건 지역의 직장:주거 비율(<strong>직주균형</strong>)</td></tr>
+      <tr><td>직주비 <strong>절대값</strong> 발표</td><td>포착률이 분자·분모에서 다름(직장 71% / 주거 40%) → 절대값이 약 1.8배 부풀려짐</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note calm">
+    <span class="lab">중요 — 절대값은 못 쓰지만 회귀 결론은 무사합니다</span>
+    <p>일정 배율 k는 <code>log(k·x) = log(k) + log(x)</code>로 <strong>절편만 옮기고 기울기는 건드리지 않습니다.</strong>
+      실제로 k를 0.5~1.8로 바꿔 재적합해도 log2 계수 0.0751과 R² 0.306이 전혀 변하지 않았습니다.
+      순위 기반(Spearman·범주)도 불변입니다.</p>
+    <p>따라서 <strong>"주민 1명당 출근자 15.7명"은 쓸 수 없고</strong>,
+      <strong>"직장 비중 2배당 ㎡당 +7.8%", "업무중심 유형 상위 26곳"은 안전</strong>합니다.
+      남은 위험은 포착률이 동마다 다를 경우인데, 그건 국민연금 <code>가입자수</code>(실측)로 대조해야 합니다.</p>
+  </div>
+</section>
+
+<section>
+  <p class="kicker">진행 경과</p>
+  <h2>기각된 가설 3개</h2>
+  <div class="chain">
+    <div class="link">
+      <span class="hn">가설 1 · 기각</span>
+      <h4>"사람이 많은 동네일수록 아파트가 비싸다"</h4>
+      <dl>
+        <dt>검증</dt><dd>상주인구 vs 단가 — 자치구 Pearson 0.155, 단순회귀 <strong>R²=0.024</strong></dd>
+        <dt>결과</dt><dd class="verdict">법정동 단위에서는 log(상주인구) 상관이 <strong>−0.222</strong>로 오히려 음수.
+          결합 모델에서 인구총량 계수는 부호가 뒤집히고 p=0.605로 무의미</dd>
+        <dt>왜</dt><dd>총량은 <strong>면적에 비례하는 규모 변수</strong>다. 넓은 동에 사람이 많은 건 당연하고 가격과는 다른 축이다.</dd>
+        <dt>정확한 결론</dt><dd>"인구가 영향을 주지 않는다"가 아니라 <strong>"인구 총량은 주지 않고, 인구 구성이 준다"</strong></dd>
+      </dl>
+    </div>
+    <p class="drop">총량이 아니라 <strong>시간 변화</strong>로 보면? 거래량이 가격을 앞서가나?</p>
+    <div class="link">
+      <span class="hn">가설 2 · 기각</span>
+      <h4>"거래량이 늘면 다음 분기 가격이 오른다 (선행지표)"</h4>
+      <dl>
+        <dt>검증</dt><dd>거래량 → 다음분기 가격. 계수 −0.029, p=0.054 — 그럴듯해 보였다</dd>
+        <dt>결과</dt><dd class="verdict">가격 자체의 관성(AR1)을 통제하면 계수 −0.0005, <strong>p=0.973으로 소멸</strong></dd>
+        <dt>왜</dt><dd>가격 변화율은 원래 음의 자기상관(평균회귀)을 갖는데, 거래량이 그걸 우연히 대리하고 있었다.</dd>
+        <dt>남는 것</dt><dd>같은 분기 <strong>동시성은 유의</strong>(구 0.084 / 동 0.029, p&lt;0.001).
+          거래량은 순수한 <strong>동행지표</strong>다 — 몰리는 분기에 가격도 뛰지만 다음 분기를 예측하지 못한다.</dd>
+      </dl>
+    </div>
+    <p class="drop">직주비가 살아남았는데 중구는 왜 안 비싼가? <strong>직장의 질</strong>이 문제인가?</p>
+    <div class="link">
+      <span class="hn">가설 3 · 기각</span>
+      <h4>"직장의 수가 아니라 질(업종·임금)이 가격을 가른다"</h4>
+      <dl>
+        <dt>출발점</dt><dd>중구는 직주비 9.96으로 서울 1위인데 단가는 10위. 강남은 5.80인데 1위.
+          인쇄·도매(중구) vs 금융·IT(강남)의 차이일 것이라 추정</dd>
+        <dt>검증</dt><dd>국민연금 가입 사업장 내역 — 서울 사업장 132,777개, 가입자 379만,
+          패널 331개 법정동 <strong>100% 매칭</strong>. 데이터 자체는 완벽했다</dd>
+        <dt>결과</dt><dd class="verdict">평균보수월액: 단독 0.365였으나 log직주비와 함께 넣으면 <strong>p=0.093으로 소멸</strong>.
+          고부가업종(IT·금융·전문서비스) 종사자 비중: 상관 <strong>−0.048</strong>로 사실상 0.
+          R² 0.306 → 0.322로 거의 변화 없음</dd>
+        <dt>의미</dt><dd>데이터 결함이 아니라 <strong>가설이 틀렸다.</strong> 중구와 강남을 가르는 것은 직장의 질이 아니다.</dd>
+      </dl>
+    </div>
+  </div>
+  <div class="note">
+    <span class="lab">발표에 쓸 만한 소재 — 우리가 스스로 잡아낸 오류</span>
+    <p>처음에 <strong>"많이 올랐던 동네가 많이 떨어졌다"(상관 −0.435, 강건해 보임)</strong>는 결과가 나왔는데,
+      <strong>인공물이었습니다.</strong> 상승기 <code>log(P21Q4/P21Q1)</code>와 충격기 <code>log(P22Q4/P21Q4)</code>가
+      <strong>21Q4를 분자·분모에 공유</strong>합니다. 법정동 분기 중앙값은 거래 몇 건으로 만들어져 노이즈가 큰데,
+      그 값이 과대추정되면 상승기는 높게 충격기는 낮게 <strong>자동으로</strong> 계산됩니다.</p>
+    <p>끝점을 분리하니 <strong>−0.435 → −0.023으로 소멸</strong>했습니다.
+      기간 변화율끼리 비교할 때는 반드시 끝점을 분리해야 합니다.</p>
+  </div>
+</section>
+
+<section>
+  <p class="kicker">예상하지 못한 발견</p>
+  <h2>가격 변동은 '어디'가 아니라 '언제'가 좌우한다</h2>
+  <p>분기별 가격 변화율의 분산을 분해했습니다(법정동 211개, n=3,758).</p>
+  <div class="tw"><table>
+    <thead><tr><th>고정효과</th><th class="n">R²</th></tr></thead>
+    <tbody>
+      <tr><td>분기(시점)만</td><td class="n hl">0.067</td></tr>
+      <tr><td>법정동만</td><td class="n">0.006</td></tr>
+      <tr><td>둘 다</td><td class="n">0.075</td></tr>
+    </tbody>
+  </table></div>
+  <p><strong>설명된 분산의 90%가 시점 요인입니다.</strong> 지역 특성이 아니라 시점이 가격 변동을 지배합니다.
+    서울 전체 분기 변화율이 금리 사이클과 거의 일치합니다 — 21Q3 +5.99%(저금리 정점),
+    22Q3 −6.88%, <strong>22Q4 −12.14%(한은 기준금리 3% 돌파)</strong>, 23Q2 +2.38%(회복 시작), 24~26 +2~3% 꾸준.</p>
+  <p>서울만으로는 금리의 인과효과를 식별할 수 없습니다(모든 동이 같은 충격을 받으므로 분기 고정효과와 겹침).
+    대신 물을 수 있는 것은 <strong>"같은 충격이 동네마다 다르게 왔는가"</strong>이고, 이건 검증 가능했습니다.</p>
+  <div class="tw"><table>
+    <caption>비싼 동네일수록 진폭이 크다 (고베타) · n=113</caption>
+    <thead><tr><th>기간</th><th class="n">상관</th><th class="n">자치구 고정효과 포함 계수</th><th>판정</th></tr></thead>
+    <tbody>
+      <tr><td>충격기 21Q4→22Q4 (금리 인상)</td><td class="n">−0.293</td><td class="n">−18.62 (p=0.037)</td><td>약함</td></tr>
+      <tr><td>회복기 23Q1→25Q4 (금리 인하)</td><td class="n hl">+0.518</td><td class="n">+16.41 (p=0.019)</td><td><strong>강건</strong></td></tr>
+      <tr><td>전체 21Q1→25Q4</td><td class="n">+0.448</td><td class="n">−10.72 (p=0.141)</td><td>구 내부에서 소멸</td></tr>
+    </tbody>
+  </table></div>
+  <p><strong>비싼 동네는 더 떨어지고 더 올랐습니다.</strong> 같은 구 안에서도 성립합니다.
+    가격이 2배인 동네는 낙폭이 약 10%p 더 컸습니다. 레버리지 민감도(비싼 아파트일수록 대출 규모가 커 금리에 민감)로
+    해석하는 게 자연스럽지만, <strong>이건 사후 해석이고 대출 데이터로 검증한 것은 아닙니다.</strong>
+    표본도 세 시점 모두 거래 5건 이상을 요구해 331개 중 113개만 남아 거래 활발한 동네로 치우쳐 있습니다.</p>
+</section>
+
+<section>
+  <p class="kicker">살아남은 것</p>
+  <h2>log직주비와 핵심생애주기비중</h2>
+  <p><strong>강건</strong> = Pearson · Spearman · 상하위 2% 제거 · 레버리지 자치구 제거, 네 기준이 모두 버팀.</p>
+  <div class="tw"><table>
+    <caption>변수별 강건성 — 화살표 우측은 레버리지 구(강남·중구·종로) 제외값</caption>
+    <thead><tr><th>변수</th><th class="n">자치구 n=25</th><th class="n">법정동 n=272</th><th>판정</th></tr></thead>
+    <tbody>
+      <tr><td><code>log직주비</code></td><td class="n">0.597 → 0.649</td><td class="n hl">0.394 → 0.429</td><td><strong>양쪽 강건</strong></td></tr>
+      <tr><td>핵심생애주기비중 (30대+40대)</td><td class="n">0.748 → 0.651</td><td class="n">0.222 → 0.209</td><td>구 강건, 동 약함</td></tr>
+      <tr><td><code>면적_중앙값</code></td><td class="n">0.831 → 0.879</td><td class="n">0.373 → 0.372</td><td>강건 (최강 단일변수)</td></tr>
+      <tr class="out"><td>상주비중_40 단독</td><td class="n">0.701 → Spearman 0.389</td><td class="n">0.328</td><td>불안정</td></tr>
+      <tr class="out"><td>직주비 (원값, 로그 없음)</td><td class="n">0.421 → trim 0.229</td><td class="n">0.177</td><td>불안정 → <strong>반드시 로그</strong></td></tr>
+      <tr class="out"><td><code>log직장인구</code> (직장 절대수)</td><td class="n">0.688</td><td class="n">0.087</td><td>동 단위에서 붕괴</td></tr>
+      <tr class="out"><td><code>log상주인구</code></td><td class="n">0.155</td><td class="n">−0.222</td><td>취약 (가설 1)</td></tr>
+    </tbody>
+  </table></div>
+  <p>핵심은 <strong>"직장이 몇 개냐"가 아니라 "주거 대비 얼마나 직장 중심이냐"</strong>가 신호라는 점입니다.
+    수유동·신림동·신월동은 직장인구가 회현동1가·수서동과 비슷한데 단가는 1/3 수준입니다.</p>
+  <div class="note calm">
+    <span class="lab">역설적 발견 — 작은 동들이 관계를 가리고 있었다</span>
+    <p>직주비는 상주인구가 분모라 인구 수백 명짜리 법정동에서 값이 폭발합니다(문래동4가 20.7, 수서동 37.1).
+      이게 착시를 만든 건지 확인했더니 <strong>정반대</strong>였습니다.</p>
+    <p>상주인구 하한을 걸수록 상관이 <strong>올라갑니다</strong> — 하한 없음 0.394 → 1,000명 0.479 →
+      5,000명 0.637 → 20,000명 <strong>0.783</strong>. 작은 동들은 관계를 만든 게 아니라 가리고 있었습니다.
+      그래서 <strong>직주비 계열을 볼 때는 상주인구 1,000명 하한</strong>을 겁니다(법정동 82% 유지).</p>
+  </div>
+</section>
+
+<section>
+  <p class="kicker">논의</p>
+  <h2>팀이 결정해야 할 것 4가지</h2>
+  <ol class="agenda">
+    <li>
+      <h4>이 데이터로 답하려는 질문을 확정하기</h4>
+      <p>시점 요인이 90%라는 결과가 나온 이상, 질문을 다시 정해야 합니다.
+        <strong>"인구가 가격을 설명하는가"</strong>는 이미 한계가 드러났고,
+        <strong>"같은 금리 충격이 동네마다 왜 다르게 왔는가"</strong>가 더 답할 수 있는 질문일 수 있습니다.</p>
+      <p class="ask">→ 결정 필요: 설명인가 예측인가, 아니면 지표 대시보드인가</p>
+    </li>
+    <li>
+      <h4>KPI 집계 단위 표준을 정하기</h4>
+      <p>자치구 3위가 행 단위면 용산구(1,830), 동 단위로 접으면 송파구(1,800)입니다.
+        1행이 동×분기라 163행이 163개 독립 관측이 아니기 때문입니다.
+        그리고 <strong>자치구(n=25) 결과는 강남·중구·종로 2~3개가 좌우</strong>해서 직주비 상관이 0.19~0.78로 요동합니다.</p>
+      <p class="ask">→ 결정 필요: 행/동/거래건수 가중 중 무엇을 표준으로. <strong>법정동을 주력, 자치구는 발표용</strong>이 현재 기준</p>
+    </li>
+    <li>
+      <h4>거래 없는 동·분기를 어떻게 볼 것인지</h4>
+      <p>1,279칸(18.4%)이 걸려 있습니다. 결측으로 명시할지, "관측 없음"으로 둘지, 해당 동을 제외할지에 따라
+        종로구 같은 구의 해석이 완전히 달라집니다.</p>
+      <p class="ask">→ 결정 필요: 결측 정의와 제외 기준</p>
+    </li>
+    <li>
+      <h4>행안부 주민등록 인구를 받을 것인지 (0순위)</h4>
+      <p><strong>가장 쉽고 가장 많이 고칩니다.</strong> 세 가지가 동시에 해결됩니다 —
+        직주비 분모(1.8배 부풀림 → 절대값 발표 가능), 연령 구성(현재 <strong>0~9세 항목이 아예 없음</strong>),
+        그리고 <strong>시간 변동</strong>(고유값 3개 → 월 단위 실제 변동).</p>
+      <p>세 번째가 결정적입니다. 이게 들어오면 <strong>"같은 동네 안에서 인구가 늘 때 가격이 따라 올랐는가"</strong>를
+        물을 수 있고, 학군·입지·브랜드 같은 지역 고유 특성이 고정효과로 제거됩니다.
+        지금 모든 결과가 횡단면 상관에 머무는 이유가 이것입니다.</p>
+      <p class="ask">→ 결정 필요: <code>jumin.mois.go.kr/agePpltStus.do</code>에서 2021.01~2026.03 월별 전체를 받는 공수</p>
+    </li>
+  </ol>
+</section>
+
+<section>
+  <p class="kicker">계획</p>
+  <h2>다음 세션</h2>
+  <div class="tw"><table>
+    <thead><tr><th class="n">#</th><th>하는 일</th><th>배우는 개념</th></tr></thead>
+    <tbody>
+      <tr><td class="n">0</td><td><code>python src/features.py</code>로 기존 수치 전부 재현. 단위(자치구 n=25 / 법정동 n=272) 확인</td><td>상관계수와 R²이 각각 무엇을 재는가</td></tr>
+      <tr><td class="n">1</td><td>가설 1 — 총량 vs 밀도, 왜 법정동에서 음수가 나오는가</td><td>규모 변수와 비율 변수</td></tr>
+      <tr><td class="n">2</td><td>가설 2 — AR1 통제 전후를 직접 돌려보기</td><td>자기상관, 평균회귀, 선행/동행 지표</td></tr>
+      <tr><td class="n">3</td><td>끝점 공유 인공물 재현 — −0.435가 −0.023이 되는 과정</td><td>측정오차가 만드는 가짜 상관</td></tr>
+      <tr><td class="n">4</td><td>시점 요인 90% 시각화 + 고베타 검증</td><td>분산 분해, 고정효과</td></tr>
+    </tbody>
+  </table></div>
+  <p>발표 구성은 <strong>A(기각된 가설 3개 + 스스로 잡은 오류 1개)를 본문으로, B(판정 불가)를 별도 섹션으로</strong>
+    두는 형태를 제안합니다. "가설이 틀렸다"와 "데이터로는 알 수 없다"를 나누는 것 자체가 발표의 핵심 메시지가 됩니다.</p>
+</section>
+
+<section>
+  <p class="kicker">첨부</p>
+  <h2>같이 받은 압축 파일</h2>
+  <p>656MB 중 필요한 것만 담아 약 20MB입니다. 가상환경과 미편입 원본은 제외했습니다.</p>
+  <div class="tw"><table>
+    <thead><tr><th>포함</th><th>내용</th></tr></thead>
+    <tbody>
+      <tr><td><code>data/output/</code></td><td>패널 CSV 4개 — <code>panel_dong.csv</code>(5,672행), <code>panel_gu.csv</code>(525행), 상권×법정동 중첩 2개</td></tr>
+      <tr><td><code>data/raw/</code></td><td>실거래가 원본 6개 + 상권 인구 3종 + <strong>KIKmix 크로스워크</strong> + 안내 문서</td></tr>
+      <tr><td><code>src/</code></td><td>패널 생성·파생변수·시각화 스크립트 6개</td></tr>
+      <tr><td><code>ANALYSIS.md</code></td><td><strong>이 문서의 근거. 함정 목록과 분석 기준 8개가 여기 있습니다</strong></td></tr>
+      <tr><td><code>README.md</code></td><td>실행 순서, 원본 출처와 다운로드 조건</td></tr>
+      <tr><td><code>eda_review_note.html</code></td><td>탐색 과정 전체 기록(브라우저로 열면 됨)</td></tr>
+    </tbody>
+  </table></div>
+  <h3>받은 뒤 환경 만들기</h3>
+  <pre><span class="c"># 압축 해제 후 폴더 안에서. 경로 설정은 필요 없다 —
+# src/paths.py가 프로젝트 폴더 기준으로 계산한다.</span>
+<b>python -m venv .venv</b>
+<b>.venv/bin/python -m pip install -r requirements.txt</b>   <span class="c"># Windows는 .venv\Scripts\python</span>
+
+<b>python src/features.py</b>     <span class="c"># 이 문서의 상관·강건성 수치 전부 재현</span>
+<b>python src/plot_dist.py</b>    <span class="c"># 분포 그림</span>
+<b>python src/paths.py</b>        <span class="c"># 어떤 원본이 있고 없는지 확인</span></pre>
+  <div class="note calm">
+    <span class="lab">추가로 받을 것이 없습니다 — 재생성까지 검증 완료</span>
+    <p>KIKmix 크로스워크까지 포함했고, <strong>2026-08-13에 실제로 패널을 재생성해
+      기존 산출물과 55개 컬럼 전부 값이 일치함을 확인했습니다</strong>(차이는 개행문자뿐 — 기존 CRLF/Windows, 신규 LF/macOS).</p>
+    <pre><b>python src/build_panel.py</b>   <span class="c"># → panel_dong.csv 5,672행, panel_gu.csv 525행</span></pre>
+    <p>Shapefile <code>.shp</code> 2개는 없지만 필요 없습니다 — 공간중첩 1단계 산출물
+      <code>trdar_bjd_fragments.csv</code>(3,292조각)가 들어 있어서, 면적 배분 규칙 자체를 바꾸고 싶을 때만 받으면 됩니다.</p>
+  </div>
+  <div class="note">
+    <span class="lab">macOS에서 돌리면 한 번 터집니다 — 이미 고쳤지만 알아두세요</span>
+    <p>Windows에서 만든 파이프라인이라 macOS에서 <strong>파일이 눈에 보이는데도</strong>
+      <code>FileNotFoundError: 파일이 하나도 없습니다: molit_price/아파트*.csv</code>가 납니다.</p>
+    <p>macOS는 한글 파일명을 <strong>NFD(자모 분해형)</strong>로 저장합니다 —
+      <code>아파트</code>가 <code>ᄋ+ᅡ+ᄑ…</code>로 쪼개져 코드포인트가 <code>0x110b 0x1161…</code>이 되는데,
+      소스의 패턴은 <strong>NFC(조합형)</strong> <code>0xc544 0xd30c…</code>라 문자열이 달라 <code>glob</code>이 아무것도 못 찾습니다.
+      실거래가 원본 6개가 전부 NFD였습니다.</p>
+    <p><code>paths.py</code>의 <code>find_one</code>/<code>find_all</code>이 양쪽을 NFC로 맞춰 비교하도록 수정했습니다.
+      새 스크립트를 쓸 때도 <code>glob('한글*')</code>을 직접 쓰지 말고 이 함수를 쓰세요.</p>
+  </div>
+</section>
+
+<footer>
+  <p>서울 아파트 가격 프로젝트 · 현황 공유 2026-08-13 ·
+    패널 <code>panel_dong.csv</code> 5,672행 55열 · 수치 근거는 <code>ANALYSIS.md</code>와 <code>src/features.py</code></p>
+</footer>
+
+</div>
+
+</body>
+</html>
