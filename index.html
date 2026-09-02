@@ -301,7 +301,6 @@
       <div class="filter-group">
         <div class="filter-label">⚡ 4대 핵심 기준별 TOP 5 퀵보기</div>
         <div class="btn-group" id="presetFilter">
-          <button class="filter-btn preset-btn active" data-preset="all">전체 (종합점수)</button>
           <button class="filter-btn preset-btn" data-preset="commute">🚀 통근 Top 5</button>
           <button class="filter-btn preset-btn" data-preset="defense">🛡️ 방어력 Top 5</button>
           <button class="filter-btn preset-btn" data-preset="3040">👨‍👩‍👧 3040 Top 5</button>
@@ -14661,20 +14660,26 @@
     document.querySelectorAll('.preset-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.preventDefault();
-        document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        currentPreset = btn.getAttribute('data-preset');
+        const clickedPreset = btn.getAttribute('data-preset');
 
-        if (currentPreset === 'commute') {
-          w_commute = 100; w_defense = 0; w_3040 = 0; w_liquidity = 0;
-        } else if (currentPreset === 'defense') {
-          w_commute = 0; w_defense = 100; w_3040 = 0; w_liquidity = 0;
-        } else if (currentPreset === '3040') {
-          w_commute = 0; w_defense = 0; w_3040 = 100; w_liquidity = 0;
-        } else if (currentPreset === 'liquidity') {
-          w_commute = 0; w_defense = 0; w_3040 = 0; w_liquidity = 100;
-        } else {
+        if (btn.classList.contains('active')) {
+          btn.classList.remove('active');
+          currentPreset = 'all';
           w_commute = 35; w_defense = 30; w_3040 = 25; w_liquidity = 10;
+        } else {
+          document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          currentPreset = clickedPreset;
+
+          if (currentPreset === 'commute') {
+            w_commute = 100; w_defense = 0; w_3040 = 0; w_liquidity = 0;
+          } else if (currentPreset === 'defense') {
+            w_commute = 0; w_defense = 100; w_3040 = 0; w_liquidity = 0;
+          } else if (currentPreset === '3040') {
+            w_commute = 0; w_defense = 0; w_3040 = 100; w_liquidity = 0;
+          } else if (currentPreset === 'liquidity') {
+            w_commute = 0; w_defense = 0; w_3040 = 0; w_liquidity = 100;
+          }
         }
 
         document.getElementById('slider_commute').value = w_commute;
