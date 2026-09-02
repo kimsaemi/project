@@ -14745,11 +14745,7 @@
       });
     });
 
-    function calcScore(d) {
-      const sumW = w_commute + w_defense + w_3040 + w_liquidity;
-      if (sumW === 0) return 0;
-      return d.dynamicScore;
-    }
+
 
     ['commute', 'defense', '3040', 'liquidity'].forEach(key => {
       document.getElementById(`slider_${key}`).addEventListener('input', (e) => {
@@ -15019,7 +15015,11 @@
       document.getElementById('listView').style.display = 'block';
     });
 
-    updateDashboard();
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', updateDashboard);
+    } else {
+      updateDashboard();
+    }
   </script>
 </body>
 </html>
