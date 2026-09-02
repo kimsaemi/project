@@ -14892,13 +14892,10 @@
         const marker = L.marker([finalLat, finalLon], { icon: customIcon }).addTo(markersLayer);
 
         const popupHtml = `
-          <div style="font-size: 12px;">
-            <div style="font-weight: 800; font-size: 14px; color: #fff;">#${idx + 1} ${d.gu} ${d.dong} (${sizeTag})</div>
-            <div style="color: #facc15; font-weight: 900; font-size: 15px; margin: 3px 0;">실시간점수: ${d.realtimeScore.toFixed(1)}점</div>
-            <div style="color: #cbd5e1; font-size: 11px;">시세: ${d.price_eok.toFixed(2)}억 원</div>
-            <button onclick="selectDong(${d.id})" style="width:100%; margin-top:6px; padding:5px 0; background:#2563eb; color:#fff; border:none; border-radius:6px; font-weight:bold; cursor:pointer;">
-              상세 분석 보기
-            </button>
+          <div style="font-size: 12px; min-width: 140px; padding: 2px;">
+            <div style="font-weight: 800; font-size: 13.5px; color: #fff; border-bottom: 1px solid #334155; padding-bottom: 4px; margin-bottom: 4px;">#${idx + 1} ${d.gu} ${d.dong} (${sizeTag})</div>
+            <div style="color: #facc15; font-weight: 900; font-size: 15px;">실시간점수: ${d.realtimeScore.toFixed(1)}점</div>
+            <div style="color: #cbd5e1; font-size: 11.5px; margin-top: 2px;">시세: ${d.price_eok.toFixed(2)}억 원</div>
           </div>
         `;
         marker.bindPopup(popupHtml);
