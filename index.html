@@ -14819,7 +14819,18 @@
         } else if (currentPreset === 'liquidity') {
           sorted.sort((a, b) => b.unit_price - a.unit_price);
         }
-        sorted = sorted.slice(0, 5);
+
+        const uniqueDongs = new Set();
+        const top5Unique = [];
+        for (const item of sorted) {
+          const key = item.gu + ' ' + item.dong;
+          if (!uniqueDongs.has(key)) {
+            uniqueDongs.add(key);
+            top5Unique.push(item);
+          }
+          if (top5Unique.length >= 5) break;
+        }
+        sorted = top5Unique;
       } else {
         sorted.sort((a, b) => b.dynamicScore - a.dynamicScore);
       }
@@ -14831,20 +14842,33 @@
         document.getElementById('stat-top').innerText = '-';
       }
 
-      sorted.forEach(d => {
+      const coordCounts = new Map();
+
+      sorted.forEach((d, idx) => {
+        const coordKey = `${d.lat.toFixed(4)}_${d.lon.toFixed(4)}`;
+        const count = coordCounts.get(coordKey) || 0;
+        coordCounts.set(coordKey, count + 1);
+
+        const latOffset = count * 0.003;
+        const lonOffset = count * 0.003;
+        const finalLat = d.lat + latOffset;
+        const finalLon = d.lon + lonOffset;
+
+        const sizeTag = d.size === 'large' ? '84㎡+' : `${d.size}㎡`;
+
         const iconHtml = `
           <div class="custom-dong-marker">
             <div class="marker-badge bg-c2">
-              ${d.dong} (${d.dynamicScore.toFixed(1)}점)
+              #${idx + 1} ${d.dong} (${sizeTag})
             </div>
           </div>
         `;
-        const customIcon = L.divIcon({ html: iconHtml, className: '', iconSize: [140, 24], iconAnchor: [70, 12] });
-        const marker = L.marker([d.lat, d.lon], { icon: customIcon }).addTo(markersLayer);
+        const customIcon = L.divIcon({ html: iconHtml, className: '', iconSize: [160, 24], iconAnchor: [80, 12] });
+        const marker = L.marker([finalLat, finalLon], { icon: customIcon }).addTo(markersLayer);
 
         const popupHtml = `
           <div style="font-size: 12px;">
-            <div style="font-weight: 800; font-size: 14px; color: #fff;">${d.gu} ${d.dong}</div>
+            <div style="font-weight: 800; font-size: 14px; color: #fff;">#${idx + 1} ${d.gu} ${d.dong} (${sizeTag})</div>
             <div style="color: #facc15; font-weight: 900; font-size: 15px; margin: 3px 0;">종합점수: ${d.dynamicScore.toFixed(1)}점</div>
             <div style="color: #cbd5e1; font-size: 11px;">시세: ${d.price_eok.toFixed(2)}억 원</div>
             <button onclick="selectDong(${d.id})" style="width:100%; margin-top:6px; padding:5px 0; background:#2563eb; color:#fff; border:none; border-radius:6px; font-weight:bold; cursor:pointer;">
