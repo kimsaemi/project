@@ -332,6 +332,11 @@
         </div>
       </div>
 
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="searchInput" placeholder="동네명/자치구 검색 (예: 당산, 염창, 공덕)" />
+      </div>
+
       <div class="filter-group" id="presetFilterGroup" style="display: none;">
         <div class="filter-label">🏆 4대 분야별 명예의 전당 (TOP 5 전용)</div>
         <div class="btn-group" id="presetFilter">
@@ -14806,10 +14811,13 @@
       });
     });
 
-    document.getElementById('searchInput').addEventListener('input', (e) => {
-      currentSearch = e.target.value.trim().toLowerCase();
-      updateDashboard();
-    });
+    const searchInputEl = document.getElementById('searchInput');
+    if (searchInputEl) {
+      searchInputEl.addEventListener('input', (e) => {
+        currentSearch = e.target.value.trim().toLowerCase();
+        updateDashboard();
+      });
+    }
 
     function updateDashboard() {
       markersLayer.clearLayers();
