@@ -299,6 +299,17 @@
       </div>
 
       <div class="filter-group">
+        <div class="filter-label">⚡ 4대 핵심 기준별 TOP 5 퀵보기</div>
+        <div class="btn-group" id="presetFilter">
+          <button class="filter-btn preset-btn active" data-preset="all">전체 (종합점수)</button>
+          <button class="filter-btn preset-btn" data-preset="commute">🚀 통근 Top 5</button>
+          <button class="filter-btn preset-btn" data-preset="defense">🛡️ 방어력 Top 5</button>
+          <button class="filter-btn preset-btn" data-preset="3040">👨‍👩‍👧 3040 Top 5</button>
+          <button class="filter-btn preset-btn" data-preset="liquidity">💧 유동성 Top 5</button>
+        </div>
+      </div>
+
+      <div class="filter-group">
         <div class="filter-label">📐 면적구간 선택</div>
         <div class="btn-group" id="sizeFilter">
           <button class="filter-btn size-btn active" data-size="all">전체 평형</button>
@@ -14645,6 +14656,42 @@
     let currentSize = 'all';
     let currentBudget = 'all';
     let currentSearch = '';
+    let currentPreset = 'all';
+
+    document.querySelectorAll('.preset-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentPreset = btn.getAttribute('data-preset');
+
+        if (currentPreset === 'commute') {
+          w_commute = 100; w_defense = 0; w_3040 = 0; w_liquidity = 0;
+        } else if (currentPreset === 'defense') {
+          w_commute = 0; w_defense = 100; w_3040 = 0; w_liquidity = 0;
+        } else if (currentPreset === '3040') {
+          w_commute = 0; w_defense = 0; w_3040 = 100; w_liquidity = 0;
+        } else if (currentPreset === 'liquidity') {
+          w_commute = 0; w_defense = 0; w_3040 = 0; w_liquidity = 100;
+        } else {
+          w_commute = 35; w_defense = 30; w_3040 = 25; w_liquidity = 10;
+        }
+
+        document.getElementById('slider_commute').value = w_commute;
+        document.getElementById('val_commute').innerText = `${w_commute}%`;
+        document.getElementById('slider_defense').value = w_defense;
+        document.getElementById('val_defense').innerText = `${w_defense}%`;
+        document.getElementById('slider_3040').value = w_3040;
+        document.getElementById('val_3040').innerText = `${w_3040}%`;
+        document.getElementById('slider_liquidity').value = w_liquidity;
+        document.getElementById('val_liquidity').innerText = `${w_liquidity}%`;
+
+        const total = w_commute + w_defense + w_3040 + w_liquidity;
+        document.getElementById('totalWeightBadge').innerText = `총합 ${total}%`;
+
+        updateDashboard();
+      });
+    });
 
     function calcScore(d) {
       const sumW = w_commute + w_defense + w_3040 + w_liquidity;
@@ -14731,7 +14778,22 @@
         return true;
       });
 
-      const sorted = [...filtered].sort((a, b) => b.dynamicScore - a.dynamicScore);
+      let sorted = [...filtered];
+      if (currentPreset === 'commute') {
+        sorted.sort((a, b) => (a.gbd + a.ybd + a.cbd) - (b.gbd + b.ybd + b.cbd));
+      } else if (currentPreset === 'defense') {
+        sorted.sort((a, b) => a.drop - b.drop);
+      } else if (currentPreset === '3040') {
+        sorted.sort((a, b) => b.p3040 - a.p3040);
+      } else if (currentPreset === 'liquidity') {
+        sorted.sort((a, b) => b.price_eok - a.price_eok);
+      } else {
+        sorted.sort((a, b) => b.dynamicScore - a.dynamicScore);
+      }
+
+      if (currentPreset !== 'all') {
+        sorted = sorted.slice(0, 5);
+      }
 
       document.getElementById('stat-count').innerText = `${sorted.length}개`;
       if (sorted.length > 0) {
