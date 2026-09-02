@@ -14691,6 +14691,23 @@
     let currentSearch = '';
     let currentPreset = 'all';
     let currentMode = 'custom'; // 'custom' or 'top5'
+    let currentSelectedDongId = null;
+    let lastSortedList = [];
+
+    function calcScore(d) {
+      const sumW = w_commute + w_defense + w_3040 + w_liquidity;
+      if (sumW === 0) return 0;
+
+      const avgCommute = (d.gbd + d.ybd + d.cbd) / 3.0;
+      d.cScore = Math.max(0, Math.min(100, 100 - (avgCommute - 30) * 2.0));
+      d.dScore = Math.max(0, Math.min(100, 100 + d.drop * 2.0 + d.rec * 0.8));
+      d.pScore = Math.max(0, Math.min(100, d.p3040 * 2.1));
+      d.lScore = Math.max(0, Math.min(100, d.unit_price / 25.0));
+
+      const total = (d.cScore * w_commute + d.dScore * w_defense + d.pScore * w_3040 + d.lScore * w_liquidity) / sumW;
+      d.realtimeScore = total;
+      return total;
+    }
 
     document.getElementById('modeCustomBtn').addEventListener('click', () => {
       document.getElementById('modeCustomBtn').classList.add('active');
@@ -14798,6 +14815,8 @@
       markersLayer.clearLayers();
       markerMap.clear();
 
+      allData.forEach(d => calcScore(d));
+
       const filtered = allData.filter(d => {
         if (currentSize !== 'all' && d.size !== currentSize) return false;
         if (currentBudget === '7억 이하' && d.price_eok > 7.0) return false;
@@ -14832,8 +14851,10 @@
         }
         sorted = top5Unique;
       } else {
-        sorted.sort((a, b) => b.dynamicScore - a.dynamicScore);
+        sorted.sort((a, b) => b.realtimeScore - a.realtimeScore);
       }
+
+      lastSortedList = sorted;
 
       document.getElementById('stat-count').innerText = `${sorted.length}개`;
       if (sorted.length > 0) {
@@ -14859,7 +14880,7 @@
         const iconHtml = `
           <div class="custom-dong-marker">
             <div class="marker-badge bg-c2">
-              #${idx + 1} ${d.dong} (${sizeTag})
+              #${idx + 1} ${d.dong} (${d.realtimeScore.toFixed(1)}점)
             </div>
           </div>
         `;
@@ -14869,7 +14890,7 @@
         const popupHtml = `
           <div style="font-size: 12px;">
             <div style="font-weight: 800; font-size: 14px; color: #fff;">#${idx + 1} ${d.gu} ${d.dong} (${sizeTag})</div>
-            <div style="color: #facc15; font-weight: 900; font-size: 15px; margin: 3px 0;">종합점수: ${d.dynamicScore.toFixed(1)}점</div>
+            <div style="color: #facc15; font-weight: 900; font-size: 15px; margin: 3px 0;">실시간점수: ${d.realtimeScore.toFixed(1)}점</div>
             <div style="color: #cbd5e1; font-size: 11px;">시세: ${d.price_eok.toFixed(2)}억 원</div>
             <button onclick="selectDong(${d.id})" style="width:100%; margin-top:6px; padding:5px 0; background:#2563eb; color:#fff; border:none; border-radius:6px; font-weight:bold; cursor:pointer;">
               상세 분석 보기
@@ -14908,10 +14929,10 @@
           </div>
           <div style="font-size:11px; margin-bottom:4px;">${defenseTag}</div>
           <div class="card-metrics">
-            <div class="metric-col"><span>통근</span><span style="color:#38bdf8;">88.4</span></div>
-            <div class="metric-col"><span>방어/가성비</span><span style="color:#34d399;">89.7</span></div>
-            <div class="metric-col"><span>3040</span><span style="color:#fbbf24;">60.8</span></div>
-            <div class="metric-col"><span>총점</span><span style="color:#fff; font-weight:900;">${d.dynamicScore.toFixed(1)}</span></div>
+            <div class="metric-col"><span>통근</span><span style="color:#38bdf8;">${d.cScore.toFixed(1)}</span></div>
+            <div class="metric-col"><span>방어/가성비</span><span style="color:#34d399;">${d.dScore.toFixed(1)}</span></div>
+            <div class="metric-col"><span>3040</span><span style="color:#fbbf24;">${d.pScore.toFixed(1)}</span></div>
+            <div class="metric-col"><span>총점</span><span style="color:#fff; font-weight:900;">${d.realtimeScore.toFixed(1)}</span></div>
           </div>
         `;
         card.addEventListener('click', () => selectDong(d.id));
@@ -14922,12 +14943,13 @@
     window.selectDong = function(id) {
       const item = allData.find(d => d.id === id);
       if (!item) return;
+      currentSelectedDongId = id;
 
       document.getElementById('d-cluster-lbl').innerText = `군집 ${item.cluster_id || 1}`;
       document.getElementById('d-title').innerText = `${item.gu} ${item.dong}`;
       document.getElementById('d-price').innerText = `${item.price_eok.toFixed(2)}억`;
       document.getElementById('d-unit-price').innerText = `${item.unit_price.toLocaleString()}만원`;
-      document.getElementById('d-score').innerText = `${item.dynamicScore.toFixed(1)}점`;
+      document.getElementById('d-score').innerText = `${item.realtimeScore ? item.realtimeScore.toFixed(1) : item.dynamicScore.toFixed(1)}점`;
 
       document.getElementById('d-price-small').innerText = item.p_small;
       document.getElementById('d-count-small').innerText = item.c_small;
@@ -14974,6 +14996,12 @@
       document.getElementById('tabDetailBtn').classList.add('active');
       document.getElementById('listView').style.display = 'none';
       document.getElementById('detailView').style.display = 'block';
+
+      if (currentSelectedDongId) {
+        selectDong(currentSelectedDongId);
+      } else if (lastSortedList.length > 0) {
+        selectDong(lastSortedList[0].id);
+      }
     });
 
     document.getElementById('backToListBtn').addEventListener('click', () => {
