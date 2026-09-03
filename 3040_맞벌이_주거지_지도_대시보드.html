@@ -15197,7 +15197,8 @@
 
       lastSortedList = sorted;
 
-      document.getElementById('stat-count').innerText = `${sorted.length}개`;
+      const uniqueDongCount = new Set(filtered.map(d => d.gu + ' ' + d.dong)).size;
+      document.getElementById('stat-count').innerText = `${uniqueDongCount}개`;
       if (sorted.length > 0) {
         document.getElementById('stat-top').innerText = `${sorted[0].gu} ${sorted[0].dong}`;
       } else {
