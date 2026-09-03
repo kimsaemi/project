@@ -15353,11 +15353,12 @@
       if (e && e.target && typeof e.target.scrollTop === 'number') {
         targetScroll = e.target.scrollTop;
       }
-      const s1 = document.getElementById('sidebarScrollBody') ? document.getElementById('sidebarScrollBody').scrollTop : 0;
-      const s2 = window.scrollY || document.documentElement.scrollTop || 0;
+      const sidebarScrollBody = document.getElementById('sidebarScrollBody');
+      const s1 = sidebarScrollBody ? sidebarScrollBody.scrollTop : 0;
+      const s2 = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
       const maxScroll = Math.max(targetScroll, s1, s2);
 
-      if (maxScroll > 50) {
+      if (maxScroll > 30) {
         scrollTopBtn.classList.add('visible');
       } else {
         scrollTopBtn.classList.remove('visible');
@@ -15372,11 +15373,17 @@
       sidebarScrollBody.addEventListener('scroll', checkScrollTopVisibility);
     }
 
+    // Fail-safe interval for touch scroll inertia on Mobile Safari / Chrome
+    setInterval(checkScrollTopVisibility, 250);
+
     if (scrollTopBtn) {
-      scrollTopBtn.addEventListener('click', () => {
+      scrollTopBtn.addEventListener('click', (e) => {
+        if (e) { e.preventDefault(); e.stopPropagation(); }
         const sidebarScrollBody = document.getElementById('sidebarScrollBody');
         if (sidebarScrollBody) sidebarScrollBody.scrollTo({ top: 0, behavior: 'smooth' });
         window.scrollTo({ top: 0, behavior: 'smooth' });
+        document.documentElement.scrollTo({ top: 0, behavior: 'smooth' });
+        document.body.scrollTo({ top: 0, behavior: 'smooth' });
       });
     }
 
