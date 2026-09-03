@@ -15270,6 +15270,13 @@
       });
 
       renderDongList(sorted);
+
+      if (sorted.length > 0 && currentMode === 'top5') {
+        setTimeout(() => {
+          const bounds = L.latLngBounds(sorted.map(d => [d.lat, d.lon]));
+          map.fitBounds(bounds, { padding: [55, 55], maxZoom: 13 });
+        }, 50);
+      }
     }
 
     window.openDetailFromMap = function(id) {
@@ -15518,7 +15525,10 @@
         mShowListBtn.classList.remove('active');
         setTimeout(() => {
           map.invalidateSize();
-          if (currentSelectedDongId) {
+          if (currentMode === 'top5' && lastSortedList && lastSortedList.length > 0) {
+            const bounds = L.latLngBounds(lastSortedList.map(d => [d.lat, d.lon]));
+            map.fitBounds(bounds, { padding: [40, 40], maxZoom: 13 });
+          } else if (currentSelectedDongId) {
             const item = allData.find(d => d.id === currentSelectedDongId);
             if (item) {
               map.setView([item.lat, item.lon], 14);
