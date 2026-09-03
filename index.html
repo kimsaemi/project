@@ -15236,6 +15236,7 @@
         }
       }
 
+      const coordCounts = new Map();
       mapMarkersData.forEach((d, idx) => {
         const coordKey = `${d.lat.toFixed(4)}_${d.lon.toFixed(4)}`;
         const count = coordCounts.get(coordKey) || 0;
