@@ -349,34 +349,35 @@
       position: fixed;
       bottom: 24px;
       right: 24px;
-      z-index: 2000;
+      z-index: 9999;
       background: #2563eb;
       color: #ffffff;
-      border: 1px solid #60a5fa;
-      border-radius: 24px;
-      padding: 9px 18px;
-      font-size: 12.5px;
+      border: 1.5px solid #60a5fa;
+      border-radius: 30px;
+      padding: 10px 18px;
+      font-size: 13px;
       font-weight: 800;
       cursor: pointer;
-      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
       opacity: 0;
       visibility: hidden;
-      transform: translateY(12px);
-      transition: all 0.25s ease;
+      transform: translateY(16px);
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
       display: flex;
       align-items: center;
       gap: 6px;
       backdrop-filter: blur(8px);
+      user-select: none;
     }
     .scroll-top-btn.visible {
-      opacity: 1;
-      visibility: visible;
-      transform: translateY(0);
+      opacity: 1 !important;
+      visibility: visible !important;
+      transform: translateY(0) !important;
     }
     .scroll-top-btn:hover {
       background: #1d4ed8;
       transform: translateY(-2px);
-      box-shadow: 0 6px 22px rgba(37, 99, 235, 0.6);
+      box-shadow: 0 6px 24px rgba(37, 99, 235, 0.7);
     }
 
     /* LEGEND TOGGLE BUTTON & POPUP */
@@ -761,7 +762,7 @@
 
     <!-- FLOATING SCROLL TOP BUTTON -->
     <button id="scrollTopBtn" class="scroll-top-btn" title="맨 위로 이동">
-      <i class="fa-solid fa-arrow-up"></i> TOP
+      <i class="fa-solid fa-arrow-up"></i> 맨 위로
     </button>
   </aside>
 
@@ -15331,31 +15332,34 @@
       });
     }
 
-    // SCROLL TOP FLOATING BUTTON EVENT LISTENER
-    const sidebarScrollBody = document.getElementById('sidebarScrollBody');
+    // UNIVERSAL SCROLL TOP FLOATING BUTTON LISTENER (CAPTURE PHASE)
     const scrollTopBtn = document.getElementById('scrollTopBtn');
-    const contentAreaEl = document.querySelector('.content-area');
 
-    function checkScrollTopVisibility() {
+    function checkScrollTopVisibility(e) {
       if (!scrollTopBtn) return;
-      const s1 = sidebarScrollBody ? sidebarScrollBody.scrollTop : 0;
-      const s2 = contentAreaEl ? contentAreaEl.scrollTop : 0;
+      let targetScroll = 0;
+      if (e && e.target && typeof e.target.scrollTop === 'number') {
+        targetScroll = e.target.scrollTop;
+      }
+      const s1 = document.getElementById('sidebarScrollBody') ? document.getElementById('sidebarScrollBody').scrollTop : 0;
+      const s2 = document.querySelector('.content-area') ? document.querySelector('.content-area').scrollTop : 0;
       const s3 = window.scrollY || document.documentElement.scrollTop || 0;
-      const maxScroll = Math.max(s1, s2, s3);
+      const maxScroll = Math.max(targetScroll, s1, s2, s3);
 
-      if (maxScroll > 100) {
+      if (maxScroll > 60) {
         scrollTopBtn.classList.add('visible');
       } else {
         scrollTopBtn.classList.remove('visible');
       }
     }
 
-    if (sidebarScrollBody) sidebarScrollBody.addEventListener('scroll', checkScrollTopVisibility);
-    if (contentAreaEl) contentAreaEl.addEventListener('scroll', checkScrollTopVisibility);
-    window.addEventListener('scroll', checkScrollTopVisibility);
+    // Attach in Capture Phase (true) so element scroll events are caught on mobile
+    window.addEventListener('scroll', checkScrollTopVisibility, true);
 
     if (scrollTopBtn) {
       scrollTopBtn.addEventListener('click', () => {
+        const sidebarScrollBody = document.getElementById('sidebarScrollBody');
+        const contentAreaEl = document.querySelector('.content-area');
         if (sidebarScrollBody) sidebarScrollBody.scrollTo({ top: 0, behavior: 'smooth' });
         if (contentAreaEl) contentAreaEl.scrollTo({ top: 0, behavior: 'smooth' });
         window.scrollTo({ top: 0, behavior: 'smooth' });
