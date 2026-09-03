@@ -533,7 +533,12 @@
       .scroll-top-btn {
         right: 16px;
         bottom: 24px;
-        z-index: 99999 !important;
+        z-index: 999999 !important;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(16px);
+      }
+      .scroll-top-btn.visible {
         opacity: 1 !important;
         visibility: visible !important;
         transform: translateY(0) !important;
@@ -15363,12 +15368,6 @@
 
     function checkScrollTopVisibility(e) {
       if (!scrollTopBtn) return;
-      if (window.innerWidth <= 768) {
-        if (!document.body.classList.contains('mobile-map-active')) {
-          scrollTopBtn.classList.add('visible');
-          return;
-        }
-      }
       let targetScroll = 0;
       if (e && e.target && typeof e.target.scrollTop === 'number') {
         targetScroll = e.target.scrollTop;
@@ -15378,7 +15377,8 @@
       const s2 = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
       const maxScroll = Math.max(targetScroll, s1, s2);
 
-      if (maxScroll > 30) {
+      // Show ONLY when user scrolls down > 120px, keeping tabs and filters completely unobstructed!
+      if (maxScroll > 120) {
         scrollTopBtn.classList.add('visible');
       } else {
         scrollTopBtn.classList.remove('visible');
