@@ -594,7 +594,7 @@
 
     <div class="stat-banner">
       <div class="stat-item">
-        <div class="stat-value" id="stat-count">137개</div>
+        <div class="stat-value" id="stat-count">273개</div>
         <div class="stat-title">분석 법정동</div>
       </div>
       <div class="stat-item">
@@ -710,8 +710,8 @@
 
           <div class="detail-header">
             <span class="detail-cluster-lbl" id="d-cluster-lbl">군집 1</span>
-            <div class="detail-dong-title" id="d-title">영등포구 당산동</div>
-            <div class="detail-price-main" id="d-price">11.50억</div>
+            <div class="detail-dong-title" id="d-title">영등포구 당산동1가</div>
+            <div class="detail-price-main" id="d-price">11.00억</div>
             <div class="detail-header-sub">
               평당 단가: <span id="d-unit-price" style="color: #fff; font-weight: 700;">1,535만원</span> · 종합점수: <span id="d-score" style="color: #38bdf8; font-weight: 800;">58.8점</span>
             </div>
@@ -777,15 +777,15 @@
           <div class="commute-grid">
             <div class="commute-card">
               <div class="commute-name">GBD (강남)</div>
-              <div class="commute-time" id="d-gbd-time">15.0분</div>
+              <div class="commute-time" id="d-gbd-time">58.7분</div>
             </div>
             <div class="commute-card">
               <div class="commute-name">YBD (여의도)</div>
-              <div class="commute-time" id="d-ybd-time" style="color: #34d399;">5.0분</div>
+              <div class="commute-time" id="d-ybd-time" style="color: #34d399;">27.2분</div>
             </div>
             <div class="commute-card">
               <div class="commute-name">CBD (도심)</div>
-              <div class="commute-time" id="d-cbd-time">20.0분</div>
+              <div class="commute-time" id="d-cbd-time">43.0분</div>
             </div>
           </div>
 
@@ -15522,10 +15522,17 @@
       });
     }
 
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', updateDashboard);
-    } else {
+    function initDashboard() {
       updateDashboard();
+      if (lastSortedList && lastSortedList.length > 0) {
+        selectDong(lastSortedList[0].id);
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initDashboard);
+    } else {
+      initDashboard();
     }
   </script>
 </body>
