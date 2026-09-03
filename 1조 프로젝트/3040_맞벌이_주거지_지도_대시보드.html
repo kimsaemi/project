@@ -15180,9 +15180,20 @@
         } else if (currentPreset === 'liquidity') {
           sorted.sort((a, b) => b.unit_price - a.unit_price);
         } else if (currentPreset === 'key6') {
-          const keyDongs = ['당산동1가', '당산동5가', '공덕동', '사당동', '염창동', '연희동', '구로동'];
-          sorted = sorted.filter(d => keyDongs.includes(d.dong));
-          sorted.sort((a, b) => b.realtimeScore - a.realtimeScore);
+          const keyDongs = ['당산동5가', '공덕동', '사당동', '염창동', '연희동', '구로동'];
+          const filteredKey = sorted.filter(d => keyDongs.includes(d.dong));
+          filteredKey.sort((a, b) => b.realtimeScore - a.realtimeScore);
+          const uniqueDongs = new Set();
+          const top6Unique = [];
+          for (const item of filteredKey) {
+            const key = item.gu + ' ' + item.dong;
+            if (!uniqueDongs.has(key)) {
+              uniqueDongs.add(key);
+              top6Unique.push(item);
+            }
+            if (top6Unique.length >= 6) break;
+          }
+          sorted = top6Unique;
         }
 
         if (currentPreset !== 'key6') {
