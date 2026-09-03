@@ -15385,7 +15385,7 @@
       });
     }
 
-    window.selectDong = function(id) {
+    window.populateDetailData = function(id) {
       const item = allData.find(d => d.id === id);
       if (!item) return;
       currentSelectedDongId = id;
@@ -15425,15 +15425,22 @@
       document.getElementById('d-pchild').innerText = `${item.pchild.toFixed(1)}%`;
       document.getElementById('d-drop').innerText = `${item.drop.toFixed(1)}%`;
       document.getElementById('d-rec').innerText = `+${item.rec.toFixed(1)}%`;
+    };
+
+    window.selectDong = function(id) {
+      populateDetailData(id);
 
       document.getElementById('tabListBtn').classList.remove('active');
       document.getElementById('tabDetailBtn').classList.add('active');
       document.getElementById('listView').style.display = 'none';
       document.getElementById('detailView').style.display = 'block';
 
-      map.setView([item.lat, item.lon], 14, { animate: true });
-      const marker = markerMap.get(id);
-      if (marker) marker.openPopup();
+      const item = allData.find(d => d.id === id);
+      if (item) {
+        map.setView([item.lat, item.lon], 14, { animate: true });
+        const marker = markerMap.get(id);
+        if (marker) marker.openPopup();
+      }
 
       if (window.innerWidth <= 768 && document.body.classList.contains('mobile-map-active')) {
         setTimeout(() => map.invalidateSize(), 150);
@@ -15583,8 +15590,21 @@
 
     function initDashboard() {
       updateDashboard();
+
+      // 1. Activate Recommendation Ranking List tab by default
+      document.getElementById('tabListBtn').classList.add('active');
+      document.getElementById('tabDetailBtn').classList.remove('active');
+      document.getElementById('listView').style.display = 'block';
+      document.getElementById('detailView').style.display = 'none';
+
+      // 2. Center map on Seoul (Zoom 11, whole Seoul view)
+      if (map) {
+        map.setView([37.5400, 126.9780], 11);
+      }
+
+      // 3. Pre-fill detailed analysis panel in background with #1 dong
       if (lastSortedList && lastSortedList.length > 0) {
-        selectDong(lastSortedList[0].id);
+        populateDetailData(lastSortedList[0].id);
       }
     }
 
