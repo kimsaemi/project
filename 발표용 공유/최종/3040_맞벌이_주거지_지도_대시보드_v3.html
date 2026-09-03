@@ -15023,11 +15023,6 @@
 
     let markersLayer = L.layerGroup().addTo(map);
     let markerMap = new Map();
-    if (map) {
-      map.on('zoomend', () => {
-        updateDashboard();
-      });
-    }
 
     let w_commute = 35;
     let w_defense = 30;
@@ -15228,11 +15223,16 @@
         document.getElementById('stat-top').innerText = '-';
       }
 
-      const currentZoom = (map && map.getZoom) ? map.getZoom() : 11;
       let mapMarkersData = sorted;
-      if (currentMode !== 'top5' && !currentSearch) {
-        if (currentZoom <= 12) {
-          mapMarkersData = sorted.slice(0, 20);
+      if (currentMode === 'top5') {
+        mapMarkersData = sorted;
+      } else {
+        mapMarkersData = sorted.slice(0, 20);
+        if (currentSelectedDongId) {
+          const selectedItem = sorted.find(d => d.id === currentSelectedDongId);
+          if (selectedItem && !mapMarkersData.some(d => d.id === currentSelectedDongId)) {
+            mapMarkersData.push(selectedItem);
+          }
         }
       }
 
