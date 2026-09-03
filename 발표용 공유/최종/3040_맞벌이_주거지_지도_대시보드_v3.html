@@ -318,21 +318,47 @@
       pointer-events: none;
     }
 
+    /* LEAFLET POPUP CUSTOM DARK STYLING */
+    .leaflet-popup-content-wrapper {
+      background: #0f172a !important;
+      color: #f8fafc !important;
+      border: 1.5px solid #334155 !important;
+      border-radius: 12px !important;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7) !important;
+      padding: 2px !important;
+    }
+    .leaflet-popup-content {
+      margin: 10px 14px !important;
+      line-height: 1.4 !important;
+    }
+    .leaflet-popup-tip {
+      background: #0f172a !important;
+      border: 1.5px solid #334155 !important;
+    }
+    .leaflet-container a.leaflet-popup-close-button {
+      color: #94a3b8 !important;
+      padding: 6px 8px 0 0 !important;
+      font-size: 16px !important;
+    }
+    .leaflet-container a.leaflet-popup-close-button:hover {
+      color: #ffffff !important;
+    }
+
     /* SCROLL TOP FLOATING BUTTON */
     .scroll-top-btn {
       position: fixed;
       bottom: 24px;
-      left: 360px;
-      z-index: 1050;
-      background: rgba(37, 99, 235, 0.95);
+      right: 24px;
+      z-index: 2000;
+      background: #2563eb;
       color: #ffffff;
       border: 1px solid #60a5fa;
-      border-radius: 20px;
-      padding: 8px 16px;
-      font-size: 11.5px;
+      border-radius: 24px;
+      padding: 9px 18px;
+      font-size: 12.5px;
       font-weight: 800;
       cursor: pointer;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5);
       opacity: 0;
       visibility: hidden;
       transform: translateY(12px);
@@ -350,7 +376,7 @@
     .scroll-top-btn:hover {
       background: #1d4ed8;
       transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(37, 99, 235, 0.6);
+      box-shadow: 0 6px 22px rgba(37, 99, 235, 0.6);
     }
 
     /* LEGEND TOGGLE BUTTON & POPUP */
@@ -475,8 +501,19 @@
       body.mobile-map-active #map {
         display: block;
       }
+
+      /* On Mobile: Legend button ONLY appears when MAP view is active */
+      .legend-toggle-btn, .map-legend {
+        display: none !important;
+      }
+      body.mobile-map-active .legend-toggle-btn {
+        display: flex !important;
+      }
+      body.mobile-map-active .map-legend.visible {
+        display: block !important;
+      }
+
       .scroll-top-btn {
-        left: auto;
         right: 16px;
         bottom: 20px;
       }
@@ -753,8 +790,8 @@
     const map = L.map('map', { center: [37.5400, 126.9780], zoom: 11, zoomControl: false });
     L.control.zoom({ position: 'topright' }).addTo(map);
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; OpenStreetMap &copy; CARTO', subdomains: 'abcd', maxZoom: 19
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors', maxZoom: 19
     }).addTo(map);
 
     let allData = [
@@ -15146,10 +15183,10 @@
         const marker = L.marker([finalLat, finalLon], { icon: customIcon }).addTo(markersLayer);
 
         const popupHtml = `
-          <div style="font-size: 12px; min-width: 140px; padding: 2px;">
-            <div style="font-weight: 800; font-size: 13.5px; color: #fff; border-bottom: 1px solid #334155; padding-bottom: 4px; margin-bottom: 4px;">#${idx + 1} ${d.gu} ${d.dong} (${sizeTag})</div>
-            <div style="color: #facc15; font-weight: 900; font-size: 15px;">실시간점수: ${d.realtimeScore.toFixed(1)}점</div>
-            <div style="color: #cbd5e1; font-size: 11.5px; margin-top: 2px;">시세: ${d.price_eok.toFixed(2)}억 원</div>
+          <div style="font-size: 12px; min-width: 150px; padding: 2px;">
+            <div style="font-weight: 800; font-size: 13.5px; color: #f8fafc; border-bottom: 1px solid #334155; padding-bottom: 5px; margin-bottom: 6px;">#${idx + 1} ${d.gu} ${d.dong} (${sizeTag})</div>
+            <div style="color: #facc15; font-weight: 900; font-size: 14.5px; margin-bottom: 3px;">실시간점수: ${d.realtimeScore.toFixed(1)}점</div>
+            <div style="color: #cbd5e1; font-size: 11.5px;">시세: <span style="color:#ffffff; font-weight:800;">${d.price_eok.toFixed(2)}억 원</span></div>
           </div>
         `;
         marker.bindPopup(popupHtml);
@@ -15297,16 +15334,31 @@
     // SCROLL TOP FLOATING BUTTON EVENT LISTENER
     const sidebarScrollBody = document.getElementById('sidebarScrollBody');
     const scrollTopBtn = document.getElementById('scrollTopBtn');
-    if (sidebarScrollBody && scrollTopBtn) {
-      sidebarScrollBody.addEventListener('scroll', () => {
-        if (sidebarScrollBody.scrollTop > 150) {
-          scrollTopBtn.classList.add('visible');
-        } else {
-          scrollTopBtn.classList.remove('visible');
-        }
-      });
+    const contentAreaEl = document.querySelector('.content-area');
+
+    function checkScrollTopVisibility() {
+      if (!scrollTopBtn) return;
+      const s1 = sidebarScrollBody ? sidebarScrollBody.scrollTop : 0;
+      const s2 = contentAreaEl ? contentAreaEl.scrollTop : 0;
+      const s3 = window.scrollY || document.documentElement.scrollTop || 0;
+      const maxScroll = Math.max(s1, s2, s3);
+
+      if (maxScroll > 100) {
+        scrollTopBtn.classList.add('visible');
+      } else {
+        scrollTopBtn.classList.remove('visible');
+      }
+    }
+
+    if (sidebarScrollBody) sidebarScrollBody.addEventListener('scroll', checkScrollTopVisibility);
+    if (contentAreaEl) contentAreaEl.addEventListener('scroll', checkScrollTopVisibility);
+    window.addEventListener('scroll', checkScrollTopVisibility);
+
+    if (scrollTopBtn) {
       scrollTopBtn.addEventListener('click', () => {
-        sidebarScrollBody.scrollTo({ top: 0, behavior: 'smooth' });
+        if (sidebarScrollBody) sidebarScrollBody.scrollTo({ top: 0, behavior: 'smooth' });
+        if (contentAreaEl) contentAreaEl.scrollTo({ top: 0, behavior: 'smooth' });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       });
     }
 
