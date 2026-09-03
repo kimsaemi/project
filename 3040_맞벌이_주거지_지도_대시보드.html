@@ -15023,6 +15023,13 @@
 
     let markersLayer = L.layerGroup().addTo(map);
     let markerMap = new Map();
+    if (map) {
+      map.on('zoomend moveend', () => {
+        if (currentMode !== 'top5') {
+          updateDashboard();
+        }
+      });
+    }
 
     let w_commute = 35;
     let w_defense = 30;
@@ -15121,6 +15128,10 @@
       document.getElementById('val_liquidity').innerText = '10%';
 
       document.getElementById('totalWeightBadge').innerText = '총합 100%';
+
+      if (map) {
+        map.setView([37.5400, 126.9780], 11, { animate: true });
+      }
 
       updateDashboard();
     });
@@ -15223,11 +15234,26 @@
         document.getElementById('stat-top').innerText = '-';
       }
 
+      const currentZoom = (map && map.getZoom) ? map.getZoom() : 11;
       let mapMarkersData = sorted;
+
       if (currentMode === 'top5') {
         mapMarkersData = sorted;
       } else {
-        mapMarkersData = sorted.slice(0, 20);
+        if (currentZoom <= 12 && !currentSearch) {
+          // Default whole Seoul view: Show TOP 20
+          mapMarkersData = sorted.slice(0, 20);
+        } else {
+          // Zoomed-in (Zoom >= 13): Smoothly reveal neighborhood markers in current visible viewport!
+          if (map && map.getBounds) {
+            const bounds = map.getBounds();
+            const inBounds = sorted.filter(d => bounds.contains([d.lat, d.lon]));
+            mapMarkersData = inBounds.length > 35 ? inBounds.slice(0, 35) : inBounds;
+          } else {
+            mapMarkersData = sorted.slice(0, 30);
+          }
+        }
+
         if (currentSelectedDongId) {
           const selectedItem = sorted.find(d => d.id === currentSelectedDongId);
           if (selectedItem && !mapMarkersData.some(d => d.id === currentSelectedDongId)) {
