@@ -528,7 +528,17 @@
 
       .scroll-top-btn {
         right: 16px;
-        bottom: 20px;
+        bottom: 24px;
+        z-index: 99999 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        transform: translateY(0) !important;
+        display: flex !important;
+      }
+      body.mobile-map-active .scroll-top-btn {
+        display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
       }
     }
   </style>
@@ -15349,6 +15359,12 @@
 
     function checkScrollTopVisibility(e) {
       if (!scrollTopBtn) return;
+      if (window.innerWidth <= 768) {
+        if (!document.body.classList.contains('mobile-map-active')) {
+          scrollTopBtn.classList.add('visible');
+          return;
+        }
+      }
       let targetScroll = 0;
       if (e && e.target && typeof e.target.scrollTop === 'number') {
         targetScroll = e.target.scrollTop;
@@ -15377,14 +15393,17 @@
     setInterval(checkScrollTopVisibility, 250);
 
     if (scrollTopBtn) {
-      scrollTopBtn.addEventListener('click', (e) => {
+      const scrollToTopFn = (e) => {
         if (e) { e.preventDefault(); e.stopPropagation(); }
         const sidebarScrollBody = document.getElementById('sidebarScrollBody');
         if (sidebarScrollBody) sidebarScrollBody.scrollTo({ top: 0, behavior: 'smooth' });
         window.scrollTo({ top: 0, behavior: 'smooth' });
         document.documentElement.scrollTo({ top: 0, behavior: 'smooth' });
         document.body.scrollTo({ top: 0, behavior: 'smooth' });
-      });
+      };
+
+      scrollTopBtn.addEventListener('click', scrollToTopFn);
+      scrollTopBtn.addEventListener('touchstart', scrollToTopFn, { passive: false });
     }
 
     // LEGEND TOGGLE EVENT LISTENER
