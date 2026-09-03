@@ -15264,8 +15264,26 @@
         mShowMapBtn.classList.remove('active');
       }
 
+      // 1. Automatically collapse filter section if expanded
+      const filterSection = document.getElementById('filterSection');
+      const filterAccordionText = document.getElementById('filterAccordionText');
+      if (filterSection) {
+        isFilterCollapsed = true;
+        filterSection.classList.add('collapsed');
+        if (filterAccordionText) {
+          filterAccordionText.innerHTML = '조건 펼치기 <i class="fa-solid fa-chevron-down" id="filterAccordionIcon"></i>';
+        }
+      }
+
+      // 2. Scroll sidebar directly to top of Detailed Analysis Panel so it is IMMEDIATELY visible!
       const sidebarScrollBody = document.getElementById('sidebarScrollBody');
-      if (sidebarScrollBody) sidebarScrollBody.scrollTo({ top: 0, behavior: 'smooth' });
+      const detailView = document.getElementById('detailView');
+      if (sidebarScrollBody && detailView) {
+        setTimeout(() => {
+          const targetPos = detailView.offsetTop - 55;
+          sidebarScrollBody.scrollTo({ top: Math.max(0, targetPos), behavior: 'smooth' });
+        }, 60);
+      }
     };
 
     function renderDongList(sorted) {
