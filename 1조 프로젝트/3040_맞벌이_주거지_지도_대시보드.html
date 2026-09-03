@@ -660,12 +660,13 @@
         </div>
 
         <div class="filter-group" id="presetFilterGroup" style="display: none;">
-          <div class="filter-label">🏆 4대 분야별 명예의 전당 (TOP 5 전용)</div>
+          <div class="filter-label">🏆 분야별 / 발표 핵심 추천 요약</div>
           <div class="btn-group" id="presetFilter">
             <button class="filter-btn preset-btn active" data-preset="commute">🚀 통근 Top 5</button>
             <button class="filter-btn preset-btn" data-preset="defense">🛡️ 방어력 Top 5</button>
             <button class="filter-btn preset-btn" data-preset="3040">👨‍👩‍👧 3040 Top 5</button>
             <button class="filter-btn preset-btn" data-preset="liquidity">💧 유동성 Top 5</button>
+            <button class="filter-btn preset-btn" data-preset="key6" style="border-color: #f59e0b; color: #fbbf24; font-weight: 800;">⭐ 발표 핵심 6개동</button>
           </div>
         </div>
 
@@ -15178,19 +15179,25 @@
           sorted.sort((a, b) => b.p3040 - a.p3040);
         } else if (currentPreset === 'liquidity') {
           sorted.sort((a, b) => b.unit_price - a.unit_price);
+        } else if (currentPreset === 'key6') {
+          const keyDongs = ['당산동1가', '당산동5가', '공덕동', '사당동', '염창동', '연희동', '구로동'];
+          sorted = sorted.filter(d => keyDongs.includes(d.dong));
+          sorted.sort((a, b) => b.realtimeScore - a.realtimeScore);
         }
 
-        const uniqueDongs = new Set();
-        const top5Unique = [];
-        for (const item of sorted) {
-          const key = item.gu + ' ' + item.dong;
-          if (!uniqueDongs.has(key)) {
-            uniqueDongs.add(key);
-            top5Unique.push(item);
+        if (currentPreset !== 'key6') {
+          const uniqueDongs = new Set();
+          const top5Unique = [];
+          for (const item of sorted) {
+            const key = item.gu + ' ' + item.dong;
+            if (!uniqueDongs.has(key)) {
+              uniqueDongs.add(key);
+              top5Unique.push(item);
+            }
+            if (top5Unique.length >= 5) break;
           }
-          if (top5Unique.length >= 5) break;
+          sorted = top5Unique;
         }
-        sorted = top5Unique;
       } else {
         sorted.sort((a, b) => b.realtimeScore - a.realtimeScore);
       }
