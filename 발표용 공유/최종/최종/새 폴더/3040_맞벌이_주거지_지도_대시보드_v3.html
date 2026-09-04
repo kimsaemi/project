@@ -2,8 +2,18 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>3040 맞벌이를 위한 서울 아파트 주거지 지도 대시보드 v3.7</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>서울픽 3040 - 맞벌이 서울 주거지 추천 지도 대시보드 v3.7</title>
+  
+  <!-- PWA & Mobile Web App Meta Tags -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="서울픽 3040">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="icon" type="image/png" href="icon-192.png">
   
   <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
@@ -573,6 +583,90 @@
         visibility: hidden !important;
       }
     }
+
+    /* PWA INSTALL BADGE & MODAL STYLES */
+    .pwa-install-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      background: linear-gradient(135deg, #2563eb, #38bdf8);
+      border: 1px solid #60a5fa;
+      color: #ffffff;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
+      transition: all 0.2s;
+    }
+    .pwa-install-badge:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(56, 189, 248, 0.5);
+    }
+    .pwa-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(6px);
+      z-index: 100000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .pwa-modal-content {
+      background: #1e293b;
+      border: 1.5px solid #38bdf8;
+      border-radius: 16px;
+      max-width: 380px;
+      width: 100%;
+      padding: 18px 20px;
+      box-shadow: 0 12px 36px rgba(0,0,0,0.8);
+      animation: modalFadeIn 0.25s ease-out;
+    }
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: scale(0.92); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .pwa-modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #334155;
+      padding-bottom: 10px;
+      margin-bottom: 12px;
+    }
+    .pwa-modal-close {
+      background: none;
+      border: none;
+      font-size: 22px;
+      color: #94a3b8;
+      cursor: pointer;
+      line-height: 1;
+    }
+    .pwa-step-box {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 10px 12px;
+    }
+    .pwa-modal-action-btn {
+      width: 100%;
+      padding: 10px;
+      background: #2563eb;
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-weight: 800;
+      font-size: 13px;
+      margin-top: 14px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .pwa-modal-action-btn:hover {
+      background: #1d4ed8;
+    }
   </style>
 </head>
 <body>
@@ -585,8 +679,13 @@
 
   <aside id="sidebar">
     <div class="sidebar-header">
-      <div class="header-badge">
-        <i class="fa-solid fa-shield-cat"></i> 방어력 데이터 보완(Fallback) 모델 탑재
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+        <div class="header-badge" style="margin-bottom: 0;">
+          <i class="fa-solid fa-shield-cat"></i> 방어력 데이터 보완(Fallback) 모델 탑재
+        </div>
+        <button id="pwaInstallBtn" class="pwa-install-badge" title="스마트폰 홈 화면에 앱으로 추가">
+          <i class="fa-solid fa-mobile-screen-button"></i> 앱 설치
+        </button>
       </div>
       <h1 class="sidebar-title">3040 맞벌이 서울 주거지 지도 대시보드</h1>
       <p class="sidebar-subtitle">방어력 검증 + 미검증 가성비 대체 탑재 지도</p>
@@ -594,7 +693,7 @@
 
     <div class="stat-banner">
       <div class="stat-item">
-        <div class="stat-value" id="stat-count">273개</div>
+        <div class="stat-value" id="stat-count">272개</div>
         <div class="stat-title">분석 법정동</div>
       </div>
       <div class="stat-item">
@@ -15623,6 +15722,90 @@
     } else {
       initDashboard();
     }
+
+    // PWA Service Worker & Install Flow
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(err => {
+          console.warn('Service Worker registration skipped:', err);
+        });
+      });
+    }
+
+    let deferredPrompt = null;
+    const pwaBtn = document.getElementById('pwaInstallBtn');
+    const pwaModal = document.getElementById('pwaModal');
+    const pwaModalCloseBtn = document.getElementById('pwaModalCloseBtn');
+    const pwaModalActionBtn = document.getElementById('pwaModalActionBtn');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      if (pwaBtn) pwaBtn.style.display = 'inline-flex';
+    });
+
+    if (pwaBtn) {
+      pwaBtn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          const { outcome } = await deferredPrompt.userChoice;
+          if (outcome === 'accepted') {
+            pwaBtn.style.display = 'none';
+          }
+          deferredPrompt = null;
+        } else {
+          if (pwaModal) pwaModal.style.display = 'flex';
+        }
+      });
+    }
+
+    if (pwaModalCloseBtn) {
+      pwaModalCloseBtn.addEventListener('click', () => {
+        if (pwaModal) pwaModal.style.display = 'none';
+      });
+    }
+    if (pwaModalActionBtn) {
+      pwaModalActionBtn.addEventListener('click', () => {
+        if (pwaModal) pwaModal.style.display = 'none';
+      });
+    }
+    if (pwaModal) {
+      pwaModal.addEventListener('click', (e) => {
+        if (e.target === pwaModal) pwaModal.style.display = 'none';
+      });
+    }
   </script>
+
+  <!-- PWA INSTALL GUIDE MODAL -->
+  <div id="pwaModal" class="pwa-modal-backdrop" style="display:none;">
+    <div class="pwa-modal-content">
+      <div class="pwa-modal-header">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <img src="icon-192.png" style="width:28px; height:28px; border-radius:6px;" alt="icon">
+          <span style="font-size:15px; font-weight:900; color:#fff;">서울픽 3040 앱 설치 안내</span>
+        </div>
+        <button class="pwa-modal-close" id="pwaModalCloseBtn">&times;</button>
+      </div>
+      <div class="pwa-modal-body">
+        <p style="font-size:13px; color:#cbd5e1; line-height:1.6; margin-bottom:14px;">
+          스마트폰 홈 화면에 <strong>서울픽 3040</strong> 앱을 추가하면, 브라우저 주소창 없이 전체 화면 앱으로 빠르고 편리하게 이용하실 수 있습니다!
+        </p>
+        <div class="pwa-step-box">
+          <div style="font-weight:800; color:#38bdf8; margin-bottom:4px;"><i class="fa-brands fa-apple"></i> 아이폰 (iOS Safari)</div>
+          <div style="font-size:12px; color:#94a3b8; line-height:1.5;">
+            사파리 하단 <strong>[공유( <i class="fa-solid fa-arrow-up-from-bracket"></i> )]</strong> 터치 ➜ <strong>[홈 화면에 추가]</strong> 선택
+          </div>
+        </div>
+        <div class="pwa-step-box" style="margin-top:10px;">
+          <div style="font-weight:800; color:#34d399; margin-bottom:4px;"><i class="fa-brands fa-android"></i> 안드로이드 (크롬 / 삼성)</div>
+          <div style="font-size:12px; color:#94a3b8; line-height:1.5;">
+            상단 메뉴( <strong><i class="fa-solid fa-ellipsis-vertical"></i></strong> ) 터치 ➜ <strong>[앱 설치]</strong> 또는 <strong>[홈 화면에 추가]</strong> 선택
+          </div>
+        </div>
+      </div>
+      <button class="pwa-modal-action-btn" id="pwaModalActionBtn">확인했습니다</button>
+    </div>
+  </div>
 </body>
 </html>
