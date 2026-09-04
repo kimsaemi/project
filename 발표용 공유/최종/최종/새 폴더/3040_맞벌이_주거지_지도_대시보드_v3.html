@@ -637,7 +637,7 @@
               <div class="slider-val-badge" id="val_commute">35%</div>
             </div>
             <div class="slider-item">
-              <div class="slider-label"><i class="fa-solid fa-shield-halved" style="color:#34d399;"></i> 🛡️ 가격 방어율</div>
+              <div class="slider-label"><i class="fa-solid fa-shield-halved" style="color:#34d399;"></i> 🛡️ 가격방어력(=안정성)</div>
               <input type="range" id="slider_defense" min="0" max="100" value="30" step="5">
               <div class="slider-val-badge" id="val_defense">30%</div>
             </div>
@@ -15045,18 +15045,25 @@
     let lastSortedList = [];
 
     function calcScore(d) {
-      const sumW = w_commute + w_defense + w_3040 + w_liquidity;
-      if (sumW === 0) return 0;
-
       const avgCommute = (d.gbd + d.ybd + d.cbd) / 3.0;
       d.cScore = Math.max(0, Math.min(100, 100 - (avgCommute - 30) * 2.0));
       d.dScore = Math.max(0, Math.min(100, 100 + d.drop * 2.0 + d.rec * 0.8));
       d.pScore = Math.max(0, Math.min(100, d.p3040 * 2.1));
       d.lScore = Math.max(0, Math.min(100, d.unit_price / 25.0));
 
+      const isDefaultWeights = (w_commute === 35 && w_defense === 30 && w_3040 === 25 && w_liquidity === 10);
+      if (isDefaultWeights && d.dynamicScore) {
+        d.realtimeScore = d.dynamicScore;
+        return d.dynamicScore;
+      }
+
+      const sumW = w_commute + w_defense + w_3040 + w_liquidity;
+      if (sumW === 0) return 0;
+
       const total = (d.cScore * w_commute + d.dScore * w_defense + d.pScore * w_3040 + d.lScore * w_liquidity) / sumW;
-      d.realtimeScore = total;
-      return total;
+      const baseRatio = (d.dynamicScore && d.dynamicScore > 0) ? (d.dynamicScore / ((d.cScore * 35 + d.dScore * 30 + d.pScore * 25 + d.lScore * 10) / 100.0)) : 1.0;
+      d.realtimeScore = Number((total * baseRatio).toFixed(1));
+      return d.realtimeScore;
     }
 
     document.getElementById('modeCustomBtn').addEventListener('click', () => {
@@ -15173,8 +15180,8 @@
       const filtered = allData.filter(d => {
         if (currentSize !== 'all' && d.size !== currentSize) return false;
         if (currentBudget === '7억 이하' && d.price_eok > 7.0) return false;
-        if (currentBudget === '7~9억' && (d.price_eok < 7.0 || d.price_eok > 9.0)) return false;
-        if (currentBudget === '9~12억' && (d.price_eok < 9.0 || d.price_eok > 12.0)) return false;
+        if (currentBudget === '7~9억' && (d.price_eok <= 7.0 || d.price_eok > 9.0)) return false;
+        if (currentBudget === '9~12억' && (d.price_eok <= 9.0 || d.price_eok > 12.0)) return false;
         if (currentBudget === '12억 초과' && d.price_eok <= 12.0) return false;
         if (currentSearch && !(d.gu + ' ' + d.dong).toLowerCase().includes(currentSearch)) return false;
         return true;
@@ -15372,7 +15379,10 @@
             </div>
             <div class="card-price">${d.price_eok.toFixed(2)}억</div>
           </div>
-          <div style="font-size:11px; margin-bottom:4px;">${defenseTag}</div>
+          <div style="font-size:11px; margin-bottom:5px; display:flex; justify-content:space-between; align-items:center;">
+            <div>${defenseTag}</div>
+            <div style="color:#94a3b8; font-size:10.5px; font-weight:500;">GBD ${d.gbd.toFixed(0)}분 · YBD ${d.ybd.toFixed(0)}분 · CBD ${d.cbd.toFixed(0)}분</div>
+          </div>
           <div class="card-metrics">
             <div class="metric-col"><span>통근</span><span style="color:#38bdf8;">${d.cScore.toFixed(1)}</span></div>
             <div class="metric-col"><span>방어/가성비</span><span style="color:#34d399;">${d.dScore.toFixed(1)}</span></div>
