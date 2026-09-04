@@ -605,15 +605,20 @@
       box-shadow: 0 4px 12px rgba(56, 189, 248, 0.5);
     }
     .pwa-modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.75);
-      backdrop-filter: blur(6px);
-      z-index: 100000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      background: rgba(0, 0, 0, 0.82) !important;
+      backdrop-filter: blur(8px) !important;
+      z-index: 2147483647 !important;
+      display: none;
+      align-items: center !important;
+      justify-content: center !important;
+      padding: 20px !important;
     }
     .pwa-modal-content {
       background: #1e293b;
@@ -668,13 +673,32 @@
       background: #1d4ed8;
     }
   </style>
+
+  <script>
+    function openPwaModalDirect() {
+      var modal = document.getElementById('pwaModal');
+      if (modal) {
+        modal.style.setProperty('display', 'flex', 'important');
+      }
+      if (window.deferredPrompt) {
+        try { window.deferredPrompt.prompt(); } catch(e){}
+      }
+    }
+    function closePwaModalDirect() {
+      var modal = document.getElementById('pwaModal');
+      if (modal) {
+        modal.style.setProperty('display', 'none', 'important');
+      }
+    }
+  </script>
 </head>
 <body>
 
   <!-- MOBILE VIEW SWITCHER BAR -->
   <div class="mobile-view-bar" id="mobileViewBar">
-    <button class="mobile-view-btn active" id="mShowListBtn"><i class="fa-solid fa-list"></i> 📋 리스트 보기</button>
-    <button class="mobile-view-btn" id="mShowMapBtn"><i class="fa-solid fa-map-location-dot"></i> 🗺️ 지도 보기</button>
+    <button class="mobile-view-btn active" id="mShowListBtn"><i class="fa-solid fa-list"></i> 📋 리스트</button>
+    <button class="mobile-view-btn" id="mShowMapBtn"><i class="fa-solid fa-map-location-dot"></i> 🗺️ 지도</button>
+    <button class="mobile-view-btn" style="background: linear-gradient(135deg, #2563eb, #38bdf8); color: #fff; font-weight: 800; border-color: #60a5fa;" onclick="openPwaModalDirect()"><i class="fa-solid fa-mobile-screen-button"></i> 📱 앱 설치</button>
   </div>
 
   <aside id="sidebar">
@@ -683,7 +707,7 @@
         <div class="header-badge" style="margin-bottom: 0;">
           <i class="fa-solid fa-shield-cat"></i> 방어력 데이터 보완(Fallback) 모델 탑재
         </div>
-        <button id="pwaInstallBtn" class="pwa-install-badge" onclick="openPwaInstallModal()" title="스마트폰 홈 화면에 앱으로 추가">
+        <button id="pwaInstallBtn" class="pwa-install-badge" onclick="openPwaModalDirect()" title="스마트폰 홈 화면에 앱으로 추가">
           <i class="fa-solid fa-mobile-screen-button"></i> 앱 설치
         </button>
       </div>
