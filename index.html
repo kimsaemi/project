@@ -683,7 +683,7 @@
         <div class="header-badge" style="margin-bottom: 0;">
           <i class="fa-solid fa-shield-cat"></i> 방어력 데이터 보완(Fallback) 모델 탑재
         </div>
-        <button id="pwaInstallBtn" class="pwa-install-badge" title="스마트폰 홈 화면에 앱으로 추가">
+        <button id="pwaInstallBtn" class="pwa-install-badge" onclick="openPwaInstallModal()" title="스마트폰 홈 화면에 앱으로 추가">
           <i class="fa-solid fa-mobile-screen-button"></i> 앱 설치
         </button>
       </div>
@@ -15733,59 +15733,48 @@
     }
 
     let deferredPrompt = null;
-    const pwaBtn = document.getElementById('pwaInstallBtn');
-    const pwaModal = document.getElementById('pwaModal');
-    const pwaModalCloseBtn = document.getElementById('pwaModalCloseBtn');
-    const pwaModalActionBtn = document.getElementById('pwaModalActionBtn');
-
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       deferredPrompt = e;
+      const pwaBtn = document.getElementById('pwaInstallBtn');
       if (pwaBtn) pwaBtn.style.display = 'inline-flex';
     });
 
-    if (pwaBtn) {
-      pwaBtn.addEventListener('click', async (e) => {
-        e.stopPropagation();
-        if (deferredPrompt) {
-          deferredPrompt.prompt();
-          const { outcome } = await deferredPrompt.userChoice;
+    window.openPwaInstallModal = function() {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(({ outcome }) => {
           if (outcome === 'accepted') {
-            pwaBtn.style.display = 'none';
+            const pwaBtn = document.getElementById('pwaInstallBtn');
+            if (pwaBtn) pwaBtn.style.display = 'none';
           }
           deferredPrompt = null;
-        } else {
-          if (pwaModal) pwaModal.style.display = 'flex';
+        });
+      } else {
+        const modal = document.getElementById('pwaModal');
+        if (modal) {
+          modal.style.setProperty('display', 'flex', 'important');
         }
-      });
-    }
+      }
+    };
 
-    if (pwaModalCloseBtn) {
-      pwaModalCloseBtn.addEventListener('click', () => {
-        if (pwaModal) pwaModal.style.display = 'none';
-      });
-    }
-    if (pwaModalActionBtn) {
-      pwaModalActionBtn.addEventListener('click', () => {
-        if (pwaModal) pwaModal.style.display = 'none';
-      });
-    }
-    if (pwaModal) {
-      pwaModal.addEventListener('click', (e) => {
-        if (e.target === pwaModal) pwaModal.style.display = 'none';
-      });
-    }
+    window.closePwaInstallModal = function() {
+      const modal = document.getElementById('pwaModal');
+      if (modal) {
+        modal.style.setProperty('display', 'none', 'important');
+      }
+    };
   </script>
 
   <!-- PWA INSTALL GUIDE MODAL -->
-  <div id="pwaModal" class="pwa-modal-backdrop" style="display:none;">
+  <div id="pwaModal" class="pwa-modal-backdrop" onclick="if(event.target===this) closePwaInstallModal()" style="display:none;">
     <div class="pwa-modal-content">
       <div class="pwa-modal-header">
         <div style="display:flex; align-items:center; gap:8px;">
           <img src="icon-192.png" style="width:28px; height:28px; border-radius:6px;" alt="icon">
           <span style="font-size:15px; font-weight:900; color:#fff;">서울픽 3040 앱 설치 안내</span>
         </div>
-        <button class="pwa-modal-close" id="pwaModalCloseBtn">&times;</button>
+        <button class="pwa-modal-close" onclick="closePwaInstallModal()">&times;</button>
       </div>
       <div class="pwa-modal-body">
         <p style="font-size:13px; color:#cbd5e1; line-height:1.6; margin-bottom:14px;">
@@ -15804,7 +15793,7 @@
           </div>
         </div>
       </div>
-      <button class="pwa-modal-action-btn" id="pwaModalActionBtn">확인했습니다</button>
+      <button class="pwa-modal-action-btn" onclick="closePwaInstallModal()">확인했습니다</button>
     </div>
   </div>
 </body>
